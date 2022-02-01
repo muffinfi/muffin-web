@@ -17,6 +17,7 @@ import {
   ExactInputSwapTransactionInfo,
   ExactOutputSwapTransactionInfo,
   MigrateV2LiquidityToV3TransactionInfo,
+  RemoveLiquidityMuffinTransactionInfo,
   RemoveLiquidityV3TransactionInfo,
   SubmitProposalTransactionInfo,
   TransactionInfo,
@@ -281,7 +282,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
 
 /////////////////////////////////////////////////////////
 
-function AddLiquidityV3MuffinSummary({
+function AddLiquidityMuffinSummary({
   info: { createPool, quoteCurrencyId, baseCurrencyId },
 }: {
   info: AddLiquidityMuffinTransactionInfo
@@ -300,12 +301,30 @@ function AddLiquidityV3MuffinSummary({
   )
 }
 
+function RemoveLiquidityMuffinSummary({
+  info: { baseCurrencyId, quoteCurrencyId, expectedAmountBaseRaw, expectedAmountQuoteRaw },
+}: {
+  info: RemoveLiquidityMuffinTransactionInfo
+}) {
+  return (
+    <Trans>
+      Remove{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedAmountBaseRaw} currencyId={baseCurrencyId} sigFigs={3} /> and{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedAmountQuoteRaw} currencyId={quoteCurrencyId} sigFigs={3} />
+    </Trans>
+  )
+}
 /////////////////////////////////////////////////////////
 
 export function TransactionSummary({ info }: { info: TransactionInfo }) {
   switch (info.type) {
     case TransactionType.ADD_LIQUIDITY_MUFFIN:
-      return <AddLiquidityV3MuffinSummary info={info} />
+      return <AddLiquidityMuffinSummary info={info} />
+
+    case TransactionType.REMOVE_LIQUIDITY_MUFFIN:
+      return <RemoveLiquidityMuffinSummary info={info} />
+
+    ///////
 
     case TransactionType.ADD_LIQUIDITY_V3_POOL:
       return <AddLiquidityV3PoolSummary info={info} />

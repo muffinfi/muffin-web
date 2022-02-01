@@ -83,11 +83,10 @@ import {
   Wrapper,
 } from './styled'
 
-const DEFAULT_USE_ACCOUNT = false
-
-const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
-
 const ZERO_PERCENT = new Percent('0')
+
+const DEFAULT_USE_ACCOUNT = false // TODO:
+const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 const parseSqrtGamma = (sqrtGammaFromUrl: string | undefined) => {
   return sqrtGammaFromUrl && isValidSqrtGamma(parseFloat(sqrtGammaFromUrl)) ? parseFloat(sqrtGammaFromUrl) : undefined
@@ -594,13 +593,14 @@ export default function AddLiquidity({
 
   /**
    * NOTE:
-   * - not using SelfPermit to approve currently
+   * - does not support internal account
+   * - does not use SelfPermit to approve
+   * - does not support deadline
    * - creating pool reduce position's received liquidity. UI not reminding user atm
    */
   const onAdd = async () => {
     if (!chainId || !library || !account) return
-    if (!manager || !baseCurrency || !quoteCurrency) return
-    if (!position || !account || !deadline) return
+    if (!baseCurrency || !quoteCurrency || !manager || !position || !deadline) return
 
     const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
 
@@ -631,7 +631,6 @@ export default function AddLiquidity({
       const response = await library.getSigner().sendTransaction({ ...txn, gasLimit: calculateGasMargin(gasEst) })
       setIsAttemptingTxn(false)
 
-      // add txn to logs
       addTransaction(response, {
         type: TransactionType.ADD_LIQUIDITY_MUFFIN,
         createPool: Boolean(noLiquidity),
@@ -642,7 +641,6 @@ export default function AddLiquidity({
         expectedAmountBaseRaw: parsedAmounts[Field.CURRENCY_A]?.quotient?.toString() ?? '0',
         expectedAmountQuoteRaw: parsedAmounts[Field.CURRENCY_B]?.quotient?.toString() ?? '0',
       })
-
       setTxHash(response.hash)
 
       ReactGA.event({
@@ -653,8 +651,8 @@ export default function AddLiquidity({
     } catch (error) {
       setIsAttemptingTxn(false)
       console.error('Failed to send transaction', error)
-      // we only care if the error is something _other_ than the user rejected the tx
-      if (error?.code !== 4001) console.error(error)
+      // // we only care if the error is something _other_ than the user rejected the tx
+      // if (error?.code !== 4001) console.error(error)
     }
   }
 

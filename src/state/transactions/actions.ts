@@ -34,7 +34,9 @@ export enum TransactionType {
   COLLECT_FEES = 12,
   REMOVE_LIQUIDITY_V3 = 13,
   SUBMIT_PROPOSAL = 14,
+  //
   ADD_LIQUIDITY_MUFFIN = 15,
+  REMOVE_LIQUIDITY_MUFFIN = 16,
 }
 
 export interface BaseTransactionInfo {
@@ -110,21 +112,6 @@ export interface CreateV3PoolTransactionInfo {
   quoteCurrencyId: string
 }
 
-////////////////////////////////////////////////////////////
-
-export interface AddLiquidityMuffinTransactionInfo {
-  type: TransactionType.ADD_LIQUIDITY_MUFFIN
-  createPool: boolean
-  baseCurrencyId: string
-  quoteCurrencyId: string
-  tierId: number
-  sqrtGamma: number
-  expectedAmountBaseRaw: string
-  expectedAmountQuoteRaw: string
-}
-
-////////////////////////////////////////////////////////////
-
 export interface AddLiquidityV3PoolTransactionInfo {
   type: TransactionType.ADD_LIQUIDITY_V3_POOL
   createPool: boolean
@@ -168,6 +155,30 @@ export interface SubmitProposalTransactionInfo {
   type: TransactionType.SUBMIT_PROPOSAL
 }
 
+////////////////////////////////////////////////////////////
+
+export interface AddLiquidityMuffinTransactionInfo {
+  type: TransactionType.ADD_LIQUIDITY_MUFFIN
+  createPool: boolean
+  baseCurrencyId: string
+  quoteCurrencyId: string
+  tierId: number
+  sqrtGamma: number
+  expectedAmountBaseRaw: string
+  expectedAmountQuoteRaw: string
+}
+
+export interface RemoveLiquidityMuffinTransactionInfo {
+  type: TransactionType.REMOVE_LIQUIDITY_MUFFIN
+  baseCurrencyId: string
+  quoteCurrencyId: string
+  sqrtGamma: number
+  expectedAmountBaseRaw: string
+  expectedAmountQuoteRaw: string
+}
+
+////////////////////////////////////////////////////////////
+
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -186,6 +197,7 @@ export type TransactionInfo =
   | RemoveLiquidityV3TransactionInfo
   | SubmitProposalTransactionInfo
   | AddLiquidityMuffinTransactionInfo
+  | RemoveLiquidityMuffinTransactionInfo
 
 export const addTransaction = createAction<{
   chainId: number

@@ -57,8 +57,8 @@ export function useMuffinPositionDetailsFromTokenIds(tokenIds: BigNumberish[] | 
         limitOrderType: position.limitOrderType,
         settlementSnapshotId: position.settlementSnapshotId,
         settled: result.settled,
-        underlyingAmount0: result.amount0,
-        underlyingAmount1: result.amount1,
+        underlyingAmount0: result.amount0, // FIXME: seems actually sdk can calculate this. Remove this from lens contract?
+        underlyingAmount1: result.amount1, // FIXME: seems actually sdk can calculate this. Remove this from lens contract?
         feeAmount0: result.feeAmount0,
         feeAmount1: result.feeAmount1,
         nonce: BigNumber.from(0), // FIXME:
