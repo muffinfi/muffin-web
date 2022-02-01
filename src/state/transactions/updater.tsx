@@ -51,7 +51,7 @@ export default function Updater(): null {
 
   const transactions = useMemo(() => (chainId ? state[chainId] ?? {} : {}), [chainId, state])
 
-  // show popup on confirm
+  // show popup on confirm (i.e. "popup" notification)
   const addPopup = useAddPopup()
 
   // speed up popup dismisall time if on L2

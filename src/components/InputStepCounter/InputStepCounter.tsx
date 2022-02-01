@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { FeeAmount } from '@uniswap/v3-sdk'
 import { ButtonGray } from 'components/Button'
 import { OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -74,7 +73,7 @@ interface StepCounterProps {
   increment: () => string
   decrementDisabled?: boolean
   incrementDisabled?: boolean
-  feeAmount?: FeeAmount
+  tierId?: number
   label?: string
   width?: string
   locked?: boolean // disable input

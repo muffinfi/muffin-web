@@ -1,7 +1,7 @@
 import { createAction } from '@reduxjs/toolkit'
 import { TradeType } from '@uniswap/sdk-core'
 
-import { VoteOption } from '../governance/types'
+// import { VoteOption } from '../governance/types'
 
 export interface SerializableTransactionReceipt {
   to: string
@@ -34,19 +34,20 @@ export enum TransactionType {
   COLLECT_FEES = 12,
   REMOVE_LIQUIDITY_V3 = 13,
   SUBMIT_PROPOSAL = 14,
+  ADD_LIQUIDITY_MUFFIN = 15,
 }
 
 export interface BaseTransactionInfo {
   type: TransactionType
 }
 
-export interface VoteTransactionInfo extends BaseTransactionInfo {
-  type: TransactionType.VOTE
-  governorAddress: string
-  proposalId: number
-  decision: VoteOption
-  reason: string
-}
+// export interface VoteTransactionInfo extends BaseTransactionInfo {
+//   type: TransactionType.VOTE
+//   governorAddress: string
+//   proposalId: number
+//   decision: VoteOption
+//   reason: string
+// }
 
 export interface DelegateTransactionInfo extends BaseTransactionInfo {
   type: TransactionType.DELEGATE
@@ -109,6 +110,21 @@ export interface CreateV3PoolTransactionInfo {
   quoteCurrencyId: string
 }
 
+////////////////////////////////////////////////////////////
+
+export interface AddLiquidityMuffinTransactionInfo {
+  type: TransactionType.ADD_LIQUIDITY_MUFFIN
+  createPool: boolean
+  baseCurrencyId: string
+  quoteCurrencyId: string
+  tierId: number
+  sqrtGamma: number
+  expectedAmountBaseRaw: string
+  expectedAmountQuoteRaw: string
+}
+
+////////////////////////////////////////////////////////////
+
 export interface AddLiquidityV3PoolTransactionInfo {
   type: TransactionType.ADD_LIQUIDITY_V3_POOL
   createPool: boolean
@@ -157,7 +173,7 @@ export type TransactionInfo =
   | ExactOutputSwapTransactionInfo
   | ExactInputSwapTransactionInfo
   | ClaimTransactionInfo
-  | VoteTransactionInfo
+  // | VoteTransactionInfo
   | DelegateTransactionInfo
   | DepositLiquidityStakingTransactionInfo
   | WithdrawLiquidityStakingTransactionInfo
@@ -169,6 +185,7 @@ export type TransactionInfo =
   | CollectFeesTransactionInfo
   | RemoveLiquidityV3TransactionInfo
   | SubmitProposalTransactionInfo
+  | AddLiquidityMuffinTransactionInfo
 
 export const addTransaction = createAction<{
   chainId: number
@@ -176,12 +193,15 @@ export const addTransaction = createAction<{
   from: string
   info: TransactionInfo
 }>('transactions/addTransaction')
+
 export const clearAllTransactions = createAction<{ chainId: number }>('transactions/clearAllTransactions')
+
 export const finalizeTransaction = createAction<{
   chainId: number
   hash: string
   receipt: SerializableTransactionReceipt
 }>('transactions/finalizeTransaction')
+
 export const checkedTransaction = createAction<{
   chainId: number
   hash: string

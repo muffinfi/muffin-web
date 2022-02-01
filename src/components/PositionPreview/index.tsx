@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
+import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency } from '@uniswap/sdk-core'
-import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -36,20 +36,20 @@ export const PositionPreview = ({
   const currency1 = unwrappedToken(position.pool.token1)
 
   // track which currency should be base
+  // prettier-ignore
   const [baseCurrency, setBaseCurrency] = useState(
     baseCurrencyDefault
-      ? baseCurrencyDefault === currency0
-        ? currency0
-        : baseCurrencyDefault === currency1
-        ? currency1
-        : currency0
+      ? baseCurrencyDefault === currency0 ? currency0 :
+        baseCurrencyDefault === currency1 ? currency1 : currency0
       : currency0
   )
 
   const sorted = baseCurrency === currency0
   const quoteCurrency = sorted ? currency1 : currency0
 
-  const price = sorted ? position.pool.priceOf(position.pool.token0) : position.pool.priceOf(position.pool.token1)
+  const price = sorted
+    ? position.poolTier.priceOf(position.pool.token0)
+    : position.poolTier.priceOf(position.pool.token1)
 
   const priceLower = sorted ? position.token0PriceLower : position.token0PriceUpper.invert()
   const priceUpper = sorted ? position.token0PriceUpper : position.token0PriceLower.invert()
@@ -103,7 +103,7 @@ export const PositionPreview = ({
               <Trans>Fee Tier</Trans>
             </ThemedText.Label>
             <ThemedText.Label>
-              <Trans>{position?.pool?.fee / 10000}%</Trans>
+              <Trans>{position.poolTier.feePercent.toFixed(2)}%</Trans>
             </ThemedText.Label>
           </RowBetween>
         </AutoColumn>

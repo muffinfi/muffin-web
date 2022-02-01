@@ -131,11 +131,13 @@ function getRelevantState(): null | keyof AppState {
     case 'swap':
       return 'swap'
     case 'add':
-      if (pieces[1] === 'v2') return 'mint'
-      else return 'mintV3'
+      // if (pieces[1] === 'v2') return 'mint'
+      // else return 'mintV3'
+      return 'mintV3'
     case 'remove':
-      if (pieces[1] === 'v2') return 'burn'
-      else return 'burnV3'
+      // if (pieces[1] === 'v2') return 'burn'
+      // else return 'burnV3'
+      return 'burnV3'
   }
   return null
 }
@@ -144,13 +146,13 @@ function issueBody(error: Error): string {
   const relevantState = getRelevantState()
   const deviceData = userAgent
   return `## URL
-  
+
 ${window.location.href}
 
 ${
   relevantState
     ? `## \`${relevantState}\` state
-    
+
 \`\`\`json
 ${JSON.stringify(store.getState()[relevantState], null, 2)}
 \`\`\`

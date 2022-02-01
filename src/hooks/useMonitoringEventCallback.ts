@@ -14,6 +14,8 @@ const SUPPORTED_TRANSACTION_TYPES = [
   TransactionType.CREATE_V3_POOL,
   TransactionType.REMOVE_LIQUIDITY_V3,
   TransactionType.SWAP,
+  //
+  TransactionType.ADD_LIQUIDITY_MUFFIN,
 ]
 
 const FIREBASE_API_KEY = process.env.REACT_APP_FIREBASE_KEY
@@ -86,6 +88,9 @@ export function useWalletConnectMonitoringEventCallback() {
   )
 }
 
+/**
+ * TODO: currently disabled
+ */
 function initializeFirebase() {
   initializeApp({
     apiKey: process.env.REACT_APP_FIREBASE_KEY,

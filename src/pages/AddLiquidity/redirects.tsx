@@ -5,7 +5,7 @@ import { WETH9_EXTENDED } from '../../constants/tokens'
 import AddLiquidity from './index'
 
 export function RedirectDuplicateTokenIds(
-  props: RouteComponentProps<{ currencyIdA: string; currencyIdB: string; feeAmount?: string }>
+  props: RouteComponentProps<{ currencyIdA: string; currencyIdB: string; sqrtGamma?: string }>
 ) {
   const {
     match: {

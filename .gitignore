@@ -42,3 +42,9 @@ package-lock.json
 cypress/videos
 cypress/screenshots
 cypress/fixtures/example.json
+
+
+# deleted, not related to muffin
+src/**/__*/
+src/**/__*.ts__
+src/**/__*.tsx__

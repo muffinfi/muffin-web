@@ -20,9 +20,8 @@ export function useTransactionAdder(): (response: TransactionResponse, info: Tra
       if (!chainId) return
 
       const { hash } = response
-      if (!hash) {
-        throw Error('No transaction hash found.')
-      }
+      if (!hash) throw Error('No transaction hash found.')
+
       dispatch(addTransaction({ hash, from: account, info, chainId }))
 
       logMonitoringEvent(info, response)

@@ -17,7 +17,7 @@ export default function RangeSelector({
   getIncrementUpper,
   currencyA,
   currencyB,
-  feeAmount,
+  tierId,
   ticksAtLimit,
 }: {
   priceLower?: Price<Token, Token>
@@ -30,7 +30,7 @@ export default function RangeSelector({
   onRightRangeInput: (typedValue: string) => void
   currencyA?: Currency | null
   currencyB?: Currency | null
-  feeAmount?: number
+  tierId?: number
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 }) {
   const tokenA = (currencyA ?? undefined)?.wrapped
@@ -51,7 +51,7 @@ export default function RangeSelector({
           increment={isSorted ? getIncrementLower : getDecrementUpper}
           decrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
           incrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
-          feeAmount={feeAmount}
+          tierId={tierId}
           label={leftPrice ? `${currencyB?.symbol}` : '-'}
           title={<Trans>Min Price</Trans>}
           tokenA={currencyA?.symbol}
@@ -65,7 +65,7 @@ export default function RangeSelector({
           increment={isSorted ? getIncrementUpper : getDecrementLower}
           incrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
           decrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
-          feeAmount={feeAmount}
+          tierId={tierId}
           label={rightPrice ? `${currencyB?.symbol}` : '-'}
           tokenA={currencyA?.symbol}
           tokenB={currencyB?.symbol}

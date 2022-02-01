@@ -225,20 +225,41 @@ export function useToken(tokenAddress?: string | null): Token | undefined | null
   ])
 }
 
-export function useCurrency(currencyId: string | null | undefined): Currency | null | undefined {
+/**
+ * Manually cache currency into a global object.
+ * Anti-pattern, but this is to stop re-fetching token data in any circumstances (e.g. block number changes).
+ * We are expecting token data will never change.
+ */
+const CURRENCIES: Record<number, Record<string, Currency> | undefined> = {}
+
+export function useCurrency(_currencyId: string | null | undefined): Currency | null | undefined {
   const { chainId } = useActiveWeb3React()
+
+  // try to get currency from cache
+  const cachedCurrency = chainId != null && _currencyId != null ? CURRENCIES[chainId]?.[_currencyId] : undefined
+  const currencyId = cachedCurrency == null ? _currencyId : undefined
+
+  // fetch token data if it is not native eth
   const isETH = currencyId?.toUpperCase() === 'ETH'
   const token = useToken(isETH ? undefined : currencyId)
-  const extendedEther = useMemo(
-    () =>
-      chainId
-        ? ExtendedEther.onChain(chainId)
-        : // display mainnet when not connected
-          ExtendedEther.onChain(SupportedChainId.MAINNET),
-    [chainId]
-  )
-  const weth = chainId ? WETH9_EXTENDED[chainId] : undefined
+  const extendedEther = useMemo(() => ExtendedEther.onChain(chainId ?? SupportedChainId.MAINNET), [chainId]) // display mainnet when not connected
+
+  // return currency if it is cached
+  if (cachedCurrency != null) return cachedCurrency
+
+  // return null/undefined if currencyId is null/undefined
   if (currencyId === null || currencyId === undefined) return currencyId
+
+  // return weth if currencyId is a weth address
+  const weth = chainId ? WETH9_EXTENDED[chainId] : undefined
   if (weth?.address?.toUpperCase() === currencyId?.toUpperCase()) return weth
-  return isETH ? extendedEther : token
+
+  // cache currency by chainId and currencyId
+  const currency = isETH ? extendedEther : token
+  if (chainId != null && currencyId != null && currency != null) {
+    const caches = CURRENCIES[chainId] ?? (CURRENCIES[chainId] = {})
+    caches[currencyId] = currency
+  }
+
+  return currency
 }

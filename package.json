@@ -21,6 +21,7 @@
     "@lingui/macro": "^3.9.0",
     "@lingui/react": "^3.9.0",
     "@metamask/jazzicon": "^2.0.0",
+    "@muffinfi/muffin-v1-sdk": "git+https://github.com/deliswap/muffin-v1-sdk.git",
     "@popperjs/core": "^2.4.4",
     "@reach/dialog": "^0.10.3",
     "@reach/portal": "^0.10.3",
@@ -164,6 +165,5 @@
       "last 1 safari version"
     ]
   },
-  "license": "GPL-3.0-or-later",
-  "dependencies": {}
+  "license": "GPL-3.0-or-later"
 }

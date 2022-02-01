@@ -1,22 +1,18 @@
-import { Price, Token } from '@uniswap/sdk-core'
 import {
-  encodeSqrtRatioX96,
-  FeeAmount,
+  encodeSqrtPriceX72,
+  MAX_SQRT_P,
+  MAX_TICK,
+  MIN_SQRT_P,
+  MIN_TICK,
   nearestUsableTick,
   priceToClosestTick,
-  TICK_SPACINGS,
-  TickMath,
-} from '@uniswap/v3-sdk'
+} from '@muffinfi/muffin-v1-sdk'
+import { Price, Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 
 export function tryParsePrice(baseToken?: Token, quoteToken?: Token, value?: string) {
-  if (!baseToken || !quoteToken || !value) {
-    return undefined
-  }
-
-  if (!value.match(/^\d*\.?\d+$/)) {
-    return undefined
-  }
+  if (!baseToken || !quoteToken || !value) return undefined
+  if (!value.match(/^\d*\.?\d+$/)) return undefined
 
   const [whole, fraction] = value.split('.')
 
@@ -34,32 +30,23 @@ export function tryParsePrice(baseToken?: Token, quoteToken?: Token, value?: str
 export function tryParseTick(
   baseToken?: Token,
   quoteToken?: Token,
-  feeAmount?: FeeAmount,
+  tickSpacing?: number,
   value?: string
 ): number | undefined {
-  if (!baseToken || !quoteToken || !feeAmount || !value) {
-    return undefined
-  }
+  if (!baseToken || !quoteToken || !tickSpacing || !value) return undefined
 
   const price = tryParsePrice(baseToken, quoteToken, value)
+  if (!price) return undefined
 
-  if (!price) {
-    return undefined
-  }
-
+  const sqrtPriceX72 = encodeSqrtPriceX72(price.numerator, price.denominator)
   let tick: number
-
-  // check price is within min/max bounds, if outside return min/max
-  const sqrtRatioX96 = encodeSqrtRatioX96(price.numerator, price.denominator)
-
-  if (JSBI.greaterThanOrEqual(sqrtRatioX96, TickMath.MAX_SQRT_RATIO)) {
-    tick = TickMath.MAX_TICK
-  } else if (JSBI.lessThanOrEqual(sqrtRatioX96, TickMath.MIN_SQRT_RATIO)) {
-    tick = TickMath.MIN_TICK
+  if (JSBI.greaterThanOrEqual(sqrtPriceX72, MAX_SQRT_P)) {
+    tick = MAX_TICK
+  } else if (JSBI.lessThanOrEqual(sqrtPriceX72, MIN_SQRT_P)) {
+    tick = MIN_TICK
   } else {
-    // this function is agnostic to the base, will always return the correct tick
-    tick = priceToClosestTick(price)
+    tick = priceToClosestTick(price) // this function is agnostic to the base, will always return the correct tick
   }
 
-  return nearestUsableTick(tick, TICK_SPACINGS[feeAmount])
+  return nearestUsableTick(tick, tickSpacing)
 }

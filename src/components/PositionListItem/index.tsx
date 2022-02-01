@@ -141,6 +141,12 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
     return {}
   }
 
+  // NOTE: general logic
+  // 1. if have stablecoin, stablecoin as quote currency  | ABC-USD
+  // 2. if have ETH or BTC, ETH or BTC as base currency   | ETH-ABC
+  // 3. if both tick prices below 1, invert them
+  // 4. otherwise, nothing changed
+
   const token0 = position.amount0.currency
   const token1 = position.amount1.currency
 
@@ -148,7 +154,7 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   const stables = [DAI, USDC, USDT]
   if (stables.some((stable) => stable.equals(token0))) {
     return {
-      priceLower: position.token0PriceUpper.invert(),
+      priceLower: position.token0PriceUpper.invert(), // it means the upper tick's token0 price, denominated in token1
       priceUpper: position.token0PriceLower.invert(),
       quote: token0,
       base: token1,
@@ -189,15 +195,17 @@ export default function PositionListItem({ positionDetails }: PositionListItemPr
   const {
     token0: token0Address,
     token1: token1Address,
-    fee: feeAmount,
+    fee: feeAmount, // NOTE: feeAmount is actually percentage fee
     liquidity,
     tickLower,
     tickUpper,
   } = positionDetails
 
+  // NOTE: fetch token basic info, init Token objects from sdk-core
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
 
+  // NOTE: unwrap Token into Currency (i.e. WETH -> ETH, if there is WETH)
   const currency0 = token0 ? unwrappedToken(token0) : undefined
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
