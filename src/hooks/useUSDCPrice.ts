@@ -1,11 +1,20 @@
+import { useClientSideMuffinTrade } from '@muffinfi/hooks/swap/useClientSideTrade'
 import { Currency, CurrencyAmount, Price, Token, TradeType } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
-
 import { SupportedChainId } from '../constants/chains'
 import { DAI_OPTIMISM, USDC, USDC_ARBITRUM } from '../constants/tokens'
-import { useBestV2Trade } from './useBestV2Trade'
-import { useClientSideV3Trade } from './useClientSideV3Trade'
 import { useActiveWeb3React } from './web3'
+
+/**
+ * Prepared by Muffin. Not an official rinkeby USDC
+ */
+const USDC_RINKEBY = new Token(
+  SupportedChainId.RINKEBY,
+  '0x4BAC7231bA2392c55e8190dE7D216d7Ed7B9BF5F',
+  18,
+  'USDC',
+  'USD//C'
+)
 
 // Stablecoin amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -13,12 +22,52 @@ const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> } = {
   [SupportedChainId.MAINNET]: CurrencyAmount.fromRawAmount(USDC, 100_000e6),
   [SupportedChainId.ARBITRUM_ONE]: CurrencyAmount.fromRawAmount(USDC_ARBITRUM, 10_000e6),
   [SupportedChainId.OPTIMISM]: CurrencyAmount.fromRawAmount(DAI_OPTIMISM, 10_000e18),
+  [SupportedChainId.RINKEBY]: CurrencyAmount.fromRawAmount(USDC_RINKEBY, 10_000e18),
 }
 
 /**
  * Returns the price in USDC of the input currency
  * @param currency currency to compute the USDC price of
  */
+export default function useUSDCPrice(currency?: Currency): Price<Currency, Token> | undefined {
+  const { chainId } = useActiveWeb3React()
+
+  const amountOut = chainId ? STABLECOIN_AMOUNT_OUT[chainId] : undefined
+  const stablecoin = amountOut?.currency
+
+  const { trade: usdcTrade } = useClientSideMuffinTrade(TradeType.EXACT_OUTPUT, amountOut, currency)
+
+  return useMemo(() => {
+    if (!currency || !stablecoin) {
+      return undefined
+    }
+
+    // handle usdc
+    if (currency?.wrapped.equals(stablecoin)) {
+      return new Price(stablecoin, stablecoin, '1', '1')
+    }
+
+    if (!usdcTrade) return undefined
+
+    const price = usdcTrade.swaps[0].route.impreciseMidPrice
+    return new Price(currency, stablecoin, price.denominator, price.numerator)
+  }, [currency, stablecoin, usdcTrade])
+}
+
+export function useUSDCValue(currencyAmount: CurrencyAmount<Currency> | undefined | null) {
+  const price = useUSDCPrice(currencyAmount?.currency)
+
+  return useMemo(() => {
+    if (!price || !currencyAmount) return null
+    try {
+      return price.quote(currencyAmount)
+    } catch (error) {
+      return null
+    }
+  }, [currencyAmount, price])
+}
+
+/**
 export default function useUSDCPrice(currency?: Currency): Price<Currency, Token> | undefined {
   const { chainId } = useActiveWeb3React()
 
@@ -52,16 +101,4 @@ export default function useUSDCPrice(currency?: Currency): Price<Currency, Token
     return undefined
   }, [currency, stablecoin, v2USDCTrade, v3USDCTrade.trade])
 }
-
-export function useUSDCValue(currencyAmount: CurrencyAmount<Currency> | undefined | null) {
-  const price = useUSDCPrice(currencyAmount?.currency)
-
-  return useMemo(() => {
-    if (!price || !currencyAmount) return null
-    try {
-      return price.quote(currencyAmount)
-    } catch (error) {
-      return null
-    }
-  }, [currencyAmount, price])
-}
+*/

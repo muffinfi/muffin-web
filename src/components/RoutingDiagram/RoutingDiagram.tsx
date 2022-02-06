@@ -1,5 +1,4 @@
 import { Currency, Percent } from '@uniswap/sdk-core'
-import { FeeAmount } from '@uniswap/v3-sdk'
 import Badge from 'components/Badge'
 import CurrencyLogo from 'components/CurrencyLogo'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -8,12 +7,13 @@ import { useTokenInfoFromActiveList } from 'hooks/useTokenInfoFromActiveList'
 import { Box } from 'rebass'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
 import { ReactComponent as DotLine } from '../../assets/svg/dot_line.svg'
+
+type TierChoices = number
 
 export interface RoutingDiagramEntry {
   percent: Percent
-  path: [Currency, Currency, FeeAmount][]
+  path: [Currency, Currency, TierChoices][]
 }
 
 const Wrapper = styled(Box)`
@@ -86,7 +86,7 @@ export default function RoutingDiagram({
   )
 }
 
-function Route({ percent, path }: { percent: RoutingDiagramEntry['percent']; path: RoutingDiagramEntry['path'] }) {
+function Route({ percent, path }: RoutingDiagramEntry) {
   return (
     <RouteRow>
       <DottedLine>
@@ -99,24 +99,35 @@ function Route({ percent, path }: { percent: RoutingDiagramEntry['percent']; pat
       </OpaqueBadge>
 
       <AutoRow gap="1px" width="100%" style={{ justifyContent: 'space-evenly', zIndex: 2 }}>
-        {path.map(([currency0, currency1, feeAmount], index) => (
-          <Pool key={index} currency0={currency0} currency1={currency1} feeAmount={feeAmount} />
+        {path.map(([currency0, currency1, tierChoices], index) => (
+          <Pool key={index} currency0={currency0} currency1={currency1} tierChoices={tierChoices} />
         ))}
       </AutoRow>
     </RouteRow>
   )
 }
 
-function Pool({ currency0, currency1, feeAmount }: { currency0: Currency; currency1: Currency; feeAmount: FeeAmount }) {
+function Pool({
+  currency0,
+  currency1,
+  tierChoices,
+}: {
+  currency0: Currency
+  currency1: Currency
+  tierChoices: number
+}) {
   const tokenInfo0 = useTokenInfoFromActiveList(currency0)
   const tokenInfo1 = useTokenInfoFromActiveList(currency1)
-
+  // TODO: specify tier choices?
   return (
     <PoolBadge>
       <Box margin="0 5px 0 10px">
         <DoubleCurrencyLogo currency0={tokenInfo1} currency1={tokenInfo0} size={20} />
       </Box>
-      <ThemedText.Small fontSize={12}>{feeAmount / 10000}%</ThemedText.Small>
+      {/* <ThemedText.Small fontSize={12}>{fee / 10000}%</ThemedText.Small> */}
+      <ThemedText.Small fontSize={12}>
+        {currency0.symbol}-{currency1.symbol}
+      </ThemedText.Small>
     </PoolBadge>
   )
 }

@@ -1,11 +1,9 @@
 import { splitSignature } from '@ethersproject/bytes'
+import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
+import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
-import { Trade as V2Trade } from '@uniswap/v2-sdk'
-import { Trade as V3Trade } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
 import { useMemo, useState } from 'react'
-
-import { SWAP_ROUTER_ADDRESSES } from '../constants/addresses'
 import { DAI, UNI, USDC } from '../constants/tokens'
 import { useSingleCallResult } from '../state/multicall/hooks'
 import { useEIP2612Contract } from './useContract'
@@ -127,10 +125,14 @@ function useERC20Permit(
   const { account, chainId, library } = useActiveWeb3React()
   const transactionDeadline = useTransactionDeadline()
   const tokenAddress = currencyAmount?.currency?.isToken ? currencyAmount.currency.address : undefined
+
   const eip2612Contract = useEIP2612Contract(tokenAddress)
   const isArgentWallet = useIsArgentWallet()
+
+  // NOTE: fetch nonce from chain. invalid result = token no support permit
   const nonceInputs = useMemo(() => [account ?? undefined], [account])
   const tokenNonceState = useSingleCallResult(eip2612Contract, 'nonces', nonceInputs)
+
   const permitInfo =
     overridePermitInfo ?? (chainId && tokenAddress ? PERMITTABLE_TOKENS[chainId]?.[tokenAddress] : undefined)
 
@@ -272,20 +274,14 @@ export function useV2LiquidityTokenPermit(
 }
 
 export function useERC20PermitFromTrade(
-  trade: V2Trade<Currency, Currency, TradeType> | V3Trade<Currency, Currency, TradeType> | undefined,
+  trade: Trade<Currency, Currency, TradeType> | undefined,
   allowedSlippage: Percent
 ) {
   const { chainId } = useActiveWeb3React()
-  const swapRouterAddress = chainId ? SWAP_ROUTER_ADDRESSES[chainId] : undefined
+  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
   const amountToApprove = useMemo(
     () => (trade ? trade.maximumAmountIn(allowedSlippage) : undefined),
     [trade, allowedSlippage]
   )
-
-  return useERC20Permit(
-    amountToApprove,
-    // v2 router does not support
-    trade instanceof V2Trade ? undefined : trade instanceof V3Trade ? swapRouterAddress : undefined,
-    null
-  )
+  return useERC20Permit(amountToApprove, trade ? managerAddress : undefined, null)
 }
