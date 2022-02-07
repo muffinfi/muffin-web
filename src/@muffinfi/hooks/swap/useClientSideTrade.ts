@@ -87,7 +87,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
 
         const amountIn = CurrencyAmount.fromRawAmount(currencyIn, result.amountIn.toString())
         const amountOut = CurrencyAmount.fromRawAmount(currencyOut, result.amountOut.toString())
-        // const gasUsed = result.gasUsed // FIXME: consider gas cost
+        // const gasUsed = result.gasUsed // FIXME: consider gas cost. Check useSwapSlippageTolerance.ts
 
         if (tradeType === TradeType.EXACT_INPUT) {
           if (currentBest.amountOut === null || JSBI.lessThan(currentBest.amountOut.quotient, amountOut.quotient)) {

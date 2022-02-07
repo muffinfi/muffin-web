@@ -85,7 +85,9 @@ import {
 
 const ZERO_PERCENT = new Percent('0')
 
-const DEFAULT_USE_ACCOUNT = false // TODO:
+// TODO: support internal account
+const DEFAULT_USE_ACCOUNT = false
+
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 const parseSqrtGamma = (sqrtGammaFromUrl: string | undefined) => {
@@ -100,15 +102,6 @@ export default function AddLiquidity({
   const currencyIdB: string | undefined = params.currencyIdB
   const sqrtGammaFromUrl: string | undefined = params.sqrtGamma
   const tokenId: string | undefined = params.tokenId
-
-  // TODO: debug data. to be deleted.
-  // //////////////////////////////
-  // // const currencyIdA: string | undefined = '0x4BAC7231bA2392c55e8190dE7D216d7Ed7B9BF5F' // usdc
-  // const currencyIdA: string | undefined = '0xc778417e063141139fce010982780140aa0cd5ab' // weth
-  // const currencyIdB: string | undefined = '0x868CaC73fe792d68E8e91d0faC94Acdb0D385af9'
-  // const sqrtGammaFromUrl: string | undefined = '99850'
-  // const tokenId: string | undefined = undefined // '1'
-  // //////////////////////////////
 
   const { account, chainId, library } = useActiveWeb3React()
 
