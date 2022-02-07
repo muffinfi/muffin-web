@@ -33,10 +33,10 @@ interface ManagerInterface extends ethers.utils.Interface {
     "deposit(address,address,uint256)": FunctionFragment;
     "depositCallback(address,uint256,bytes)": FunctionFragment;
     "depositToExternal(address,uint256,address,uint256)": FunctionFragment;
-    "exactIn(bytes,uint256,uint256,address,bool,bool)": FunctionFragment;
-    "exactInSingle(address,address,uint256,uint256,uint256,address,bool,bool)": FunctionFragment;
-    "exactOut(bytes,uint256,uint256,address,bool,bool)": FunctionFragment;
-    "exactOutSingle(address,address,uint256,uint256,uint256,address,bool,bool)": FunctionFragment;
+    "exactIn(bytes,uint256,uint256,address,bool,bool,uint256)": FunctionFragment;
+    "exactInSingle(address,address,uint256,uint256,uint256,address,bool,bool,uint256)": FunctionFragment;
+    "exactOut(bytes,uint256,uint256,address,bool,bool,uint256)": FunctionFragment;
+    "exactOutSingle(address,address,uint256,uint256,uint256,address,bool,bool,uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
     "hub()": FunctionFragment;
@@ -121,7 +121,15 @@ interface ManagerInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "exactIn",
-    values: [BytesLike, BigNumberish, BigNumberish, string, boolean, boolean]
+    values: [
+      BytesLike,
+      BigNumberish,
+      BigNumberish,
+      string,
+      boolean,
+      boolean,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "exactInSingle",
@@ -133,12 +141,21 @@ interface ManagerInterface extends ethers.utils.Interface {
       BigNumberish,
       string,
       boolean,
-      boolean
+      boolean,
+      BigNumberish
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "exactOut",
-    values: [BytesLike, BigNumberish, BigNumberish, string, boolean, boolean]
+    values: [
+      BytesLike,
+      BigNumberish,
+      BigNumberish,
+      string,
+      boolean,
+      boolean,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "exactOutSingle",
@@ -150,7 +167,8 @@ interface ManagerInterface extends ethers.utils.Interface {
       BigNumberish,
       string,
       boolean,
-      boolean
+      boolean,
+      BigNumberish
     ]
   ): string;
   encodeFunctionData(
@@ -536,7 +554,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     deposit(
@@ -568,6 +586,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -580,6 +599,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -590,6 +610,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -602,6 +623,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -787,7 +809,7 @@ export class Manager extends BaseContract {
     setLimitOrderType(
       tokenId: BigNumberish,
       limitOrderType: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setTokenDescriptor(
@@ -884,7 +906,7 @@ export class Manager extends BaseContract {
     token1: string,
     sqrtGamma: BigNumberish,
     sqrtPrice: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   deposit(
@@ -916,6 +938,7 @@ export class Manager extends BaseContract {
     recipient: string,
     fromAccount: boolean,
     toAccount: boolean,
+    deadline: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -928,6 +951,7 @@ export class Manager extends BaseContract {
     recipient: string,
     fromAccount: boolean,
     toAccount: boolean,
+    deadline: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -938,6 +962,7 @@ export class Manager extends BaseContract {
     recipient: string,
     fromAccount: boolean,
     toAccount: boolean,
+    deadline: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -950,6 +975,7 @@ export class Manager extends BaseContract {
     recipient: string,
     fromAccount: boolean,
     toAccount: boolean,
+    deadline: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1129,7 +1155,7 @@ export class Manager extends BaseContract {
   setLimitOrderType(
     tokenId: BigNumberish,
     limitOrderType: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setTokenDescriptor(
@@ -1258,6 +1284,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1270,6 +1297,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1280,6 +1308,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1292,6 +1321,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1607,7 +1637,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     deposit(
@@ -1639,6 +1669,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1651,6 +1682,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1661,6 +1693,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1673,6 +1706,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1817,7 +1851,7 @@ export class Manager extends BaseContract {
     setLimitOrderType(
       tokenId: BigNumberish,
       limitOrderType: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setTokenDescriptor(
@@ -1918,7 +1952,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     deposit(
@@ -1950,6 +1984,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1962,6 +1997,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1972,6 +2008,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1984,6 +2021,7 @@ export class Manager extends BaseContract {
       recipient: string,
       fromAccount: boolean,
       toAccount: boolean,
+      deadline: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2134,7 +2172,7 @@ export class Manager extends BaseContract {
     setLimitOrderType(
       tokenId: BigNumberish,
       limitOrderType: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setTokenDescriptor(

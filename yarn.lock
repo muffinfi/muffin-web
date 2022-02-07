@@ -3238,7 +3238,7 @@
 
 "@muffinfi/muffin-v1-sdk@git+https://github.com/deliswap/muffin-v1-sdk.git":
   version "1.0.0"
-  resolved "git+https://github.com/deliswap/muffin-v1-sdk.git#aeb0bc3a250bae4b67b48d9d92babac429812302"
+  resolved "git+https://github.com/deliswap/muffin-v1-sdk.git#43a04278f35de95e87e770642019478fa87ebea9"
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/solidity" "^5.5.0"

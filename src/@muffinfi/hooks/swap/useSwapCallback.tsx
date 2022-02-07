@@ -72,11 +72,11 @@ function useSwapCallArguments(
     const USE_SENDER_INTERNAL_ACCOUNT = false
     const SEND_TO_RECIPIENT_INTERNAL_ACCOUNT = false
 
-    // FIXME: support deadline
     const { value, calldata } = SwapManager.swapCallParameters(trade, {
       recipient,
       fromAccount: USE_SENDER_INTERNAL_ACCOUNT,
       toAccount: SEND_TO_RECIPIENT_INTERNAL_ACCOUNT,
+      deadline: deadline.toString(),
       slippageTolerance: allowedSlippage,
       managerAddress,
       ...(signatureData

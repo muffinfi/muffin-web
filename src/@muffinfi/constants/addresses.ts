@@ -16,6 +16,6 @@ type AddressMap = { [chainId: number]: string }
 
 // FIXME: these are Rinkeby
 export const MUFFIN_HUB_ADDRESSES: AddressMap = constructSameAddressMap('0x37Ea623F66848f35cD296ff3251B4a2faA65f482')
-export const MUFFIN_MANAGER_ADDRESSES: AddressMap = constructSameAddressMap('0x35a7C2Ea35683104C81072eCB595a08F2429c2d5') // prettier-ignore
+export const MUFFIN_MANAGER_ADDRESSES: AddressMap = constructSameAddressMap('0xD65f4e56dbeA10E7802A0D3865ca84138432463B') // prettier-ignore
 export const MUFFIN_LENS_ADDRESSES: AddressMap = constructSameAddressMap('0xBd8FdD668eD0B5E58307C5aC618BF8542a5c6083')
 export const MUFFIN_QUOTER_ADDRESSES: AddressMap = constructSameAddressMap('0x7Cfa70398A54d2b801600a74cc78B60057409Ccd')

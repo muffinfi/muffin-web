@@ -651,8 +651,6 @@ export default function AddLiquidity({
     } catch (error) {
       setIsAttemptingTxn(false)
       console.error('Failed to send transaction', error)
-      // // we only care if the error is something _other_ than the user rejected the tx
-      // if (error?.code !== 4001) console.error(error)
     }
   }
 
