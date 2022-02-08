@@ -1,5 +1,13 @@
 {
   "semi": false,
   "singleQuote": true,
-  "printWidth": 120
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "src/constants/tokens.ts",
+      "options": {
+        "printWidth": 180
+      }
+    }
+  ]
 }
