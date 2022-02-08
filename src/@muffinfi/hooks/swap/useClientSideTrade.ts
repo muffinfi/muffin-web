@@ -44,17 +44,17 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
   // make a list of swap routes for currencyIn and currencyOut
   const { routes, loading: routesLoading } = useAllMuffinRoutes(currencyIn, currencyOut)
 
+  // prepare quoter calldatas
+  const calldatas = useMemo(() => {
+    return routes && amountSpecified
+      ? routes.map((route) => SwapQuoter.quoteCallParameters(route, amountSpecified, tradeType).calldata)
+      : []
+  }, [routes, amountSpecified, tradeType])
+
   // fetch quotes from quoter contract
   const { chainId } = useActiveWeb3React()
-  const _quotesResults = useSingleContractWithCallData(
-    useQuoterContract(),
-    useMemo(() => {
-      return amountSpecified && routes
-        ? routes.map((route) => SwapQuoter.quoteCallParameters(route, amountSpecified, tradeType).calldata)
-        : []
-    }, [amountSpecified, routes, tradeType]),
-    { gasRequired: chainId ? QUOTE_GAS_OVERRIDES[chainId] ?? DEFAULT_GAS_QUOTE : undefined }
-  )
+  const gasRequired = chainId ? QUOTE_GAS_OVERRIDES[chainId] ?? DEFAULT_GAS_QUOTE : undefined
+  const _quotesResults = useSingleContractWithCallData(useQuoterContract(), calldatas, { gasRequired })
   const quotesResults = _quotesResults.length > 0 ? _quotesResults : _EMPTY_CALLSTATES
 
   return useMemo(() => {
@@ -63,10 +63,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
       !currencyIn ||
       !currencyOut ||
       quotesResults.some(({ valid }) => !valid) ||
-      // skip when tokens are the same
-      (tradeType === TradeType.EXACT_INPUT
-        ? amountSpecified.currency.equals(currencyOut)
-        : amountSpecified.currency.equals(currencyIn))
+      amountSpecified.currency.equals(tradeType === TradeType.EXACT_INPUT ? currencyOut : currencyIn) // skip when tokens are the same
     ) {
       return {
         state: V3TradeState.INVALID,

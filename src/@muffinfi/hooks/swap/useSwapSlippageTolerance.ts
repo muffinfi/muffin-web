@@ -18,7 +18,7 @@ const ONE_TENTHS_PERCENT = new Percent(10, 10_000) // .10%
  */
 function guesstimateGas(trade: Trade<Currency, Currency, TradeType> | undefined): number | undefined {
   if (!trade) return undefined
-  return 100_000 + trade.swaps.reduce((memo, swap) => swap.route.pools.length + memo, 0) * 30_000
+  return 100_000 + trade.swaps.reduce((memo, swap) => swap.route.pools.length + memo, 0) * 30_000 // FIXME:
 }
 
 const MIN_AUTO_SLIPPAGE_TOLERANCE = new Percent(5, 1000) // 0.5%

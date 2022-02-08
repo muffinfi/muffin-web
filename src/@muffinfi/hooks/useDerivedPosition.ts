@@ -16,21 +16,32 @@ export function useDerivedMuffinPosition(positionDetail: MuffinPositionDetail | 
   const currency1 = useCurrency(positionDetail?.token1) ?? undefined
   const [poolState, pool] = useMuffinPool(currency0, currency1)
 
+  const { tierId, tickLower, tickUpper, liquidityD8, limitOrderType, settlementSnapshotId, settled } =
+    positionDetail || {}
+  const liquidityD8Str = liquidityD8?.toString()
+
   const position = useMemo(
     () =>
-      pool && positionDetail
+      pool &&
+      tierId !== undefined &&
+      tickLower !== undefined &&
+      tickUpper !== undefined &&
+      liquidityD8Str !== undefined &&
+      limitOrderType !== undefined &&
+      settlementSnapshotId !== undefined &&
+      settled !== undefined
         ? new Position({
             pool,
-            tierId: positionDetail.tierId,
-            tickLower: positionDetail.tickLower,
-            tickUpper: positionDetail.tickUpper,
-            liquidityD8: positionDetail.liquidityD8.toString(),
-            limitOrderType: positionDetail.limitOrderType,
-            settlementSnapshotId: positionDetail.settlementSnapshotId,
-            settled: positionDetail.settled,
+            tierId,
+            tickLower,
+            tickUpper,
+            liquidityD8: liquidityD8Str,
+            limitOrderType,
+            settlementSnapshotId,
+            settled,
           })
         : undefined,
-    [pool, positionDetail]
+    [pool, tierId, tickLower, tickUpper, liquidityD8Str, limitOrderType, settlementSnapshotId, settled]
   )
 
   return {

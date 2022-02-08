@@ -32,13 +32,12 @@ export default function useUSDCPrice(currency?: Currency): Price<Currency, Token
     if (!currency || !stablecoin) {
       return undefined
     }
-
-    // handle usdc
     if (currency?.wrapped.equals(stablecoin)) {
       return new Price(stablecoin, stablecoin, '1', '1')
     }
-
-    if (!usdcTrade) return undefined
+    if (!usdcTrade) {
+      return undefined
+    }
 
     const price = usdcTrade.swaps[0].route.impreciseMidPrice
     return new Price(currency, stablecoin, price.denominator, price.numerator)
@@ -57,39 +56,3 @@ export function useUSDCValue(currencyAmount: CurrencyAmount<Currency> | undefine
     }
   }, [currencyAmount, price])
 }
-
-/**
-export default function useUSDCPrice(currency?: Currency): Price<Currency, Token> | undefined {
-  const { chainId } = useActiveWeb3React()
-
-  const amountOut = chainId ? STABLECOIN_AMOUNT_OUT[chainId] : undefined
-  const stablecoin = amountOut?.currency
-
-  const v2USDCTrade = useBestV2Trade(TradeType.EXACT_OUTPUT, amountOut, currency, {
-    maxHops: 2,
-  })
-  const v3USDCTrade = useClientSideV3Trade(TradeType.EXACT_OUTPUT, amountOut, currency)
-
-  return useMemo(() => {
-    if (!currency || !stablecoin) {
-      return undefined
-    }
-
-    // handle usdc
-    if (currency?.wrapped.equals(stablecoin)) {
-      return new Price(stablecoin, stablecoin, '1', '1')
-    }
-
-    // use v2 price if available, v3 as fallback
-    if (v2USDCTrade) {
-      const { numerator, denominator } = v2USDCTrade.route.midPrice
-      return new Price(currency, stablecoin, denominator, numerator)
-    } else if (v3USDCTrade.trade) {
-      const { numerator, denominator } = v3USDCTrade.trade.route.midPrice
-      return new Price(currency, stablecoin, denominator, numerator)
-    }
-
-    return undefined
-  }, [currency, stablecoin, v2USDCTrade, v3USDCTrade.trade])
-}
-*/

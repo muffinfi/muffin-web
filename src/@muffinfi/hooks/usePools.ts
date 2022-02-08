@@ -80,13 +80,6 @@ export const useMuffinPool = (
 
 /////////////
 
-// export const useMuffinPool = (
-//   currencyA: Currency | undefined,
-//   currencyB: Currency | undefined
-// ): [PoolState, Pool | null] => {
-//   return useMuffinPools(useMemo(() => [[currencyA, currencyB]], [currencyA, currencyB]))[0]
-// }
-
 export const useMuffinPools = (
   currencyPairs: [Currency | undefined, Currency | undefined][]
 ): [PoolState, Pool | null][] => {
