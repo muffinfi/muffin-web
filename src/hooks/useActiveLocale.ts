@@ -22,15 +22,20 @@ function parseLocale(maybeSupportedLocale: unknown): SupportedLocale | undefined
  * Returns the supported locale read from the user agent (navigator)
  */
 export function navigatorLocale(): SupportedLocale | undefined {
+  /**
+   * We currently freeze default language to 'en'.
+   * TODO: support switching locale
+   */
+  return DEFAULT_LOCALE
+
+  /*
   if (!navigator.language) return undefined
-
   const [language, region] = navigator.language.split('-')
-
   if (region) {
     return parseLocale(`${language}-${region.toUpperCase()}`) ?? parseLocale(language)
   }
-
   return parseLocale(language)
+  */
 }
 
 function storeLocale(): SupportedLocale | undefined {
