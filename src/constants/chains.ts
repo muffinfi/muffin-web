@@ -114,6 +114,7 @@ export const CHAIN_INFO: ChainInfo = {
     explorer: 'https://rinkeby.etherscan.io/',
     infoLink: 'https://info.uniswap.org/#/',
     label: 'Rinkeby',
+    logoUrl: ethereumLogoUrl, // FIXME:
     nativeCurrency: { name: 'Rinkeby ETH', symbol: 'rinkETH', decimals: 18 },
   },
   [SupportedChainId.ROPSTEN]: {

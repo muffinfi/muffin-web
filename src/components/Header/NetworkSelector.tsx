@@ -240,8 +240,10 @@ export default function NetworkSelector() {
             <Trans>Select a network</Trans>
           </FlyoutHeader>
           <Row targetChain={SupportedChainId.MAINNET} />
-          <Row targetChain={SupportedChainId.OPTIMISM} />
-          <Row targetChain={SupportedChainId.ARBITRUM_ONE} />
+          {/* FIXME: temp */}
+          <Row targetChain={SupportedChainId.RINKEBY} />
+          {/* <Row targetChain={SupportedChainId.OPTIMISM} />
+          <Row targetChain={SupportedChainId.ARBITRUM_ONE} /> */}
         </FlyoutMenu>
       )}
     </SelectorWrapper>
