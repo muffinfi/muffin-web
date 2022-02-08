@@ -110,19 +110,22 @@ export const useMuffinPools = (
   const hubContract = useHubContract()
   const poolIds = useMemo(() => pairs.map((pair) => [pair?.poolId]), [pairs])
 
-  const poolParamsList = useSingleContractMultipleData(hubContract, 'getPoolParameters', poolIds)
-  const tiersDataList = useSingleContractMultipleData(hubContract, 'getAllTiers', poolIds)
+  type NullableCalldata = CallState | undefined
+  const poolParamsList: NullableCalldata[] = useSingleContractMultipleData(hubContract, 'getPoolParameters', poolIds)
+  const tiersDataList: NullableCalldata[] = useSingleContractMultipleData(hubContract, 'getAllTiers', poolIds)
 
   return useMemo(() => {
     return pairs.map((pair, i) => {
       const { token0, token1, poolId } = pair || {}
-      if (!token0 || !token1 || !poolId) return [PoolState.INVALID, null]
+      const poolParamsState = poolParamsList[i]
+      const tiersDataState = tiersDataList[i]
 
-      if (!poolParamsList[i].valid || !tiersDataList[i].valid) return [PoolState.INVALID, null]
+      if (!token0 || !token1 || !poolId || !poolParamsState || !tiersDataState) return [PoolState.INVALID, null]
+      if (!poolParamsState.valid || !tiersDataState.valid) return [PoolState.INVALID, null]
+      if (poolParamsState.loading || tiersDataState.loading) return [PoolState.LOADING, null]
 
-      if (poolParamsList[i].loading || tiersDataList[i].loading) return [PoolState.LOADING, null]
-
-      const [poolParams, tiersData] = [poolParamsList[i].result, tiersDataList[i].result]
+      const poolParams = poolParamsState.result
+      const tiersData = tiersDataState.result
       if (!poolParams || !tiersData) return [PoolState.NOT_EXISTS, null]
       if (poolParams.tickSpacing === 0) return [PoolState.NOT_EXISTS, null]
 
