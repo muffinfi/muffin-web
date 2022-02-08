@@ -1,30 +1,29 @@
 import { Trans } from '@lingui/macro'
 import useScrollPosition from '@react-hook/window-scroll'
-import { CHAIN_INFO, SupportedChainId } from 'constants/chains'
 import useTheme from 'hooks/useTheme'
 import { darken } from 'polished'
-import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Text } from 'rebass'
-import { useShowClaimPopup, useToggleSelfClaimModal } from 'state/application/hooks'
-import { useUserHasAvailableClaim } from 'state/claim/hooks'
-import { useUserHasSubmittedClaim } from 'state/transactions/hooks'
 import { useDarkModeManager } from 'state/user/hooks'
 import { useETHBalances } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
-
 import { ReactComponent as Logo } from '../../assets/svg/logo.svg'
 import { useActiveWeb3React } from '../../hooks/web3'
-import { ExternalLink, ThemedText } from '../../theme'
-import ClaimModal from '../claim/ClaimModal'
-import { CardNoise } from '../earn/styled'
 import Menu from '../Menu'
-import Modal from '../Modal'
 import Row from '../Row'
-import { Dots } from '../swap/styleds'
 import Web3Status from '../Web3Status'
 import NetworkSelector from './NetworkSelector'
-import UniBalanceContent from './UniBalanceContent'
+// import { CHAIN_INFO, SupportedChainId } from 'constants/chains'
+// import { useState } from 'react'
+// import { useShowClaimPopup, useToggleSelfClaimModal } from 'state/application/hooks'
+// import { useUserHasAvailableClaim } from 'state/claim/hooks'
+// import { useUserHasSubmittedClaim } from 'state/transactions/hooks'
+// import { ThemedText, ExternalLink } from '../../theme'
+// import ClaimModal from '../claim/ClaimModal'
+// import { CardNoise } from '../earn/styled'
+// import Modal from '../Modal'
+// import { Dots } from '../swap/styleds'
+// import UniBalanceContent from './UniBalanceContent'
 
 const HeaderFrame = styled.div<{ showBackground: boolean }>`
   display: grid;
@@ -99,7 +98,7 @@ const HeaderLinks = styled(Row)`
   overflow: auto;
   align-items: center;
   ${({ theme }) => theme.mediaWidth.upToLarge`
-    justify-self: start;  
+    justify-self: start;
     `};
   ${({ theme }) => theme.mediaWidth.upToMedium`
     justify-self: center;
@@ -133,6 +132,7 @@ const AccountElement = styled.div<{ active: boolean }>`
   }
 `
 
+/*
 const UNIAmount = styled(AccountElement)`
   color: white;
   padding: 4px 8px;
@@ -155,6 +155,7 @@ const UNIWrapper = styled.span`
     opacity: 0.9;
   }
 `
+*/
 
 const BalanceText = styled(Text)`
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
@@ -215,6 +216,7 @@ const StyledNavLink = styled(NavLink).attrs({
   }
 `
 
+/*
 const StyledExternalLink = styled(ExternalLink).attrs({
   activeClassName,
 })<{ isActive?: boolean }>`
@@ -242,32 +244,33 @@ const StyledExternalLink = styled(ExternalLink).attrs({
     text-decoration: none;
   }
 `
+*/
 
 export default function Header() {
-  const { account, chainId } = useActiveWeb3React()
+  const { account } = useActiveWeb3React()
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
   const [darkMode] = useDarkModeManager()
   const { white, black } = useTheme()
 
-  const toggleClaimModal = useToggleSelfClaimModal()
-
-  const availableClaim: boolean = useUserHasAvailableClaim(account)
-
-  const { claimTxn } = useUserHasSubmittedClaim(account ?? undefined)
-
-  const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
-  const showClaimPopup = useShowClaimPopup()
+  // // related to claim UNI
+  // const toggleClaimModal = useToggleSelfClaimModal()
+  // const availableClaim: boolean = useUserHasAvailableClaim(account)
+  // const { claimTxn } = useUserHasSubmittedClaim(account ?? undefined)
+  // const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
+  // const showClaimPopup = useShowClaimPopup()
 
   const scrollY = useScrollPosition()
 
-  const { infoLink } = CHAIN_INFO[chainId ? chainId : SupportedChainId.MAINNET]
+  // // link to info site
+  // const { infoLink } = CHAIN_INFO[chainId ? chainId : SupportedChainId.MAINNET]
+
   return (
     <HeaderFrame showBackground={scrollY > 45}>
-      <ClaimModal />
+      {/* <ClaimModal />
       <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
         <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
-      </Modal>
+      </Modal> */}
       <Title href=".">
         <UniIcon>
           <Logo fill={darkMode ? white : black} width="24px" height="100%" title="logo" />
@@ -290,15 +293,15 @@ export default function Header() {
         >
           <Trans>Pool</Trans>
         </StyledNavLink>
-        {(!chainId || chainId === SupportedChainId.MAINNET) && (
+        {/* {(!chainId || chainId === SupportedChainId.MAINNET) && (
           <StyledNavLink id={`vote-nav-link`} to={'/vote'}>
             <Trans>Vote</Trans>
           </StyledNavLink>
-        )}
-        <StyledExternalLink id={`charts-nav-link`} href={infoLink}>
+        )} */}
+        {/* <StyledExternalLink id={`charts-nav-link`} href={infoLink}>
           <Trans>Charts</Trans>
           <sup>↗</sup>
-        </StyledExternalLink>
+        </StyledExternalLink> */}
       </HeaderLinks>
 
       <HeaderControls>
@@ -306,7 +309,7 @@ export default function Header() {
           <NetworkSelector />
         </HeaderElement>
         <HeaderElement>
-          {availableClaim && !showClaimPopup && (
+          {/* {availableClaim && !showClaimPopup && (
             <UNIWrapper onClick={toggleClaimModal}>
               <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
                 <ThemedText.White padding="0 2px">
@@ -321,7 +324,7 @@ export default function Header() {
               </UNIAmount>
               <CardNoise />
             </UNIWrapper>
-          )}
+          )} */}
           <AccountElement active={!!account}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0, userSelect: 'none' }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
