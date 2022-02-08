@@ -188,7 +188,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       slippageTolerance,
       withdrawalRecipient: DEFAULT_WITHDRAW ? account : ADDRESS_ZERO,
       collectAllFees: DEFAULT_COLLECT_ALL_FEES,
-      isSettledPosition: position.settled,
     })
 
     try {

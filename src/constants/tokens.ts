@@ -53,3 +53,8 @@ export class ExtendedEther extends Ether {
     return this._cachedEther[chainId] ?? (this._cachedEther[chainId] = new ExtendedEther(chainId))
   }
 }
+
+/**
+ * Prepared by Muffin. Not an official rinkeby USDC
+ */
+export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x4BAC7231bA2392c55e8190dE7D216d7Ed7B9BF5F', 18, 'USDC', 'USD//C')

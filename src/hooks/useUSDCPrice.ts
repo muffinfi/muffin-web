@@ -2,19 +2,8 @@ import { useClientSideMuffinTrade } from '@muffinfi/hooks/swap/useClientSideTrad
 import { Currency, CurrencyAmount, Price, Token, TradeType } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
 import { SupportedChainId } from '../constants/chains'
-import { DAI_OPTIMISM, USDC, USDC_ARBITRUM } from '../constants/tokens'
+import { DAI_OPTIMISM, USDC, USDC_ARBITRUM, USDC_RINKEBY } from '../constants/tokens'
 import { useActiveWeb3React } from './web3'
-
-/**
- * Prepared by Muffin. Not an official rinkeby USDC
- */
-const USDC_RINKEBY = new Token(
-  SupportedChainId.RINKEBY,
-  '0x4BAC7231bA2392c55e8190dE7D216d7Ed7B9BF5F',
-  18,
-  'USDC',
-  'USD//C'
-)
 
 // Stablecoin amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -26,8 +15,10 @@ const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> } = {
 }
 
 /**
- * Returns the price in USDC of the input currency
+ * Returns the price in USDC of the input currency.
  * @param currency currency to compute the USDC price of
+ *
+ * NOTE: it doesn't work when all pool liquidity is too low to fetch the USDC amount out.
  */
 export default function useUSDCPrice(currency?: Currency): Price<Currency, Token> | undefined {
   const { chainId } = useActiveWeb3React()
