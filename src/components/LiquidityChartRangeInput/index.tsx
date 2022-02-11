@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool, sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
 import { AutoColumn, ColumnCenter } from 'components/Column'
 import Loader from 'components/Loader'
@@ -17,6 +17,7 @@ import { ThemedText } from '../../theme'
 import { Chart } from './Chart'
 import { useDensityChartData } from './hooks'
 import { ZoomLevels } from './types'
+import { VisiblilitySelector } from './VisibilitySelector'
 
 const SMALL_ZOOM_LEVEL: ZoomLevels = {
   initialMin: 0.999,
@@ -85,8 +86,15 @@ export default function LiquidityChartRangeInput({
   const tokenAColor = useColor(currencyA?.wrapped)
   const tokenBColor = useColor(currencyB?.wrapped)
 
-  const keys = useMemo(() => pool?.tiers.map((_, index) => index.toString()) ?? [], [pool])
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(keys)
+  const keys = useMemo(
+    () => pool?.tiers.map((tier) => `${sqrtGammaToFeePercent(tier.sqrtGamma).toFixed(2)}%`) ?? [],
+    [pool]
+  )
+  const [hiddenKeyIndexes, setHiddenKeyIndexes] = useState<number[]>([])
+  const selectedKeys = useMemo(
+    () => pool?.tiers.map((_, index) => index.toString()).filter((_, index) => !hiddenKeyIndexes.includes(index)) || [],
+    [pool?.tiers, hiddenKeyIndexes]
+  )
 
   const isSorted = currencyA && currencyB && currencyA?.wrapped.sortsBefore(currencyB?.wrapped)
 
@@ -151,6 +159,20 @@ export default function LiquidityChartRangeInput({
     [isSorted, price, ticksAtLimit]
   )
 
+  const onToggleVisibility = useCallback(
+    (index: number) => {
+      if (index === tierId) return
+      setHiddenKeyIndexes((preVal) => {
+        const curIndex = preVal.findIndex((val) => val === index)
+        if (curIndex < 0) {
+          return [...preVal, index]
+        }
+        return preVal.filter((val) => val !== index)
+      })
+    },
+    [tierId]
+  )
+
   if (isError) {
     ReactGA.exception({
       ...error,
@@ -160,8 +182,14 @@ export default function LiquidityChartRangeInput({
   }
 
   useEffect(() => {
-    setSelectedKeys(keys)
+    setHiddenKeyIndexes([])
   }, [keys])
+
+  useEffect(() => {
+    if (typeof tierId === 'number' && hiddenKeyIndexes.includes(tierId)) {
+      setHiddenKeyIndexes(hiddenKeyIndexes.filter((val) => val !== tierId))
+    }
+  }, [hiddenKeyIndexes, tierId])
 
   return (
     <AutoColumn gap="md" style={{ minHeight: '200px' }}>
@@ -211,6 +239,14 @@ export default function LiquidityChartRangeInput({
               ticksAtLimit={ticksAtLimit}
             />
           </ChartWrapper>
+          {keys.length > 1 && (
+            <VisiblilitySelector
+              options={keys}
+              hiddenOptionsIndexes={hiddenKeyIndexes}
+              selectedIndex={tierId}
+              onToggleOption={onToggleVisibility}
+            />
+          )}
         </>
       )}
     </AutoColumn>
