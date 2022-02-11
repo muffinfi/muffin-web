@@ -1,26 +1,18 @@
 import { Currency } from '@uniswap/sdk-core'
-import { FeeAmount } from '@uniswap/v3-sdk'
-import { usePoolActiveLiquidity } from 'hooks/usePoolTickData'
-import JSBI from 'jsbi'
+import { TickProcessed, usePoolActiveLiquidity } from 'hooks/usePoolTickData'
 import { useCallback, useMemo } from 'react'
-
 import { ChartEntry } from './types'
-
-export interface TickProcessed {
-  liquidityActive: JSBI
-  price0: string
-}
 
 export function useDensityChartData({
   currencyA,
   currencyB,
-  feeAmount,
+  tierId,
 }: {
   currencyA: Currency | undefined
   currencyB: Currency | undefined
-  feeAmount: FeeAmount | undefined
+  tierId: number | undefined
 }) {
-  const { isLoading, isUninitialized, isError, error, data } = usePoolActiveLiquidity(currencyA, currencyB, feeAmount)
+  const { isLoading, isUninitialized, isError, error, data } = usePoolActiveLiquidity(currencyA, currencyB, tierId)
 
   const formatData = useCallback(() => {
     if (!data?.length) {
@@ -33,11 +25,15 @@ export function useDensityChartData({
       const t: TickProcessed = data[i]
 
       const chartEntry = {
-        activeLiquidity: parseFloat(t.liquidityActive.toString()),
+        activeLiquidity: Object.fromEntries(
+          Object.entries(t.liquidityActive).map(([key, value]) => [key, parseFloat(value.toString())])
+        ),
         price0: parseFloat(t.price0),
       }
 
-      if (chartEntry.activeLiquidity > 0) {
+      const liquidities = Object.values(chartEntry.activeLiquidity)
+
+      if (liquidities.length > 0 && liquidities.every((value) => value > 0)) {
         newData.push(chartEntry)
       }
     }

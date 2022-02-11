@@ -28,6 +28,7 @@ import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import DowntimeWarning from 'components/DowntimeWarning'
 import HoverInlineText from 'components/HoverInlineText'
+import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { AddRemoveTabs } from 'components/NavigationTabs'
 import { PositionPreview } from 'components/PositionPreview'
 import RangeSelector from 'components/RangeSelector'
@@ -1079,21 +1080,21 @@ export default function AddLiquidity({
                               </Trans>
                             </AutoRow>
                           )}
-                          {/* TODO: */}
-                          {/* <LiquidityChartRangeInput
+                          <LiquidityChartRangeInput
                             currencyA={baseCurrency ?? undefined}
                             currencyB={quoteCurrency ?? undefined}
-                            feeAmount={feeAmount}
+                            pool={pool || undefined}
+                            tierId={tierId}
                             ticksAtLimit={areTicksAtLimit}
                             price={
-                              price ? parseFloat((isInvertPrice ? price.invert() : price).toSignificant(8)) : undefined
+                              price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined
                             }
                             priceLower={priceLower}
                             priceUpper={priceUpper}
                             onLeftRangeInput={onLeftRangeInput}
                             onRightRangeInput={onRightRangeInput}
                             interactive={!hasExistingPosition}
-                          /> */}
+                          />
                         </>
                       ) : (
                         makeCreatePoolStartPriceForm()

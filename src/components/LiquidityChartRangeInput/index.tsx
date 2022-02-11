@@ -1,50 +1,39 @@
 import { Trans } from '@lingui/macro'
+import { Pool } from '@muffinfi/muffin-v1-sdk'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
-import { FeeAmount } from '@uniswap/v3-sdk'
 import { AutoColumn, ColumnCenter } from 'components/Column'
 import Loader from 'components/Loader'
 import { format } from 'd3'
 import { useColor } from 'hooks/useColor'
 import useTheme from 'hooks/useTheme'
 import { saturate } from 'polished'
-import React, { ReactNode, useCallback, useMemo } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { BarChart2, CloudOff, Inbox } from 'react-feather'
 import ReactGA from 'react-ga'
 import { batch } from 'react-redux'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
-
 import { ThemedText } from '../../theme'
 import { Chart } from './Chart'
 import { useDensityChartData } from './hooks'
 import { ZoomLevels } from './types'
 
-const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {
-  [FeeAmount.LOWEST]: {
-    initialMin: 0.999,
-    initialMax: 1.001,
-    min: 0.00001,
-    max: 1.5,
-  },
-  [FeeAmount.LOW]: {
-    initialMin: 0.999,
-    initialMax: 1.001,
-    min: 0.00001,
-    max: 1.5,
-  },
-  [FeeAmount.MEDIUM]: {
-    initialMin: 0.5,
-    initialMax: 2,
-    min: 0.00001,
-    max: 20,
-  },
-  [FeeAmount.HIGH]: {
-    initialMin: 0.5,
-    initialMax: 2,
-    min: 0.00001,
-    max: 20,
-  },
+const SMALL_ZOOM_LEVEL: ZoomLevels = {
+  initialMin: 0.999,
+  initialMax: 1.001,
+  min: 0.00001,
+  max: 1.5,
 }
+
+const MEDIUM_ZOOM_LEVEL: ZoomLevels = {
+  initialMin: 0.5,
+  initialMax: 2,
+  min: 0.00001,
+  max: 20,
+}
+
+const getZoomLevel = (tickSpacing?: number) =>
+  typeof tickSpacing === 'number' && tickSpacing < 60 ? SMALL_ZOOM_LEVEL : MEDIUM_ZOOM_LEVEL
 
 const ChartWrapper = styled.div`
   position: relative;
@@ -69,7 +58,8 @@ function InfoBox({ message, icon }: { message?: ReactNode; icon: ReactNode }) {
 export default function LiquidityChartRangeInput({
   currencyA,
   currencyB,
-  feeAmount,
+  pool,
+  tierId,
   ticksAtLimit,
   price,
   priceLower,
@@ -80,7 +70,8 @@ export default function LiquidityChartRangeInput({
 }: {
   currencyA: Currency | undefined
   currencyB: Currency | undefined
-  feeAmount?: FeeAmount
+  pool: Pool | undefined
+  tierId?: number
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
   price: number | undefined
   priceLower?: Price<Token, Token>
@@ -94,12 +85,15 @@ export default function LiquidityChartRangeInput({
   const tokenAColor = useColor(currencyA?.wrapped)
   const tokenBColor = useColor(currencyB?.wrapped)
 
+  const keys = useMemo(() => pool?.tiers.map((_, index) => index.toString()) ?? [], [pool])
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(keys)
+
   const isSorted = currencyA && currencyB && currencyA?.wrapped.sortsBefore(currencyB?.wrapped)
 
   const { isLoading, isUninitialized, isError, error, formattedData } = useDensityChartData({
     currencyA,
     currencyB,
-    feeAmount,
+    tierId,
   })
 
   const onBrushDomainChangeEnded = useCallback(
@@ -165,6 +159,10 @@ export default function LiquidityChartRangeInput({
     })
   }
 
+  useEffect(() => {
+    setSelectedKeys(keys)
+  }, [keys])
+
   return (
     <AutoColumn gap="md" style={{ minHeight: '200px' }}>
       {isUninitialized ? (
@@ -185,30 +183,35 @@ export default function LiquidityChartRangeInput({
           icon={<BarChart2 size={56} stroke={theme.text4} />}
         />
       ) : (
-        <ChartWrapper>
-          <Chart
-            data={{ series: formattedData, current: price }}
-            dimensions={{ width: 400, height: 200 }}
-            margins={{ top: 10, right: 2, bottom: 20, left: 0 }}
-            styles={{
-              area: {
-                selection: theme.blue1,
-              },
-              brush: {
-                handle: {
-                  west: saturate(0.1, tokenAColor) ?? theme.red1,
-                  east: saturate(0.1, tokenBColor) ?? theme.blue1,
+        <>
+          <ChartWrapper>
+            <Chart
+              data={{ series: formattedData, current: price }}
+              keys={selectedKeys}
+              selectedKey={tierId?.toString()}
+              dimensions={{ width: 400, height: 200 }}
+              margins={{ top: 10, right: 2, bottom: 20, left: 0 }}
+              styles={{
+                area: {
+                  selection: theme.blue1,
+                  default: theme.blue4,
                 },
-              },
-            }}
-            interactive={interactive}
-            brushLabels={brushLabelValue}
-            brushDomain={brushDomain}
-            onBrushDomainChange={onBrushDomainChangeEnded}
-            zoomLevels={ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM]}
-            ticksAtLimit={ticksAtLimit}
-          />
-        </ChartWrapper>
+                brush: {
+                  handle: {
+                    west: saturate(0.1, tokenAColor) ?? theme.red1,
+                    east: saturate(0.1, tokenBColor) ?? theme.blue1,
+                  },
+                },
+              }}
+              interactive={interactive}
+              brushLabels={brushLabelValue}
+              brushDomain={brushDomain}
+              onBrushDomainChange={onBrushDomainChangeEnded}
+              zoomLevels={getZoomLevel(pool?.tickSpacing)}
+              ticksAtLimit={ticksAtLimit}
+            />
+          </ChartWrapper>
+        </>
       )}
     </AutoColumn>
   )

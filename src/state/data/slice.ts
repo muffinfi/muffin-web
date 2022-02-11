@@ -8,7 +8,7 @@ import { AppState } from 'state'
 // List of supported subgraphs. Note that the app currently only support one active subgraph at a time
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
   [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
-  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
+  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/virtues-milkier/muffin-rinkeby',
 
   [SupportedChainId.ARBITRUM_ONE]: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
 
@@ -20,11 +20,47 @@ export const api = createApi({
   baseQuery: graphqlRequestBaseQuery(),
   endpoints: (builder) => ({
     allV3Ticks: builder.query({
-      query: ({ poolAddress, skip = 0 }) => ({
+      query: ({ poolId, skip = 0 }) => ({
         document: gql`
-          query allV3Ticks($poolAddress: String!, $skip: Int!) {
-            ticks(first: 1000, skip: $skip, where: { poolAddress: $poolAddress }, orderBy: tickIdx) {
+          query allV3Ticks($poolId: String!, $skip: Int!) {
+            tier0: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 0 }, orderBy: tickIdx) {
               tickIdx
+              tierId
+              liquidityNet
+              price0
+              price1
+            }
+            tier1: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 1 }, orderBy: tickIdx) {
+              tickIdx
+              tierId
+              liquidityNet
+              price0
+              price1
+            }
+            tier2: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 2 }, orderBy: tickIdx) {
+              tickIdx
+              tierId
+              liquidityNet
+              price0
+              price1
+            }
+            tier3: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 3 }, orderBy: tickIdx) {
+              tickIdx
+              tierId
+              liquidityNet
+              price0
+              price1
+            }
+            tier4: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 4 }, orderBy: tickIdx) {
+              tickIdx
+              tierId
+              liquidityNet
+              price0
+              price1
+            }
+            tier5: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 5 }, orderBy: tickIdx) {
+              tickIdx
+              tierId
               liquidityNet
               price0
               price1
@@ -32,7 +68,7 @@ export const api = createApi({
           }
         `,
         variables: {
-          poolAddress,
+          poolId,
           skip,
         },
       }),
@@ -46,7 +82,7 @@ export const api = createApi({
                 number
               }
             }
-            asToken0: pools(
+            asToken0: tiers(
               orderBy: totalValueLockedToken0
               orderDirection: desc
               where: { token0: $token0, token1: $token1 }
@@ -55,7 +91,7 @@ export const api = createApi({
               totalValueLockedToken0
               totalValueLockedToken1
             }
-            asToken1: pools(
+            asToken1: tiers(
               orderBy: totalValueLockedToken0
               orderDirection: desc
               where: { token0: $token1, token1: $token0 }
