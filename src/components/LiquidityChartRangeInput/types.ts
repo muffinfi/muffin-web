@@ -1,7 +1,7 @@
 import { Bound } from 'state/mint/v3/actions'
 
 export interface ChartEntry {
-  activeLiquidity: number
+  activeLiquidity: Record<number, number>
   price0: number
 }
 
@@ -32,12 +32,15 @@ export interface LiquidityChartRangeInputProps {
     series: ChartEntry[]
     current: number
   }
+  keys: string[]
+  selectedKey?: string
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 
   styles: {
     area: {
       // color of the ticks in range
       selection: string
+      default: string
     }
 
     brush: {

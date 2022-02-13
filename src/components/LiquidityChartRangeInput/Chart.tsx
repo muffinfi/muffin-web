@@ -1,7 +1,6 @@
-import { max, scaleLinear, ZoomTransform } from 'd3'
+import { max, scaleLinear, stack, sum, ZoomTransform } from 'd3'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
-
 import { Area } from './Area'
 import { AxisBottom } from './AxisBottom'
 import { Brush } from './Brush'
@@ -9,12 +8,18 @@ import { Line } from './Line'
 import { ChartEntry, LiquidityChartRangeInputProps } from './types'
 import Zoom, { ZoomOverlay } from './Zoom'
 
-export const xAccessor = (d: ChartEntry) => d.price0
-export const yAccessor = (d: ChartEntry) => d.activeLiquidity
+export const getYDomainAccessor = (keys: string[]) => (d: ChartEntry) =>
+  sum(
+    Object.entries(d.activeLiquidity)
+      .filter(([key]) => keys.includes(key))
+      .map(([, val]) => val)
+  )
 
 export function Chart({
   id = 'liquidityChartRangeInput',
   data: { series, current },
+  keys,
+  selectedKey,
   ticksAtLimit,
   styles,
   dimensions: { width, height },
@@ -35,12 +40,13 @@ export function Chart({
   )
 
   const { xScale, yScale } = useMemo(() => {
+    const yDomainAccessor = getYDomainAccessor(keys)
     const scales = {
       xScale: scaleLinear()
         .domain([current * zoomLevels.initialMin, current * zoomLevels.initialMax] as number[])
         .range([0, innerWidth]),
       yScale: scaleLinear()
-        .domain([0, max(series, yAccessor)] as number[])
+        .domain([0, max(series, yDomainAccessor)] as number[])
         .range([innerHeight, 0]),
     }
 
@@ -50,7 +56,23 @@ export function Chart({
     }
 
     return scales
-  }, [current, zoomLevels.initialMin, zoomLevels.initialMax, innerWidth, series, innerHeight, zoom])
+  }, [current, zoomLevels.initialMin, zoomLevels.initialMax, innerWidth, series, keys, innerHeight, zoom])
+
+  const stackedData = useMemo(
+    () =>
+      stack().keys(keys)(
+        series.map((s) => {
+          return keys.reduce(
+            (acc, val) => {
+              acc[val] = s.activeLiquidity[+val] || 0
+              return acc
+            },
+            { price0: s.price0 } as Record<string, number>
+          )
+        })
+      ),
+    [keys, series]
+  )
 
   useEffect(() => {
     // reset zoom as necessary
@@ -105,17 +127,24 @@ export function Chart({
 
         <g transform={`translate(${margins.left},${margins.top})`}>
           <g clipPath={`url(#${id}-chart-clip)`}>
-            <Area series={series} xScale={xScale} yScale={yScale} xValue={xAccessor} yValue={yAccessor} />
+            <Area
+              stackedData={stackedData}
+              keys={keys}
+              selectedKey={selectedKey}
+              xScale={xScale}
+              yScale={yScale}
+              fill={styles.area.default}
+            />
 
             {brushDomain && (
               // duplicate area chart with mask for selected area
               <g mask={`url(#${id}-chart-area-mask)`}>
                 <Area
-                  series={series}
+                  stackedData={stackedData}
+                  keys={keys}
+                  selectedKey={selectedKey}
                   xScale={xScale}
                   yScale={yScale}
-                  xValue={xAccessor}
-                  yValue={yAccessor}
                   fill={styles.area.selection}
                 />
               </g>
