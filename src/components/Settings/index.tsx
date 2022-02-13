@@ -118,7 +118,13 @@ const ModalContentWrapper = styled.div`
   border-radius: 20px;
 `
 
-export default function SettingsTab({ placeholderSlippage }: { placeholderSlippage: Percent }) {
+export default function SettingsTab({
+  placeholderSlippage,
+  noDeadline,
+}: {
+  placeholderSlippage: Percent
+  noDeadline?: boolean
+}) {
   const { chainId } = useActiveWeb3React()
 
   const node = useRef<HTMLDivElement>()
@@ -195,7 +201,7 @@ export default function SettingsTab({ placeholderSlippage }: { placeholderSlippa
             <Text fontWeight={600} fontSize={14}>
               <Trans>Transaction Settings</Trans>
             </Text>
-            <TransactionSettings placeholderSlippage={placeholderSlippage} />
+            <TransactionSettings placeholderSlippage={placeholderSlippage} noDeadline={noDeadline} />
             <Text fontWeight={600} fontSize={14}>
               <Trans>Interface Settings</Trans>
             </Text>

@@ -4,14 +4,13 @@ import useTheme from 'hooks/useTheme'
 import { darken } from 'polished'
 import { ReactNode } from 'react'
 import { ArrowLeft } from 'react-feather'
-import { Link as HistoryLink, NavLink, useLocation } from 'react-router-dom'
+import { Link as HistoryLink, NavLink } from 'react-router-dom'
 import { Box } from 'rebass'
 import { useAppDispatch } from 'state/hooks'
 // import { resetMintState } from 'state/mint/actions'
 import { resetMintState as resetMintV3State } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
 import Row, { RowBetween } from '../Row'
 import SettingsTab from '../Settings'
 
@@ -113,18 +112,12 @@ export function AddRemoveTabs({
   const theme = useTheme()
   // reset states on back
   const dispatch = useAppDispatch()
-  const location = useLocation()
-
-  // detect if back should redirect to v3 or v2 pool page
-  const poolLink = location.pathname.includes('add/v2')
-    ? '/pool/v2'
-    : '/pool' + (!!positionID ? `/${positionID.toString()}` : '')
 
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem 1rem 0 1rem' }}>
         <StyledHistoryLink
-          to={poolLink}
+          to={'/pool' + (!!positionID ? `/${positionID.toString()}` : '')}
           onClick={() => {
             if (adding) {
               // not 100% sure both of these are needed
@@ -150,7 +143,7 @@ export function AddRemoveTabs({
           )}
         </ThemedText.MediumHeader>
         <Box style={{ marginRight: '.5rem' }}>{children}</Box>
-        <SettingsTab placeholderSlippage={defaultSlippage} />
+        <SettingsTab placeholderSlippage={defaultSlippage} noDeadline={true} />
       </RowBetween>
     </Tabs>
   )

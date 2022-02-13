@@ -85,15 +85,16 @@ const OptionCustom = styled(FancyButton)<{ active?: boolean; warning?: boolean }
 const SlippageEmojiContainer = styled.span`
   color: #f3841e;
   ${({ theme }) => theme.mediaWidth.upToSmall`
-    display: none;  
+    display: none;
   `}
 `
 
 interface TransactionSettingsProps {
   placeholderSlippage: Percent // varies according to the context in which the settings dialog is placed
+  noDeadline: boolean | undefined
 }
 
-export default function TransactionSettings({ placeholderSlippage }: TransactionSettingsProps) {
+export default function TransactionSettings({ placeholderSlippage, noDeadline }: TransactionSettingsProps) {
   const { chainId } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
 
@@ -154,7 +155,7 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
     }
   }
 
-  const showCustomDeadlineRow = Boolean(chainId && !L2_CHAIN_IDS.includes(chainId))
+  const showCustomDeadlineRow = Boolean(!noDeadline && chainId && !L2_CHAIN_IDS.includes(chainId))
 
   return (
     <AutoColumn gap="md">
