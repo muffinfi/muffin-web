@@ -1,57 +1,66 @@
-import { Token } from '@uniswap/sdk-core'
 import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
+import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
-import { AllV3TicksQuery } from 'state/data/generated'
-
 import computeSurroundingTicks from './computeSurroundingTicks'
 
-const getV3Tick = (tickIdx: number, liquidityNet: number) => ({
-  tickIdx,
-  liquidityNet: JSBI.BigInt(liquidityNet),
-  price0: '1',
-  price1: '2',
-})
+const getV3Tick = (tickIdx: number, liquidityNet: (number | undefined)[]) =>
+  ({
+    tickIdx,
+    price0: '1',
+    liquidityActive: {},
+    liquidityNet: liquidityNet.reduce<Record<number, JSBI>>((acc, liq, index) => {
+      if (typeof liq === 'number') {
+        acc[index] = JSBI.BigInt(liq)
+      }
+      return acc
+    }, {}),
+  } as TickProcessed)
 
 describe('#computeSurroundingTicks', () => {
   it('correctly compute active liquidity', () => {
-    const token0 = new Token(1, '0x2170ed0880ac9a755fd29b2688956bd959f933f8', 18)
-    const token1 = new Token(1, '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', 18)
     const feeAmount = FeeAmount.LOW
     const spacing = TICK_SPACINGS[feeAmount]
-    const activeTickProcessed = {
+    const activeTickProcessed: TickProcessed = {
       tickIdx: 1000,
-      liquidityActive: JSBI.BigInt(300),
-      liquidityNet: JSBI.BigInt(100),
-      price0: '100',
+      liquidityActive: { 0: JSBI.BigInt(300), 1: JSBI.BigInt(300), 2: JSBI.BigInt(300) },
+      liquidityNet: { 0: JSBI.BigInt(100), 1: JSBI.BigInt(110), 2: JSBI.BigInt(90) },
+      price0: '1',
     }
     const pivot = 3
-    const ascending = true
-    const sortedTickData: AllV3TicksQuery['ticks'] = [
-      getV3Tick(activeTickProcessed.tickIdx - 4 * spacing, 10),
-      getV3Tick(activeTickProcessed.tickIdx - 2 * spacing, 20),
-      getV3Tick(activeTickProcessed.tickIdx - 1 * spacing, 30),
-      getV3Tick(activeTickProcessed.tickIdx * spacing, 100),
-      getV3Tick(activeTickProcessed.tickIdx + 1 * spacing, 40),
-      getV3Tick(activeTickProcessed.tickIdx + 2 * spacing, 20),
-      getV3Tick(activeTickProcessed.tickIdx + 5 * spacing, 20),
+    const sortedTickData: TickProcessed[] = [
+      getV3Tick(activeTickProcessed.tickIdx - 4 * spacing, [10, undefined, undefined]),
+      getV3Tick(activeTickProcessed.tickIdx - 2 * spacing, [20, undefined, 30]),
+      getV3Tick(activeTickProcessed.tickIdx - 1 * spacing, [30, 40, undefined]),
+      activeTickProcessed,
+      getV3Tick(activeTickProcessed.tickIdx + 1 * spacing, [40, undefined, 50]),
+      getV3Tick(activeTickProcessed.tickIdx + 2 * spacing, [20, 30, undefined]),
+      getV3Tick(activeTickProcessed.tickIdx + 5 * spacing, [20, 30, 30]),
     ]
 
-    const previous = computeSurroundingTicks(token0, token1, activeTickProcessed, sortedTickData, pivot, !ascending)
+    for (let i = 0; i < 3; i++) {
+      computeSurroundingTicks(sortedTickData, i, pivot, true)
+      computeSurroundingTicks(sortedTickData, i, pivot, false)
+    }
 
-    const subsequent = computeSurroundingTicks(token0, token1, activeTickProcessed, sortedTickData, pivot, ascending)
-
-    expect(previous.length).toEqual(3)
-    expect(previous.map((t) => [t.tickIdx, parseFloat(t.liquidityActive.toString())])).toEqual([
-      [activeTickProcessed.tickIdx - 4 * spacing, 150],
-      [activeTickProcessed.tickIdx - 2 * spacing, 170],
-      [activeTickProcessed.tickIdx - 1 * spacing, 200],
-    ])
-
-    expect(subsequent.length).toEqual(3)
-    expect(subsequent.map((t) => [t.tickIdx, parseFloat(t.liquidityActive.toString())])).toEqual([
-      [activeTickProcessed.tickIdx + 1 * spacing, 340],
-      [activeTickProcessed.tickIdx + 2 * spacing, 360],
-      [activeTickProcessed.tickIdx + 5 * spacing, 380],
+    expect(
+      sortedTickData.map((t) => [
+        t.tickIdx,
+        ...Object.entries(t.liquidityActive).reduce(
+          (arr, [index, val]) => {
+            arr[+index] = parseFloat(val.toString())
+            return arr
+          },
+          [0, 0, 0]
+        ),
+      ])
+    ).toEqual([
+      [activeTickProcessed.tickIdx - 4 * spacing, 150, 150, 180],
+      [activeTickProcessed.tickIdx - 2 * spacing, 170, 150, 210],
+      [activeTickProcessed.tickIdx - 1 * spacing, 200, 190, 210],
+      [activeTickProcessed.tickIdx, 300, 300, 300],
+      [activeTickProcessed.tickIdx + 1 * spacing, 340, 300, 350],
+      [activeTickProcessed.tickIdx + 2 * spacing, 360, 330, 350],
+      [activeTickProcessed.tickIdx + 5 * spacing, 380, 360, 380],
     ])
   })
 })
