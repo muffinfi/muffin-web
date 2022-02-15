@@ -1,6 +1,9 @@
 import { Trans } from '@lingui/macro'
-import { Percent, Price, Token } from '@uniswap/sdk-core'
-import { Position } from '@uniswap/v3-sdk'
+import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
+import { useMuffinPool } from '@muffinfi/hooks/usePools'
+import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
+import { Position, sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import { Price, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -8,17 +11,13 @@ import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Loader'
 import { RowBetween } from 'components/Row'
 import { useToken } from 'hooks/Tokens'
-import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
-import { usePool } from 'hooks/usePools'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, SmallOnly } from 'theme'
-import { PositionDetails } from 'types/position'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
-
 import { DAI, USDC, USDT, WBTC, WETH9_EXTENDED } from '../../constants/tokens'
 
 const LinkRow = styled(Link)`
@@ -128,7 +127,7 @@ const DataText = styled.div`
 `
 
 interface PositionListItemProps {
-  positionDetails: PositionDetails
+  positionDetails: MuffinPositionDetail
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
@@ -192,14 +191,7 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 }
 
 export default function PositionListItem({ positionDetails }: PositionListItemProps) {
-  const {
-    token0: token0Address,
-    token1: token1Address,
-    fee: feeAmount, // NOTE: feeAmount is actually percentage fee
-    liquidity,
-    tickLower,
-    tickUpper,
-  } = positionDetails
+  const { token0: token0Address, token1: token1Address, tierId, liquidityD8, tickLower, tickUpper } = positionDetails
 
   // NOTE: fetch token basic info, init Token objects from sdk-core
   const token0 = useToken(token0Address)
@@ -210,16 +202,17 @@ export default function PositionListItem({ positionDetails }: PositionListItemPr
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+  const [, pool] = useMuffinPool(currency0 ?? undefined, currency1 ?? undefined)
+  const tier = typeof tierId === 'number' ? pool?.tiers[tierId] : undefined
 
   const position = useMemo(() => {
     if (pool) {
-      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+      return new Position({ pool, liquidityD8: liquidityD8.toString(), tierId, tickLower, tickUpper })
     }
     return undefined
-  }, [liquidity, pool, tickLower, tickUpper])
+  }, [liquidityD8, pool, tickLower, tickUpper, tierId])
 
-  const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
+  const tickAtLimit = useIsTickAtLimit(pool?.tickSpacing, tickLower, tickUpper)
 
   // prices
   const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
@@ -228,11 +221,11 @@ export default function PositionListItem({ positionDetails }: PositionListItemPr
   const currencyBase = base && unwrappedToken(base)
 
   // check if price is within range
-  const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false
+  const outOfRange: boolean = tier ? tier.computedTick < tickLower || tier.computedTick >= tickUpper : false
 
   const positionSummaryLink = '/pool/' + positionDetails.tokenId
 
-  const removed = liquidity?.eq(0)
+  const removed = liquidityD8?.eq(0)
 
   return (
     <LinkRow to={positionSummaryLink}>
@@ -243,11 +236,13 @@ export default function PositionListItem({ positionDetails }: PositionListItemPr
             &nbsp;{currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
           </DataText>
           &nbsp;
-          <Badge>
-            <BadgeText>
-              <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
-            </BadgeText>
-          </Badge>
+          {tier && (
+            <Badge>
+              <BadgeText>
+                <Trans>{sqrtGammaToFeePercent(tier.sqrtGamma).toSignificant(3)}%</Trans>
+              </BadgeText>
+            </Badge>
+          )}
         </PrimaryPositionIdData>
         <RangeBadge removed={removed} inRange={!outOfRange} />
       </RowBetween>

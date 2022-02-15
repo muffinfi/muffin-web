@@ -1,9 +1,9 @@
 import { Trans } from '@lingui/macro'
+import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import PositionListItem from 'components/PositionListItem'
 import React from 'react'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
-import { PositionDetails } from 'types/position'
 
 const DesktopHeader = styled.div`
   display: none;
@@ -35,7 +35,7 @@ const MobileHeader = styled.div`
 `
 
 type PositionListProps = React.PropsWithChildren<{
-  positions: PositionDetails[]
+  positions: MuffinPositionDetail[]
 }>
 
 export default function PositionList({ positions }: PositionListProps) {

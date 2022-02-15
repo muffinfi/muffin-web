@@ -3,9 +3,10 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
+import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
-import { MAX_TICK, MIN_TICK, nearestUsableTick, PositionManager, Tier } from '@muffinfi/muffin-v1-sdk'
+import { PositionManager, Tier } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import { ButtonConfirmed, ButtonGray, ButtonPrimary } from 'components/Button'
@@ -205,20 +206,6 @@ function getRatio(
 }
 
 //////////////////////////////////
-
-export function useIsTickAtLimit(
-  tickSpacing: number | undefined,
-  tickLower: number | undefined,
-  tickUpper: number | undefined
-) {
-  return useMemo(
-    () => ({
-      [Bound.LOWER]: tickLower && tickSpacing ? tickLower === nearestUsableTick(MIN_TICK, tickSpacing) : undefined,
-      [Bound.UPPER]: tickUpper && tickSpacing ? tickUpper === nearestUsableTick(MAX_TICK, tickSpacing) : undefined,
-    }),
-    [tickLower, tickUpper, tickSpacing]
-  )
-}
 
 export function PositionPage({
   match: {

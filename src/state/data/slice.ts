@@ -108,6 +108,21 @@ export const api = createApi({
         },
       }),
     }),
+    positionTokenIds: builder.query({
+      query: ({ owner, skip = 0 }) => ({
+        document: gql`
+          query positionTokenIds($owner: Bytes!, $skip: Int!) {
+            positions(first: 1000, skip: $skip, where: { owner: $owner }, orderBy: tokenId) {
+              tokenId
+            }
+          }
+        `,
+        variables: {
+          owner,
+          skip,
+        },
+      }),
+    }),
   }),
 })
 
