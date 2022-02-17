@@ -8,10 +8,10 @@ import { Line } from './Line'
 import { ChartEntry, LiquidityChartRangeInputProps } from './types'
 import Zoom, { ZoomOverlay } from './Zoom'
 
-export const getYDomainAccessor = (keys: string[]) => (d: ChartEntry) =>
+export const getYDomainAccessor = (hiddenKeyIndexes: number[]) => (d: ChartEntry) =>
   sum(
     Object.entries(d.activeLiquidity)
-      .filter(([key]) => keys.includes(key))
+      .filter(([idx]) => !hiddenKeyIndexes.includes(+idx))
       .map(([, val]) => val)
   )
 
@@ -19,7 +19,8 @@ export function Chart({
   id = 'liquidityChartRangeInput',
   data: { series, current },
   keys,
-  selectedKey,
+  hiddenKeyIndexes,
+  selectedKeyIndex,
   ticksAtLimit,
   styles,
   dimensions: { width, height },
@@ -39,39 +40,38 @@ export function Chart({
     [width, height, margins]
   )
 
-  const { xScale, yScale } = useMemo(() => {
-    const yDomainAccessor = getYDomainAccessor(keys)
-    const scales = {
-      xScale: scaleLinear()
-        .domain([current * zoomLevels.initialMin, current * zoomLevels.initialMax] as number[])
-        .range([0, innerWidth]),
-      yScale: scaleLinear()
-        .domain([0, max(series, yDomainAccessor)] as number[])
-        .range([innerHeight, 0]),
-    }
-
+  const xScale = useMemo(() => {
+    const scale = scaleLinear()
+      .domain([current * zoomLevels.initialMin, current * zoomLevels.initialMax] as number[])
+      .range([0, innerWidth])
     if (zoom) {
-      const newXscale = zoom.rescaleX(scales.xScale)
-      scales.xScale.domain(newXscale.domain())
+      const newXscale = zoom.rescaleX(scale)
+      scale.domain(newXscale.domain())
     }
+    return scale
+  }, [current, innerWidth, zoom, zoomLevels.initialMax, zoomLevels.initialMin])
 
-    return scales
-  }, [current, zoomLevels.initialMin, zoomLevels.initialMax, innerWidth, series, keys, innerHeight, zoom])
+  const yScale = useMemo(() => {
+    const yDomainAccessor = getYDomainAccessor(hiddenKeyIndexes)
+    return scaleLinear()
+      .domain([0, max(series, yDomainAccessor) || 1] as number[])
+      .range([innerHeight, 0])
+  }, [hiddenKeyIndexes, series, innerHeight])
 
   const stackedData = useMemo(
     () =>
       stack().keys(keys)(
         series.map((s) => {
           return keys.reduce(
-            (acc, val) => {
-              acc[val] = s.activeLiquidity[+val] || 0
+            (acc, val, index) => {
+              acc[val] = hiddenKeyIndexes.includes(index) ? 0 : s.activeLiquidity[index] || 0
               return acc
             },
             { price0: s.price0 } as Record<string, number>
           )
         })
       ),
-    [keys, series]
+    [keys, hiddenKeyIndexes, series]
   )
 
   useEffect(() => {
@@ -129,8 +129,7 @@ export function Chart({
           <g clipPath={`url(#${id}-chart-clip)`}>
             <Area
               stackedData={stackedData}
-              keys={keys}
-              selectedKey={selectedKey}
+              selectedKey={typeof selectedKeyIndex === 'number' ? keys[selectedKeyIndex] : undefined}
               xScale={xScale}
               yScale={yScale}
               fill={styles.area.default}
@@ -141,8 +140,7 @@ export function Chart({
               <g mask={`url(#${id}-chart-area-mask)`}>
                 <Area
                   stackedData={stackedData}
-                  keys={keys}
-                  selectedKey={selectedKey}
+                  selectedKey={typeof selectedKeyIndex === 'number' ? keys[selectedKeyIndex] : undefined}
                   xScale={xScale}
                   yScale={yScale}
                   fill={styles.area.selection}

@@ -5,6 +5,7 @@ import { AutoColumn, ColumnCenter } from 'components/Column'
 import Loader from 'components/Loader'
 import { format } from 'd3'
 import { useColor } from 'hooks/useColor'
+import usePrevious from 'hooks/usePrevious'
 import useTheme from 'hooks/useTheme'
 import { saturate } from 'polished'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -86,15 +87,13 @@ export default function LiquidityChartRangeInput({
   const tokenAColor = useColor(currencyA?.wrapped)
   const tokenBColor = useColor(currencyB?.wrapped)
 
+  const previousTierId = usePrevious(tierId)
+
   const keys = useMemo(
     () => pool?.tiers.map((tier) => `${sqrtGammaToFeePercent(tier.sqrtGamma).toFixed(2)}%`) ?? [],
     [pool]
   )
   const [hiddenKeyIndexes, setHiddenKeyIndexes] = useState<number[]>([])
-  const selectedKeys = useMemo(
-    () => pool?.tiers.map((_, index) => index.toString()).filter((_, index) => !hiddenKeyIndexes.includes(index)) || [],
-    [pool?.tiers, hiddenKeyIndexes]
-  )
 
   const isSorted = currencyA && currencyB && currencyA?.wrapped.sortsBefore(currencyB?.wrapped)
 
@@ -159,19 +158,15 @@ export default function LiquidityChartRangeInput({
     [isSorted, price, ticksAtLimit]
   )
 
-  const onToggleVisibility = useCallback(
-    (index: number) => {
-      if (index === tierId) return
-      setHiddenKeyIndexes((preVal) => {
-        const curIndex = preVal.findIndex((val) => val === index)
-        if (curIndex < 0) {
-          return [...preVal, index]
-        }
-        return preVal.filter((val) => val !== index)
-      })
-    },
-    [tierId]
-  )
+  const onToggleVisibility = useCallback((index: number) => {
+    setHiddenKeyIndexes((preVal) => {
+      const curIndex = preVal.findIndex((val) => val === index)
+      if (curIndex < 0) {
+        return [...preVal, index]
+      }
+      return preVal.filter((val) => val !== index)
+    })
+  }, [])
 
   if (isError) {
     ReactGA.exception({
@@ -186,10 +181,10 @@ export default function LiquidityChartRangeInput({
   }, [keys])
 
   useEffect(() => {
-    if (typeof tierId === 'number' && hiddenKeyIndexes.includes(tierId)) {
+    if (typeof tierId === 'number' && previousTierId !== tierId && hiddenKeyIndexes.includes(tierId)) {
       setHiddenKeyIndexes(hiddenKeyIndexes.filter((val) => val !== tierId))
     }
-  }, [hiddenKeyIndexes, tierId])
+  }, [hiddenKeyIndexes, tierId, previousTierId])
 
   return (
     <AutoColumn gap="md" style={{ minHeight: '200px' }}>
@@ -215,8 +210,9 @@ export default function LiquidityChartRangeInput({
           <ChartWrapper>
             <Chart
               data={{ series: formattedData, current: price }}
-              keys={selectedKeys}
-              selectedKey={tierId?.toString()}
+              keys={keys}
+              hiddenKeyIndexes={hiddenKeyIndexes}
+              selectedKeyIndex={tierId}
               dimensions={{ width: 400, height: 200 }}
               margins={{ top: 10, right: 2, bottom: 20, left: 0 }}
               styles={{
