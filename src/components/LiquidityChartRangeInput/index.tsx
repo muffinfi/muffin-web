@@ -144,6 +144,8 @@ export default function LiquidityChartRangeInput({
       : undefined
   }, [isSorted, priceLower, priceUpper])
 
+  const tierColors = useMemo(() => [theme.yellow1, theme.red1, theme.green1, theme.yellow2, theme.red2], [theme])
+
   const brushLabelValue = useCallback(
     (d: 'w' | 'e', x: number) => {
       if (!price) return ''
@@ -218,7 +220,7 @@ export default function LiquidityChartRangeInput({
               styles={{
                 area: {
                   selection: theme.blue1,
-                  default: theme.blue4,
+                  default: tierColors,
                 },
                 brush: {
                   handle: {
@@ -239,8 +241,9 @@ export default function LiquidityChartRangeInput({
             <VisiblilitySelector
               options={keys}
               hiddenOptionsIndexes={hiddenKeyIndexes}
-              selectedIndex={tierId}
+              selectedKeyIndex={tierId}
               onToggleOption={onToggleVisibility}
+              colors={tierColors}
             />
           )}
         </>

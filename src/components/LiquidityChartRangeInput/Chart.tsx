@@ -129,10 +129,11 @@ export function Chart({
           <g clipPath={`url(#${id}-chart-clip)`}>
             <Area
               stackedData={stackedData}
-              selectedKey={typeof selectedKeyIndex === 'number' ? keys[selectedKeyIndex] : undefined}
+              keys={keys}
+              selectedKeyIndex={selectedKeyIndex}
               xScale={xScale}
               yScale={yScale}
-              fill={styles.area.default}
+              colors={styles.area.default}
             />
 
             {brushDomain && (
@@ -140,9 +141,11 @@ export function Chart({
               <g mask={`url(#${id}-chart-area-mask)`}>
                 <Area
                   stackedData={stackedData}
-                  selectedKey={typeof selectedKeyIndex === 'number' ? keys[selectedKeyIndex] : undefined}
+                  keys={keys}
+                  selectedKeyIndex={selectedKeyIndex}
                   xScale={xScale}
                   yScale={yScale}
+                  colors={styles.area.default}
                   fill={styles.area.selection}
                 />
               </g>

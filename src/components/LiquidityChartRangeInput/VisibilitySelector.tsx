@@ -37,19 +37,21 @@ const ResponsiveText = styled(ThemedText.Label)`
   `};
 `
 
-const Button = styled(ButtonOutlined)<{ active?: boolean }>`
-  border: 1px solid ${({ active, theme }) => (active ? theme.primary1 : theme.bg2)};
+const Button = styled(ButtonOutlined)<{ active?: boolean; borderColor?: string }>`
+  border: 1px solid ${({ active, borderColor, theme }) => (active ? borderColor ?? theme.primary1 : theme.bg2)};
 `
 
 export const VisiblilitySelector = ({
   options,
+  colors,
   hiddenOptionsIndexes,
-  selectedIndex,
+  selectedKeyIndex,
   onToggleOption,
 }: {
   options: string[]
+  colors: string[]
   hiddenOptionsIndexes: number[]
-  selectedIndex?: number
+  selectedKeyIndex?: number
   onToggleOption: (index: number) => void
 }) => {
   const onClick: MouseEventHandler<HTMLButtonElement> = useCallback(
@@ -70,6 +72,9 @@ export const VisiblilitySelector = ({
             <Button
               key={option}
               active={!hiddenOptionsIndexes.includes(index)}
+              borderColor={
+                selectedKeyIndex === index ? undefined : colors[(selectedKeyIndex ?? -1) > index ? index : index - 1]
+              }
               onClick={onClick}
               data-index={index}
               padding="8px 6px"
@@ -83,6 +88,6 @@ export const VisiblilitySelector = ({
         </ButtonsWrapper>
       </Wrapper>
     ),
-    [options, hiddenOptionsIndexes, onClick]
+    [options, hiddenOptionsIndexes, selectedKeyIndex, colors, onClick]
   )
 }

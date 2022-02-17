@@ -33,28 +33,36 @@ const AnimatedPath = ({ animate, d, fill }: { animate?: boolean; d: any; fill?: 
 
 export const Area = ({
   stackedData,
-  selectedKey,
+  keys,
+  selectedKeyIndex,
   xScale,
   yScale,
   fill,
+  colors,
 }: {
   stackedData: Series<{ [key: string]: number }, string>[]
-  selectedKey?: string
+  keys: string[]
+  selectedKeyIndex?: number
   xScale: ScaleLinear<number, number>
   yScale: ScaleLinear<number, number>
   fill?: string | undefined
+  colors: string[]
 }) => {
-  const previousSelectedKey = usePrevious(selectedKey)
+  const previousSelectedKeyIndex = usePrevious(selectedKeyIndex)
   const previousXScale = usePrevious(xScale)
 
   return useMemo(
     () => (
       <>
-        {stackedData.map((data) => (
+        {stackedData.map((data, index) => (
           <AnimatedPath
-            fill={data.key === selectedKey ? undefined : fill}
+            fill={
+              typeof selectedKeyIndex !== 'undefined' && data.key === keys[selectedKeyIndex]
+                ? undefined
+                : colors[(selectedKeyIndex ?? -1) > index ? index : index - 1]
+            }
             key={data.key}
-            animate={previousSelectedKey === selectedKey && previousXScale === xScale}
+            animate={previousSelectedKeyIndex === selectedKeyIndex && previousXScale === xScale}
             d={
               area()
                 .curve(curveStepAfter)
@@ -71,6 +79,6 @@ export const Area = ({
         ))}
       </>
     ),
-    [stackedData, selectedKey, fill, previousSelectedKey, previousXScale, xScale, yScale]
+    [stackedData, selectedKeyIndex, keys, colors, previousSelectedKeyIndex, previousXScale, xScale, yScale]
   )
 }
