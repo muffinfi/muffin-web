@@ -1,4 +1,5 @@
 import { max, scaleLinear, stack, sum, ZoomTransform } from 'd3'
+import { darken } from 'polished'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import { Area } from './Area'
@@ -74,6 +75,11 @@ export function Chart({
     [keys, hiddenKeyIndexes, series]
   )
 
+  const selectionColors = useMemo(
+    () => styles.area.colors.map((color, index) => (selectedKeyIndex === index ? darken(0.1, color) : color)),
+    [selectedKeyIndex, styles.area.colors]
+  )
+
   useEffect(() => {
     // reset zoom as necessary
     setZoom(null)
@@ -133,7 +139,7 @@ export function Chart({
               hiddenKeyIndexes={hiddenKeyIndexes}
               xScale={xScale}
               yScale={yScale}
-              colors={styles.area.default}
+              colors={styles.area.colors}
             />
 
             {brushDomain && (
@@ -145,7 +151,7 @@ export function Chart({
                   hiddenKeyIndexes={hiddenKeyIndexes}
                   xScale={xScale}
                   yScale={yScale}
-                  colors={styles.area.selection}
+                  colors={selectionColors}
                 />
               </g>
             )}

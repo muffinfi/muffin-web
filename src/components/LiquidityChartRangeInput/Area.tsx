@@ -48,7 +48,7 @@ export const Area = ({
   hiddenKeyIndexes: number[]
   xScale: ScaleLinear<number, number>
   yScale: ScaleLinear<number, number>
-  colors: string[]
+  colors: (string | undefined)[]
 }) => {
   const previousSelectedKeyIndex = usePrevious(selectedKeyIndex)
   const previousXScale = usePrevious(xScale)

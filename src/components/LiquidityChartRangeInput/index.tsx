@@ -8,7 +8,7 @@ import { useColor } from 'hooks/useColor'
 import usePrevious from 'hooks/usePrevious'
 import useTheme from 'hooks/useTheme'
 import useTierColors from 'hooks/useTierColors'
-import { darken, saturate } from 'polished'
+import { saturate } from 'polished'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { BarChart2, CloudOff, Inbox } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -91,7 +91,6 @@ export default function LiquidityChartRangeInput({
   const previousTierId = usePrevious(tierId)
 
   const tierColors = useTierColors()
-  const selectionTierColors = useMemo(() => tierColors.map((color) => darken(0.075, color)), [tierColors])
 
   const keys = useMemo(
     () => pool?.tiers.map((tier) => `${sqrtGammaToFeePercent(tier.sqrtGamma).toFixed(2)}%`) ?? [],
@@ -221,8 +220,7 @@ export default function LiquidityChartRangeInput({
               margins={{ top: 10, right: 2, bottom: 20, left: 0 }}
               styles={{
                 area: {
-                  selection: selectionTierColors,
-                  default: tierColors,
+                  colors: tierColors,
                 },
                 brush: {
                   handle: {

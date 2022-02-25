@@ -3,7 +3,6 @@ import { darken } from 'polished'
 import { Check, ChevronDown } from 'react-feather'
 import { Button as RebassButton, ButtonProps as ButtonPropsOriginal } from 'rebass/styled-components'
 import styled from 'styled-components/macro'
-
 import { RowBetween } from '../Row'
 
 type ButtonProps = Omit<ButtonPropsOriginal, 'css'>
@@ -309,16 +308,16 @@ export function ButtonDropdownLight({ disabled = false, children, ...rest }: { d
   )
 }
 
-const ActiveOutlined = styled(ButtonOutlined)`
+const ActiveOutlined = styled(ButtonOutlined)<{ activeColor?: string }>`
   border: 1px solid;
-  border-color: ${({ theme }) => theme.primary1};
+  border-color: ${({ activeColor, theme }) => activeColor ?? theme.primary1};
 `
 
-const Circle = styled.div`
+const Circle = styled.div<{ activeColor?: string }>`
   height: 17px;
   width: 17px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.primary1};
+  background-color: ${({ activeColor, theme }) => activeColor ?? theme.primary1};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -336,7 +335,12 @@ const ResponsiveCheck = styled(Check)`
   size: 13px;
 `
 
-export function ButtonRadioChecked({ active = false, children, ...rest }: { active?: boolean } & ButtonProps) {
+export function ButtonRadioChecked({
+  active = false,
+  activeColor,
+  children,
+  ...rest
+}: { active?: boolean; activeColor?: string } & ButtonProps) {
   const theme = useTheme()
 
   if (!active) {
@@ -347,12 +351,12 @@ export function ButtonRadioChecked({ active = false, children, ...rest }: { acti
     )
   } else {
     return (
-      <ActiveOutlined {...rest} padding="12px 8px" $borderRadius="12px">
+      <ActiveOutlined {...rest} activeColor={activeColor} padding="12px 8px" $borderRadius="12px">
         {
           <RowBetween>
             {children}
             <CheckboxWrapper>
-              <Circle>
+              <Circle activeColor={activeColor}>
                 <ResponsiveCheck size={13} stroke={theme.white} />
               </Circle>
             </CheckboxWrapper>
