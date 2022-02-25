@@ -309,7 +309,7 @@ export default function Pool() {
                   </label>
                   <input
                     type="checkbox"
-                    onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
+                    onChange={() => setUserHideClosedPositions(!userHideClosedPositions)}
                     checked={!userHideClosedPositions}
                   />
                 </ShowInactiveToggle>
