@@ -129,8 +129,8 @@ export function Chart({
           <g clipPath={`url(#${id}-chart-clip)`}>
             <Area
               stackedData={stackedData}
-              keys={keys}
               selectedKeyIndex={selectedKeyIndex}
+              hiddenKeyIndexes={hiddenKeyIndexes}
               xScale={xScale}
               yScale={yScale}
               colors={styles.area.default}
@@ -141,12 +141,11 @@ export function Chart({
               <g mask={`url(#${id}-chart-area-mask)`}>
                 <Area
                   stackedData={stackedData}
-                  keys={keys}
                   selectedKeyIndex={selectedKeyIndex}
+                  hiddenKeyIndexes={hiddenKeyIndexes}
                   xScale={xScale}
                   yScale={yScale}
-                  colors={styles.area.default}
-                  fill={styles.area.selection}
+                  colors={styles.area.selection}
                 />
               </g>
             )}

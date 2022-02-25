@@ -72,9 +72,7 @@ export const VisiblilitySelector = ({
             <Button
               key={option}
               active={!hiddenOptionsIndexes.includes(index)}
-              borderColor={
-                selectedKeyIndex === index ? undefined : colors[(selectedKeyIndex ?? -1) > index ? index : index - 1]
-              }
+              borderColor={colors[index % colors.length]}
               onClick={onClick}
               data-index={index}
               padding="8px 6px"
@@ -88,6 +86,6 @@ export const VisiblilitySelector = ({
         </ButtonsWrapper>
       </Wrapper>
     ),
-    [options, hiddenOptionsIndexes, selectedKeyIndex, colors, onClick]
+    [options, hiddenOptionsIndexes, colors, onClick]
   )
 }

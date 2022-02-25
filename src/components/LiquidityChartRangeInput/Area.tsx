@@ -9,7 +9,7 @@ const Path = styled.path<{ fill: string | undefined }>`
   fill: ${({ fill, theme }) => fill ?? theme.blue2};
 `
 
-const AnimatedPath = ({ animate, d, fill }: { animate?: boolean; d: any; fill?: string }) => {
+const AnimatedPath = ({ animate, d, fill, hidden }: { animate?: boolean; d: any; fill?: string; hidden?: boolean }) => {
   const ref = useRef<SVGPathElement>(null)
   const [didMount, setDidMount] = useState(false)
 
@@ -18,34 +18,36 @@ const AnimatedPath = ({ animate, d, fill }: { animate?: boolean; d: any; fill?: 
     const element = select(ref.current)
     if (!animate || !didMount) {
       element.attr('d', d)
+      element.style('opacity', hidden ? 0 : 1)
       if (!didMount) setDidMount(true)
       return
     }
-    element.transition().attr('d', d)
+    element
+      .transition()
+      .attr('d', d)
+      .style('opacity', hidden ? 0 : 1)
     // cleanup by ending transitions
     return () => {
       element.interrupt()
     }
-  }, [didMount, d, animate])
+  }, [didMount, d, animate, hidden])
 
   return <Path ref={ref} fill={fill} />
 }
 
 export const Area = ({
   stackedData,
-  keys,
   selectedKeyIndex,
+  hiddenKeyIndexes,
   xScale,
   yScale,
-  fill,
   colors,
 }: {
   stackedData: Series<{ [key: string]: number }, string>[]
-  keys: string[]
   selectedKeyIndex?: number
+  hiddenKeyIndexes: number[]
   xScale: ScaleLinear<number, number>
   yScale: ScaleLinear<number, number>
-  fill?: string | undefined
   colors: string[]
 }) => {
   const previousSelectedKeyIndex = usePrevious(selectedKeyIndex)
@@ -56,13 +58,10 @@ export const Area = ({
       <>
         {stackedData.map((data, index) => (
           <AnimatedPath
-            fill={
-              typeof selectedKeyIndex !== 'undefined' && data.key === keys[selectedKeyIndex]
-                ? undefined
-                : colors[(selectedKeyIndex ?? -1) > index ? index : index - 1]
-            }
+            fill={colors[index % colors.length]}
             key={data.key}
             animate={previousSelectedKeyIndex === selectedKeyIndex && previousXScale === xScale}
+            hidden={hiddenKeyIndexes.includes(index)}
             d={
               area()
                 .curve(curveStepAfter)
@@ -79,6 +78,6 @@ export const Area = ({
         ))}
       </>
     ),
-    [stackedData, selectedKeyIndex, keys, colors, previousSelectedKeyIndex, previousXScale, xScale, yScale]
+    [stackedData, colors, previousSelectedKeyIndex, selectedKeyIndex, previousXScale, xScale, hiddenKeyIndexes, yScale]
   )
 }
