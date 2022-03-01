@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import { ButtonGray, ButtonOutlined, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import DowntimeWarning from 'components/DowntimeWarning'
@@ -8,19 +9,14 @@ import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
-import { L2_CHAIN_IDS } from 'constants/chains'
-import { useV3Positions } from 'hooks/useV3Positions'
 import { useActiveWeb3React } from 'hooks/web3'
 import { useContext } from 'react'
-import { BookOpen, ChevronDown, ChevronsRight, Inbox, Layers, PlusCircle } from 'react-feather'
+import { ChevronDown, ChevronsRight, Inbox, Layers, PlusCircle } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { useWalletModalToggle } from 'state/application/hooks'
 import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { ThemeContext } from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
-import { PositionDetails } from 'types/position'
-
-import CTACards from './CTACards'
 import { LoadingRows } from './styleds'
 
 const PageWrapper = styled(AutoColumn)`
@@ -129,17 +125,17 @@ const ResponsiveRow = styled(RowFixed)`
 `
 
 export default function Pool() {
-  const { account, chainId } = useActiveWeb3React()
+  const { account } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
 
   const theme = useContext(ThemeContext)
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
-  const { positions, loading: positionsLoading } = useV3Positions(account)
+  const { positions, loading: positionsLoading } = useMuffinPositionDetails(account)
 
-  const [openPositions, closedPositions] = positions?.reduce<[PositionDetails[], PositionDetails[]]>(
+  const [openPositions, closedPositions] = positions?.reduce<[MuffinPositionDetail[], MuffinPositionDetail[]]>(
     (acc, p) => {
-      acc[p.liquidity?.isZero() ? 1 : 0].push(p)
+      acc[p.liquidityD8?.isZero() ? 1 : 0].push(p)
       return acc
     },
     [[], []]
@@ -147,7 +143,7 @@ export default function Pool() {
 
   const filteredPositions = [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
   const showConnectAWallet = Boolean(!account)
-  const showV2Features = !!chainId && !L2_CHAIN_IDS.includes(chainId)
+  const showV2Features = false // !!chainId && !L2_CHAIN_IDS.includes(chainId)
 
   const menuItems = [
     {
@@ -160,36 +156,37 @@ export default function Pool() {
       link: '/add/ETH',
       external: false,
     },
-    {
-      content: (
-        <MenuItem>
-          <Trans>Migrate</Trans>
-          <ChevronsRight size={16} />
-        </MenuItem>
-      ),
-      link: '/migrate/v2',
-      external: false,
-    },
-    {
-      content: (
-        <MenuItem>
-          <Trans>V2 liquidity</Trans>
-          <Layers size={16} />
-        </MenuItem>
-      ),
-      link: '/pool/v2',
-      external: false,
-    },
-    {
-      content: (
-        <MenuItem>
-          <Trans>Learn</Trans>
-          <BookOpen size={16} />
-        </MenuItem>
-      ),
-      link: 'https://docs.uniswap.org/',
-      external: true,
-    },
+    // TODO: use new links
+    // {
+    //   content: (
+    //     <MenuItem>
+    //       <Trans>Migrate</Trans>
+    //       <ChevronsRight size={16} />
+    //     </MenuItem>
+    //   ),
+    //   link: '/migrate/v2',
+    //   external: false,
+    // },
+    // {
+    //   content: (
+    //     <MenuItem>
+    //       <Trans>V2 liquidity</Trans>
+    //       <Layers size={16} />
+    //     </MenuItem>
+    //   ),
+    //   link: '/pool/v2',
+    //   external: false,
+    // },
+    // {
+    //   content: (
+    //     <MenuItem>
+    //       <Trans>Learn</Trans>
+    //       <BookOpen size={16} />
+    //     </MenuItem>
+    //   ),
+    //   link: 'https://docs.uniswap.org/',
+    //   external: true,
+    // },
   ]
 
   return (
@@ -226,7 +223,7 @@ export default function Pool() {
             <HideSmall>
               <NetworkAlert thin />
               <DowntimeWarning />
-              <CTACards />
+              {/* <CTACards /> */}
             </HideSmall>
 
             <MainContentWrapper>
@@ -312,7 +309,7 @@ export default function Pool() {
                   </label>
                   <input
                     type="checkbox"
-                    onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
+                    onChange={() => setUserHideClosedPositions(!userHideClosedPositions)}
                     checked={!userHideClosedPositions}
                   />
                 </ShowInactiveToggle>

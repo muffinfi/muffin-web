@@ -33,14 +33,14 @@ export interface LiquidityChartRangeInputProps {
     current: number
   }
   keys: string[]
-  selectedKey?: string
+  hiddenKeyIndexes: number[]
+  selectedKeyIndex?: number
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 
   styles: {
     area: {
       // color of the ticks in range
-      selection: string
-      default: string
+      colors: string[]
     }
 
     brush: {

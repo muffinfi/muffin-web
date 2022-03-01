@@ -1,5 +1,6 @@
-import { area, curveStepAfter, ScaleLinear, Series } from 'd3'
-import React, { useMemo } from 'react'
+import { area, curveStepAfter, ScaleLinear, select, Series } from 'd3'
+import usePrevious from 'hooks/usePrevious'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
 
 const Path = styled.path<{ fill: string | undefined }>`
@@ -8,28 +9,59 @@ const Path = styled.path<{ fill: string | undefined }>`
   fill: ${({ fill, theme }) => fill ?? theme.blue2};
 `
 
+const AnimatedPath = ({ animate, d, fill, hidden }: { animate?: boolean; d: any; fill?: string; hidden?: boolean }) => {
+  const ref = useRef<SVGPathElement>(null)
+  const [didMount, setDidMount] = useState(false)
+
+  useEffect(() => {
+    if (!ref.current) return
+    const element = select(ref.current)
+    if (!animate || !didMount) {
+      element.attr('d', d)
+      element.style('opacity', hidden ? 0 : 1)
+      if (!didMount) setDidMount(true)
+      return
+    }
+    element
+      .transition()
+      .attr('d', d)
+      .style('opacity', hidden ? 0 : 1)
+    // cleanup by ending transitions
+    return () => {
+      element.interrupt()
+    }
+  }, [didMount, d, animate, hidden])
+
+  return <Path ref={ref} fill={fill} />
+}
+
 export const Area = ({
   stackedData,
-  keys,
-  selectedKey,
+  selectedKeyIndex,
+  hiddenKeyIndexes,
   xScale,
   yScale,
-  fill,
+  colors,
 }: {
   stackedData: Series<{ [key: string]: number }, string>[]
-  keys: string[]
-  selectedKey?: string
+  selectedKeyIndex?: number
+  hiddenKeyIndexes: number[]
   xScale: ScaleLinear<number, number>
   yScale: ScaleLinear<number, number>
-  fill?: string | undefined
-}) =>
-  useMemo(
+  colors: (string | undefined)[]
+}) => {
+  const previousSelectedKeyIndex = usePrevious(selectedKeyIndex)
+  const previousXScale = usePrevious(xScale)
+
+  return useMemo(
     () => (
       <>
-        {stackedData.map((data) => (
-          <Path
-            fill={data.key === selectedKey ? undefined : fill}
+        {stackedData.map((data, index) => (
+          <AnimatedPath
+            fill={colors[index % colors.length]}
             key={data.key}
+            animate={previousSelectedKeyIndex === selectedKeyIndex && previousXScale === xScale}
+            hidden={hiddenKeyIndexes.includes(index)}
             d={
               area()
                 .curve(curveStepAfter)
@@ -46,5 +78,6 @@ export const Area = ({
         ))}
       </>
     ),
-    [fill, selectedKey, stackedData, xScale, yScale]
+    [stackedData, colors, previousSelectedKeyIndex, selectedKeyIndex, previousXScale, xScale, hiddenKeyIndexes, yScale]
   )
+}

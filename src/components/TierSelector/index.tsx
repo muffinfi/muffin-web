@@ -4,6 +4,7 @@ import { Pool, sqrtGammaToFeePercent, SQRT_GAMMAS_FIRST_TIER } from '@muffinfi/m
 import Card from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { RowBetween } from 'components/Row'
+import useTierColors from 'hooks/useTierColors'
 import { useActiveWeb3React } from 'hooks/web3'
 import { DynamicSection } from 'pages/AddLiquidity/styled'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -71,6 +72,9 @@ export default function TierSelector({
     [sqrtGammaSelected]
   )
 
+  // tier colors
+  const tierColors = useTierColors()
+
   // pulsing animation
   const [pulsing, setPulsing] = useState(false)
   const prevSqrtGammaSelected = usePrevious(sqrtGammaSelected)
@@ -119,6 +123,7 @@ export default function TierSelector({
               <TierOption
                 tierId={i}
                 active={i === tierIdSelected}
+                activeColor={tierColors[i % tierColors.length]}
                 sqrtGamma={sqrtGamma}
                 distributions={distributions}
                 handleTierSelect={handleTierSelect}

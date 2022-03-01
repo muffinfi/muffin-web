@@ -27,12 +27,14 @@ export function TierOption({
   tierId,
   sqrtGamma,
   active,
+  activeColor,
   distributions,
   handleTierSelect,
 }: {
   tierId: number
   sqrtGamma: number
   active: boolean
+  activeColor: string
   distributions: ReturnType<typeof useMuffinTierDistribution>['distributions']
   handleTierSelect: (sqrtGamma: number) => void
 }) {
@@ -40,7 +42,7 @@ export function TierOption({
   const onClick = useCallback(() => handleTierSelect(sqrtGamma), [handleTierSelect, sqrtGamma])
 
   return (
-    <ButtonRadioChecked active={active} onClick={onClick}>
+    <ButtonRadioChecked active={active} onClick={onClick} activeColor={activeColor}>
       <AutoColumn gap="sm" justify="flex-start">
         <AutoColumn justify="flex-start" gap="6px">
           <ResponsiveText>
