@@ -81,19 +81,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const _wantedCurrency1 = receiveWETH ? token1 : currency1
 
   /*=====================================================================
-   *                           FEE AMOUNTS
-   *====================================================================*/
-
-  // wrap fee amount into CurrencyAmount
-  const [feeAmount0, feeAmount1] = useMemo(() => {
-    if (!positionDetail || !_wantedCurrency0 || !_wantedCurrency1) return []
-    return [
-      CurrencyAmount.fromRawAmount(_wantedCurrency0, positionDetail.feeAmount0.toString()),
-      CurrencyAmount.fromRawAmount(_wantedCurrency1, positionDetail.feeAmount1.toString()),
-    ]
-  }, [positionDetail, _wantedCurrency0, _wantedCurrency1])
-
-  /*=====================================================================
    *                   AMOUNTS FROM BURNED LIQUIDITY
    *====================================================================*/
 
@@ -109,6 +96,32 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       CurrencyAmount.fromRawAmount(_wantedCurrency1, liquidityPercent.multiply(position.amount1.quotient).quotient),
     ]
   }, [liquidityPercent, position, _wantedCurrency0, _wantedCurrency1])
+
+  /*=====================================================================
+   *                           FEE AMOUNTS
+   *====================================================================*/
+
+  // TODO: add checkbox to toggle fee collection flag
+  const [collectAllFees] = useState(DEFAULT_COLLECT_ALL_FEES)
+
+  // wrap fee amount into CurrencyAmount
+  const [feeAmount0, feeAmount1] = useMemo(() => {
+    if (!positionDetail || !_wantedCurrency0 || !_wantedCurrency1) return []
+    return [
+      CurrencyAmount.fromRawAmount(
+        _wantedCurrency0,
+        collectAllFees
+          ? positionDetail.feeAmount0.toString()
+          : liquidityPercent.multiply(positionDetail.feeAmount0.toString()).quotient
+      ),
+      CurrencyAmount.fromRawAmount(
+        _wantedCurrency1,
+        collectAllFees
+          ? positionDetail.feeAmount1.toString()
+          : liquidityPercent.multiply(positionDetail.feeAmount1.toString()).quotient
+      ),
+    ]
+  }, [positionDetail, _wantedCurrency0, _wantedCurrency1, collectAllFees, liquidityPercent])
 
   /*=====================================================================
    *                       BUTTON ERROR MESSAGE
@@ -187,7 +200,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       liquidityPercentage: liquidityPercent,
       slippageTolerance,
       withdrawalRecipient: DEFAULT_WITHDRAW ? account : ADDRESS_ZERO,
-      collectAllFees: DEFAULT_COLLECT_ALL_FEES,
+      collectAllFees,
     })
 
     try {
@@ -229,6 +242,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     partialAmount1,
     tokenId,
     slippageTolerance,
+    collectAllFees,
     addTransaction,
   ])
 
