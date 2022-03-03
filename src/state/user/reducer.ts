@@ -1,6 +1,6 @@
+import { updateUserInternalAccountMode } from '@muffinfi/state/user/actions'
 import { createReducer } from '@reduxjs/toolkit'
 import { SupportedLocale } from 'constants/locales'
-
 import { DEFAULT_DEADLINE_FROM_NOW } from '../../constants/misc'
 import { updateVersion } from '../global/actions'
 import {
@@ -37,6 +37,7 @@ export interface UserState {
   userLocale: SupportedLocale | null
 
   userExpertMode: boolean
+  userInternalAccountMode: boolean
 
   userClientSideRouter: boolean // whether routes should be calculated with the client side router only
 
@@ -77,6 +78,7 @@ export const initialState: UserState = {
   optimismAlphaAcknowledged: false,
   userDarkMode: null,
   userExpertMode: false,
+  userInternalAccountMode: true,
   userLocale: null,
   userClientSideRouter: false,
   userHideClosedPositions: false,
@@ -140,6 +142,10 @@ export default createReducer(initialState, (builder) =>
     })
     .addCase(updateUserExpertMode, (state, action) => {
       state.userExpertMode = action.payload.userExpertMode
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserInternalAccountMode, (state, action) => {
+      state.userInternalAccountMode = action.payload.userInternalAccountMode
       state.timestamp = currentTimestamp()
     })
     .addCase(updateUserLocale, (state, action) => {

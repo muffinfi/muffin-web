@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
+import { useInternalAccountModeManager } from '@muffinfi/state/user/hooks'
 import { Percent } from '@uniswap/sdk-core'
 import { SupportedChainId } from 'constants/chains'
 import { useActiveWeb3React } from 'hooks/web3'
@@ -8,7 +9,6 @@ import { Settings, X } from 'react-feather'
 import ReactGA from 'react-ga'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components/macro'
-
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalOpen, useToggleSettingsMenu } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
@@ -134,6 +134,7 @@ export default function SettingsTab({
   const theme = useContext(ThemeContext)
 
   const [expertMode, toggleExpertMode] = useExpertModeManager()
+  const [internalAccountMode, toggleInternalAccountMode] = useInternalAccountModeManager()
 
   const [clientSideRouter, setClientSideRouter] = useClientSideRouter()
 
@@ -202,6 +203,20 @@ export default function SettingsTab({
               <Trans>Transaction Settings</Trans>
             </Text>
             <TransactionSettings placeholderSlippage={placeholderSlippage} noDeadline={noDeadline} />
+            <RowBetween>
+              <RowFixed>
+                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
+                  <Trans>Use Internal Account</Trans>
+                </ThemedText.Black>
+                <QuestionHelper text={<Trans>Use internal account balance for swap and add/remove liquidity.</Trans>} />
+              </RowFixed>
+              <Toggle
+                id="toggle-internal-account-mode-button"
+                isActive={internalAccountMode}
+                toggle={toggleInternalAccountMode}
+              />
+            </RowBetween>
+
             <Text fontWeight={600} fontSize={14}>
               <Trans>Interface Settings</Trans>
             </Text>
