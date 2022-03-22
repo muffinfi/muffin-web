@@ -2,6 +2,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { t, Trans } from '@lingui/macro' // eslint-disable-line no-restricted-imports
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { SwapManager, Trade } from '@muffinfi/muffin-v1-sdk'
+import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import useENS from 'hooks/useENS'
@@ -11,6 +13,7 @@ import { useActiveWeb3React } from 'hooks/web3'
 import { ReactNode, useMemo } from 'react'
 import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
+import { useTokenBalances } from 'state/wallet/hooks'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
@@ -53,6 +56,7 @@ function useSwapCallArguments(
   trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
   allowedSlippage: Percent, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  toAccount: boolean,
   signatureData: SignatureData | null | undefined
 ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
@@ -61,6 +65,16 @@ function useSwapCallArguments(
   const recipient = recipientAddressOrName === null ? account : recipientAddress
   const deadline = useTransactionDeadline()
   const argentWalletContract = useArgentWalletContract()
+  const tryInternalAccount = useIsUsingInternalAccount()
+
+  const internalBalance = useTokenBalances(
+    account ?? undefined,
+    useMemo(
+      () => (trade?.inputAmount.currency.isToken ? [trade?.inputAmount.currency] : []),
+      [trade?.inputAmount.currency]
+    ),
+    tryInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : 0
+  )
 
   return useMemo(() => {
     if (!trade || !recipient || !library || !account || !chainId || !deadline) return []
@@ -68,14 +82,17 @@ function useSwapCallArguments(
     const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
     if (!managerAddress) return []
 
-    // FIXME: support internal accounts
-    const USE_SENDER_INTERNAL_ACCOUNT = false
-    const SEND_TO_RECIPIENT_INTERNAL_ACCOUNT = false
+    const fromAccount =
+      (tryInternalAccount &&
+        trade &&
+        trade.inputAmount.currency.isToken &&
+        internalBalance[trade.inputAmount.currency.address]?.greaterThan(0)) ??
+      false
 
     const { value, calldata } = SwapManager.swapCallParameters(trade, {
       recipient,
-      fromAccount: USE_SENDER_INTERNAL_ACCOUNT,
-      toAccount: SEND_TO_RECIPIENT_INTERNAL_ACCOUNT,
+      fromAccount,
+      toAccount,
       deadline: deadline.toString(),
       slippageTolerance: allowedSlippage,
       managerAddress,
@@ -126,7 +143,20 @@ function useSwapCallArguments(
         value,
       },
     ]
-  }, [account, allowedSlippage, argentWalletContract, chainId, deadline, library, recipient, signatureData, trade])
+  }, [
+    account,
+    allowedSlippage,
+    argentWalletContract,
+    chainId,
+    deadline,
+    internalBalance,
+    library,
+    recipient,
+    signatureData,
+    toAccount,
+    trade,
+    tryInternalAccount,
+  ])
 }
 
 /**
@@ -180,11 +210,18 @@ export function useSwapCallback(
   trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
   allowedSlippage: Percent, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  toInternalAccount: boolean,
   signatureData: SignatureData | undefined | null
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName, signatureData)
+  const swapCalls = useSwapCallArguments(
+    trade,
+    allowedSlippage,
+    recipientAddressOrName,
+    toInternalAccount,
+    signatureData
+  )
 
   const addTransaction = useTransactionAdder()
 

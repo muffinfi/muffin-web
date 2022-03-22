@@ -23,6 +23,7 @@ interface ILensInterface extends ethers.utils.Interface {
     "getDerivedPosition(uint256)": FunctionFragment;
     "getFeeAmounts(tuple,tuple)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
+    "getUnderlyingAmounts(tuple,tuple,bool)": FunctionFragment;
     "hub()": FunctionFragment;
     "isSettled(tuple,tuple)": FunctionFragment;
     "manager()": FunctionFragment;
@@ -55,6 +56,27 @@ interface ILensInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getPosition",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnderlyingAmounts",
+    values: [
+      {
+        owner: string;
+        token0: string;
+        token1: string;
+        tierId: BigNumberish;
+        tickLower: BigNumberish;
+        tickUpper: BigNumberish;
+      },
+      {
+        liquidityD8: BigNumberish;
+        feeGrowthInside0Last: BigNumberish;
+        feeGrowthInside1Last: BigNumberish;
+        limitOrderType: BigNumberish;
+        settlementSnapshotId: BigNumberish;
+      },
+      boolean
+    ]
   ): string;
   encodeFunctionData(functionFragment: "hub", values?: undefined): string;
   encodeFunctionData(
@@ -89,6 +111,10 @@ interface ILensInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getPosition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnderlyingAmounts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "hub", data: BytesLike): Result;
@@ -162,9 +188,11 @@ export class ILens extends BaseContract {
           limitOrderType: number;
           settlementSnapshotId: number;
         },
+        boolean,
         BigNumber,
         BigNumber,
-        boolean
+        BigNumber,
+        BigNumber
       ] & {
         info: [string, string, string, number, number, number] & {
           owner: string;
@@ -181,9 +209,11 @@ export class ILens extends BaseContract {
           limitOrderType: number;
           settlementSnapshotId: number;
         };
+        settled: boolean;
+        amount0: BigNumber;
+        amount1: BigNumber;
         feeAmount0: BigNumber;
         feeAmount1: BigNumber;
-        settled: boolean;
       }
     >;
 
@@ -247,6 +277,28 @@ export class ILens extends BaseContract {
       }
     >;
 
+    getUnderlyingAmounts(
+      info: {
+        owner: string;
+        token0: string;
+        token1: string;
+        tierId: BigNumberish;
+        tickLower: BigNumberish;
+        tickUpper: BigNumberish;
+      },
+      position: {
+        liquidityD8: BigNumberish;
+        feeGrowthInside0Last: BigNumberish;
+        feeGrowthInside1Last: BigNumberish;
+        limitOrderType: BigNumberish;
+        settlementSnapshotId: BigNumberish;
+      },
+      settled: boolean,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
     hub(overrides?: CallOverrides): Promise<[string]>;
 
     isSettled(
@@ -291,9 +343,11 @@ export class ILens extends BaseContract {
         limitOrderType: number;
         settlementSnapshotId: number;
       },
+      boolean,
       BigNumber,
       BigNumber,
-      boolean
+      BigNumber,
+      BigNumber
     ] & {
       info: [string, string, string, number, number, number] & {
         owner: string;
@@ -310,9 +364,11 @@ export class ILens extends BaseContract {
         limitOrderType: number;
         settlementSnapshotId: number;
       };
+      settled: boolean;
+      amount0: BigNumber;
+      amount1: BigNumber;
       feeAmount0: BigNumber;
       feeAmount1: BigNumber;
-      settled: boolean;
     }
   >;
 
@@ -376,6 +432,28 @@ export class ILens extends BaseContract {
     }
   >;
 
+  getUnderlyingAmounts(
+    info: {
+      owner: string;
+      token0: string;
+      token1: string;
+      tierId: BigNumberish;
+      tickLower: BigNumberish;
+      tickUpper: BigNumberish;
+    },
+    position: {
+      liquidityD8: BigNumberish;
+      feeGrowthInside0Last: BigNumberish;
+      feeGrowthInside1Last: BigNumberish;
+      limitOrderType: BigNumberish;
+      settlementSnapshotId: BigNumberish;
+    },
+    settled: boolean,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+  >;
+
   hub(overrides?: CallOverrides): Promise<string>;
 
   isSettled(
@@ -420,9 +498,11 @@ export class ILens extends BaseContract {
           limitOrderType: number;
           settlementSnapshotId: number;
         },
+        boolean,
         BigNumber,
         BigNumber,
-        boolean
+        BigNumber,
+        BigNumber
       ] & {
         info: [string, string, string, number, number, number] & {
           owner: string;
@@ -439,9 +519,11 @@ export class ILens extends BaseContract {
           limitOrderType: number;
           settlementSnapshotId: number;
         };
+        settled: boolean;
+        amount0: BigNumber;
+        amount1: BigNumber;
         feeAmount0: BigNumber;
         feeAmount1: BigNumber;
-        settled: boolean;
       }
     >;
 
@@ -505,6 +587,28 @@ export class ILens extends BaseContract {
       }
     >;
 
+    getUnderlyingAmounts(
+      info: {
+        owner: string;
+        token0: string;
+        token1: string;
+        tierId: BigNumberish;
+        tickLower: BigNumberish;
+        tickUpper: BigNumberish;
+      },
+      position: {
+        liquidityD8: BigNumberish;
+        feeGrowthInside0Last: BigNumberish;
+        feeGrowthInside1Last: BigNumberish;
+        limitOrderType: BigNumberish;
+        settlementSnapshotId: BigNumberish;
+      },
+      settled: boolean,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
     hub(overrides?: CallOverrides): Promise<string>;
 
     isSettled(
@@ -561,6 +665,26 @@ export class ILens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getUnderlyingAmounts(
+      info: {
+        owner: string;
+        token0: string;
+        token1: string;
+        tierId: BigNumberish;
+        tickLower: BigNumberish;
+        tickUpper: BigNumberish;
+      },
+      position: {
+        liquidityD8: BigNumberish;
+        feeGrowthInside0Last: BigNumberish;
+        feeGrowthInside1Last: BigNumberish;
+        limitOrderType: BigNumberish;
+        settlementSnapshotId: BigNumberish;
+      },
+      settled: boolean,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     hub(overrides?: CallOverrides): Promise<BigNumber>;
 
     isSettled(
@@ -612,6 +736,26 @@ export class ILens extends BaseContract {
 
     getPosition(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnderlyingAmounts(
+      info: {
+        owner: string;
+        token0: string;
+        token1: string;
+        tierId: BigNumberish;
+        tickLower: BigNumberish;
+        tickUpper: BigNumberish;
+      },
+      position: {
+        liquidityD8: BigNumberish;
+        feeGrowthInside0Last: BigNumberish;
+        feeGrowthInside1Last: BigNumberish;
+        limitOrderType: BigNumberish;
+        settlementSnapshotId: BigNumberish;
+      },
+      settled: boolean,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

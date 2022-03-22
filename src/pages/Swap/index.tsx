@@ -12,8 +12,10 @@ import { AutoRouterLogo } from 'components/swap/RouterLabel'
 import SwapRoute from 'components/swap/SwapRoute'
 import TradePrice from 'components/swap/TradePrice'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
+import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
 import { MouseoverTooltip, MouseoverTooltipContent } from 'components/Tooltip'
 import useENS from 'hooks/useENS'
+import useToggle from 'hooks/useToggle'
 import JSBI from 'jsbi'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { ArrowDown, CheckCircle, HelpCircle, Info } from 'react-feather'
@@ -125,6 +127,7 @@ export default function Swap({ history }: RouteComponentProps) {
     (isExactIn ? currencyOut : currencyIn) ?? undefined
   )
   const slippageTolerance = useSwapSlippageTolerance(trade ?? undefined)
+  const [storeInInternalAccount, toggleStoreInInternalAccount] = useToggle(true)
 
   /*=====================================================================
    *                       INPUT ERROR MESSAGE
@@ -404,6 +407,7 @@ export default function Swap({ history }: RouteComponentProps) {
     trade ?? undefined,
     slippageTolerance,
     recipient,
+    storeInInternalAccount,
     signatureData
   )
 
@@ -596,7 +600,7 @@ export default function Swap({ history }: RouteComponentProps) {
                   {approvalState === ApprovalState.APPROVED || signatureState === UseERC20PermitState.SIGNED ? (
                     <Trans>You can now trade {currencies[Field.INPUT]?.symbol}</Trans>
                   ) : (
-                    <Trans>Allow the Uniswap Protocol to use your {currencies[Field.INPUT]?.symbol}</Trans>
+                    <Trans>Allow the Muffin Protocol to use your {currencies[Field.INPUT]?.symbol}</Trans>
                   )}
                 </span>
                 {approvalState === ApprovalState.PENDING ? (
@@ -709,6 +713,7 @@ export default function Swap({ history }: RouteComponentProps) {
             attemptingTxn={attemptingTxn}
             txHash={txHash}
             recipient={recipient}
+            toInternalAccount={storeInInternalAccount}
             allowedSlippage={slippageTolerance}
             onConfirm={handleSwap}
             swapErrorMessage={swapErrorMessage}
@@ -732,6 +737,12 @@ export default function Swap({ history }: RouteComponentProps) {
               </>
             ) : null}
 
+            <TokenDestinationToggleRow
+              padding="0.25rem"
+              toInternalAccount={storeInInternalAccount}
+              questionHelperContent={<Trans>Choose the destination of the swapped token.</Trans>}
+              onToggle={toggleStoreInInternalAccount}
+            />
             {makeAdvancedDetails()}
             {makeButton()}
           </AutoColumn>

@@ -5,7 +5,6 @@ import { useContext, useState } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components/macro'
-
 import { useUSDCValue } from '../../hooks/useUSDCPrice'
 import { ThemedText } from '../../theme'
 import { isAddress, shortenAddress } from '../../utils'
@@ -43,12 +42,14 @@ export default function SwapModalHeader({
   allowedSlippage,
   recipient,
   showAcceptChanges,
+  toInternalAccount,
   onAcceptChanges,
 }: {
   trade: Trade<Currency, Currency, TradeType>
   allowedSlippage: Percent
   recipient: string | null
   showAcceptChanges: boolean
+  toInternalAccount: boolean
   onAcceptChanges: () => void
 }) {
   const theme = useContext(ThemeContext)
@@ -118,6 +119,16 @@ export default function SwapModalHeader({
           </RowBetween>
         </AutoColumn>
       </LightCard>
+
+      <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
+        <ThemedText.Body color={theme.text2} fontWeight={500} fontSize={14}>
+          <Trans>Store token into</Trans>
+        </ThemedText.Body>
+        <Text color={theme.text1} fontWeight={500} fontSize={14}>
+          {toInternalAccount ? <Trans>Internal Account</Trans> : <Trans>Wallet</Trans>}
+        </Text>
+      </RowBetween>
+
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <ThemedText.Body color={theme.text2} fontWeight={500} fontSize={14}>
           <Trans>Price</Trans>

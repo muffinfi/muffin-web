@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { ReactNode, useCallback, useMemo } from 'react'
-
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
@@ -35,6 +34,7 @@ export default function ConfirmSwapModal({
   onConfirm,
   onDismiss,
   recipient,
+  toInternalAccount,
   swapErrorMessage,
   isOpen,
   attemptingTxn,
@@ -46,6 +46,7 @@ export default function ConfirmSwapModal({
   attemptingTxn: boolean
   txHash: string | undefined
   recipient: string | null
+  toInternalAccount: boolean
   allowedSlippage: Percent
   onAcceptChanges: () => void
   onConfirm: () => void
@@ -64,10 +65,11 @@ export default function ConfirmSwapModal({
         allowedSlippage={allowedSlippage}
         recipient={recipient}
         showAcceptChanges={showAcceptChanges}
+        toInternalAccount={toInternalAccount}
         onAcceptChanges={onAcceptChanges}
       />
     ) : null
-  }, [allowedSlippage, onAcceptChanges, recipient, showAcceptChanges, trade])
+  }, [allowedSlippage, onAcceptChanges, recipient, showAcceptChanges, toInternalAccount, trade])
 
   const modalBottom = useCallback(() => {
     return trade ? (

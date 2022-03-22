@@ -302,6 +302,9 @@ export default function Header() {
           <Trans>Charts</Trans>
           <sup>↗</sup>
         </StyledExternalLink> */}
+        <StyledNavLink id={`account-nav-link`} to={'/account'}>
+          <Trans>Account</Trans>
+        </StyledNavLink>
       </HeaderLinks>
 
       <HeaderControls>

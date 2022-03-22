@@ -6,7 +6,8 @@ import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
-import { PositionManager, Tier } from '@muffinfi/muffin-v1-sdk'
+import { ADDRESS_ZERO, PositionManager, Tier } from '@muffinfi/muffin-v1-sdk'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import { ButtonConfirmed, ButtonGray, ButtonPrimary } from 'components/Button'
@@ -17,8 +18,10 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { usePricesFromPositionForUI } from 'components/PositionListItem/hooks'
 import { RowBetween, RowFixed } from 'components/Row'
 import { Dots } from 'components/swap/styleds'
+import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
 import { PoolState } from 'hooks/usePools'
+import useToggle from 'hooks/useToggle'
 import { useActiveWeb3React } from 'hooks/web3'
 import { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
@@ -300,6 +303,7 @@ export function PositionPage({
   const [collectMigrationHash, setCollectMigrationHash] = useState<string | null>(null)
   const isCollectPending = useIsTransactionPending(collectMigrationHash ?? undefined)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [storeInInternalAccount, toggleStoreInInternalAccount] = useToggle(true)
 
   // const [receiveWETH, setReceiveWETH] = useState(true)
   // const onOptimisticChain = Boolean(
@@ -338,7 +342,7 @@ export function PositionPage({
       tokenId: tokenId.toString(),
       liquidityPercentage: new Percent(0),
       slippageTolerance: new Percent(0),
-      withdrawalRecipient: account,
+      withdrawalRecipient: storeInInternalAccount ? ADDRESS_ZERO : account,
       collectAllFees: true,
     })
 
@@ -370,6 +374,7 @@ export function PositionPage({
               type: TransactionType.COLLECT_FEES,
               currencyId0: currencyId(feeAmount0.currency),
               currencyId1: currencyId(feeAmount1.currency),
+              tokenDestination: storeInInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : BalanceSource.WALLET,
             })
           })
       })
@@ -377,7 +382,18 @@ export function PositionPage({
         setCollecting(false)
         console.error(error)
       })
-  }, [chainId, feeAmount0, feeAmount1, manager, account, tokenId, addTransaction, library, position])
+  }, [
+    chainId,
+    feeAmount0,
+    feeAmount1,
+    manager,
+    account,
+    tokenId,
+    library,
+    position,
+    storeInInternalAccount,
+    addTransaction,
+  ])
 
   /*=====================================================================
    *                          REACT COMPONENT
@@ -693,6 +709,11 @@ export function PositionPage({
           </RowBetween>
         </AutoColumn>
       </LightCard>
+      <TokenDestinationToggleRow
+        toInternalAccount={storeInInternalAccount}
+        questionHelperContent={<Trans>Choose the destination of the collected fee.</Trans>}
+        onToggle={toggleStoreInInternalAccount}
+      />
       <ThemedText.Italic>
         <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
       </ThemedText.Italic>

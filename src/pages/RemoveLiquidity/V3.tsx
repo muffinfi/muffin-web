@@ -4,6 +4,7 @@ import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
@@ -15,11 +16,15 @@ import { Break } from 'components/earn/styled'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Loader'
 import { AddRemoveTabs } from 'components/NavigationTabs'
+import QuestionHelper from 'components/QuestionHelper'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
+import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
+import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTheme from 'hooks/useTheme'
+import useToggle from 'hooks/useToggle'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useActiveWeb3React } from 'hooks/web3'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
@@ -38,8 +43,6 @@ import { currencyId } from '../../utils/currencyId'
 import AppBody from '../AppBody'
 import { ResponsiveHeaderText, SmallMaxButton, Wrapper } from './styled'
 
-const DEFAULT_WITHDRAW = true // TODO:
-const DEFAULT_COLLECT_ALL_FEES = false // TODO:
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
 export default function RemoveLiquidityV3({ location, match: { params } }: RouteComponentProps<{ tokenId: string }>) {
@@ -98,11 +101,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   }, [liquidityPercent, position, _wantedCurrency0, _wantedCurrency1])
 
   /*=====================================================================
-   *                           FEE AMOUNTS
+   *                 FEE AMOUNTS AND TOKEN DESTINATION
    *====================================================================*/
 
-  // TODO: add checkbox to toggle fee collection flag
-  const [collectAllFees] = useState(DEFAULT_COLLECT_ALL_FEES)
+  const [storeInInternalAccount, toggleStoreInInternalAccount] = useToggle(true)
+  const [collectAllFees, toggleCollectAllFees] = useToggle(false)
 
   // wrap fee amount into CurrencyAmount
   const [feeAmount0, feeAmount1] = useMemo(() => {
@@ -199,7 +202,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       tokenId: tokenId.toString(),
       liquidityPercentage: liquidityPercent,
       slippageTolerance,
-      withdrawalRecipient: DEFAULT_WITHDRAW ? account : ADDRESS_ZERO,
+      withdrawalRecipient: storeInInternalAccount ? ADDRESS_ZERO : account,
       collectAllFees,
     })
 
@@ -217,6 +220,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         sqrtGamma: position.poolTier.sqrtGamma,
         expectedAmountBaseRaw: partialAmount0.quotient.toString(),
         expectedAmountQuoteRaw: partialAmount1.quotient.toString(),
+        tokenDestination: storeInInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : BalanceSource.WALLET,
       })
       setTxHash(response.hash)
 
@@ -242,6 +246,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     partialAmount1,
     tokenId,
     slippageTolerance,
+    storeInInternalAccount,
     collectAllFees,
     addTransaction,
   ])
@@ -308,6 +313,31 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         {feeAmount0?.greaterThan(0) || feeAmount1?.greaterThan(0) ? (
           <>
             <Break />
+            <RowBetween>
+              <RowFixed>
+                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
+                  <Trans>Fees Collection</Trans>
+                </ThemedText.Black>
+                <QuestionHelper
+                  text={<Trans>Choose to collect all/partial of fee when removing partial liquidity.</Trans>}
+                />
+              </RowFixed>
+              <RowFixed>
+                <div
+                  style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
+                  onClick={toggleCollectAllFees}
+                >
+                  <ToggleWrapper width="fit-content">
+                    <ToggleElement isActive={collectAllFees} fontSize="12px">
+                      <Trans>All</Trans>
+                    </ToggleElement>
+                    <ToggleElement isActive={!collectAllFees} fontSize="12px">
+                      <Trans>Partial</Trans>
+                    </ToggleElement>
+                  </ToggleWrapper>
+                </div>
+              </RowFixed>
+            </RowBetween>
             <RowBetween>
               <Text fontSize={16} fontWeight={500}>
                 <Trans>{feeAmount0?.currency?.symbol} Fees Earned:</Trans>
@@ -388,6 +418,14 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={feeAmount1?.currency} />
             </RowFixed>
           </RowBetween>
+          <RowBetween>
+            <Text fontSize={16} fontWeight={500}>
+              <Trans>Store tokens into:</Trans>
+            </Text>
+            <Text fontSize={16} fontWeight={500}>
+              {storeInInternalAccount ? <Trans>Internal Account</Trans> : <Trans>Wallet</Trans>}
+            </Text>
+          </RowBetween>
         </>
       ) : null}
       <ButtonPrimary mt="16px" onClick={burn}>
@@ -443,6 +481,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               </RowBetween>
               {makeSliderCard()}
               {makePartialLiquidityDataCard()}
+
+              <TokenDestinationToggleRow
+                toInternalAccount={storeInInternalAccount}
+                questionHelperContent={<Trans>Choose the destination of the removed tokens and fee.</Trans>}
+                onToggle={toggleStoreInInternalAccount}
+              />
 
               {showCollectAsWeth && (
                 <RowBetween>

@@ -14,6 +14,7 @@
     }
   },
   "ignorePatterns": [
+    "src/@muffinfi/typechain",
     "src/types/v3",
     "src/abis/types",
     "src/locales/**/*.js",
@@ -41,7 +42,10 @@
     "prettier/@typescript-eslint",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["simple-import-sort", "unused-imports"],
+  "plugins": [
+    "simple-import-sort",
+    "unused-imports"
+  ],
   "rules": {
     "unused-imports/no-unused-imports": "warn",
     "simple-import-sort/imports": "off",
@@ -53,7 +57,10 @@
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "react/react-in-jsx-scope": "off",
-    "object-shorthand": ["error", "always"],
+    "object-shorthand": [
+      "error",
+      "always"
+    ],
     "no-restricted-imports": [
       "error",
       {
@@ -72,17 +79,23 @@
           },
           {
             "name": "@lingui/macro",
-            "importNames": ["t"],
+            "importNames": [
+              "t"
+            ],
             "message": "Please use <Trans> instead of t."
           }
         ],
         "patterns": [
           {
-            "group": ["**/dist"],
+            "group": [
+              "**/dist"
+            ],
             "message": "Do not import from dist/ - this is an implementation detail, and breaks tree-shaking."
           },
           {
-            "group": ["!styled-components/macro"]
+            "group": [
+              "!styled-components/macro"
+            ]
           }
         ]
       }

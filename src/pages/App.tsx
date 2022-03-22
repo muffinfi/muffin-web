@@ -5,7 +5,6 @@ import { Suspense } from 'react'
 import { Route, Switch } from 'react-router-dom'
 // import { Redirect, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components/macro'
-
 import GoogleAnalyticsReporter from '../components/analytics/GoogleAnalyticsReporter'
 import AddressClaimModal from '../components/claim/AddressClaimModal'
 import ErrorBoundary from '../components/ErrorBoundary'
@@ -16,6 +15,7 @@ import Web3ReactManager from '../components/Web3ReactManager'
 import { useModalOpen, useToggleModal } from '../state/application/hooks'
 import { ApplicationModal } from '../state/application/reducer'
 import DarkModeQueryParamReader from '../theme/DarkModeQueryParamReader'
+import Account from './Account'
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 // import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
@@ -29,7 +29,6 @@ import { PositionPage } from './Pool/PositionPage'
 // import PoolFinder from './PoolFinder'
 // import RemoveLiquidity from './RemoveLiquidity'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
-
 import Swap from './Swap'
 // import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
@@ -120,6 +119,8 @@ export default function App() {
 
                 {/* <Route exact strict path="/migrate/v2" component={MigrateV2} />
                 <Route exact strict path="/migrate/v2/:address" component={MigrateV2Pair} /> */}
+
+                <Route exact strict path="/account" component={Account} />
 
                 <Route component={RedirectPathToSwapOnly} />
               </Switch>

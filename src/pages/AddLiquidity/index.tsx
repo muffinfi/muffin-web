@@ -21,6 +21,8 @@ import {
   Tier,
   ZERO,
 } from '@muffinfi/muffin-v1-sdk'
+import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { ButtonError, ButtonLight, ButtonPrimary, ButtonText, ButtonYellow } from 'components/Button'
 import { BlueCard, OutlineCard, YellowCard } from 'components/Card'
@@ -61,7 +63,7 @@ import { tryParseAmount } from 'state/swap/hooks'
 import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from 'state/user/hooks'
-import { useCurrencyBalances } from 'state/wallet/hooks'
+import { useCurrencyBalances, useTokenBalance } from 'state/wallet/hooks'
 import { ThemeContext } from 'styled-components/macro'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -85,9 +87,6 @@ import {
 } from './styled'
 
 const ZERO_PERCENT = new Percent('0')
-
-// TODO: support internal account
-const DEFAULT_USE_ACCOUNT = false
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
@@ -578,21 +577,39 @@ export default function AddLiquidity({
    *                    ADD LIQUIDITY CHAIN ACTION
    *====================================================================*/
 
+  const tryUseInternalAccount = useIsUsingInternalAccount()
   const manager = useManagerContract()
   const deadline = useTransactionDeadline() // NOTE: not using currently
   const slippageTolerance = useUserSlippageToleranceWithDefault(
     isOutOfRange ? ZERO_PERCENT : DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE
   )
   const addTransaction = useTransactionAdder()
+  const internalAmountA = useTokenBalance(
+    account ?? undefined,
+    tokenA,
+    tryUseInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : 0
+  )
+  const internalAmountB = useTokenBalance(
+    account ?? undefined,
+    tokenB,
+    tryUseInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : 0
+  )
+  const useAccount = useMemo(
+    () =>
+      (tryUseInternalAccount &&
+        ((!depositADisabled && internalAmountA?.greaterThan(0)) ||
+          (!depositBDisabled && internalAmountB?.greaterThan(0)))) ??
+      false,
+    [tryUseInternalAccount, depositADisabled, internalAmountA, depositBDisabled, internalAmountB]
+  )
 
   /**
    * NOTE:
-   * - does not support internal account
    * - does not use SelfPermit to approve
    * - does not support deadline
    * - creating pool reduce position's received liquidity. UI not reminding user atm
    */
-  const onAdd = async () => {
+  const onAdd = useCallback(async () => {
     if (!chainId || !library || !account) return
     if (!baseCurrency || !quoteCurrency || !manager || !position || !deadline) return
 
@@ -600,7 +617,7 @@ export default function AddLiquidity({
 
     const { calldata, value } = PositionManager.addCallParameters(position, {
       ...(hasExistingPosition && tokenId ? { tokenId } : { recipient: account, createPool: noLiquidity }),
-      useAccount: DEFAULT_USE_ACCOUNT,
+      useAccount,
       slippageTolerance,
       useNative,
     })
@@ -646,7 +663,25 @@ export default function AddLiquidity({
       setIsAttemptingTxn(false)
       console.error('Failed to send transaction', error)
     }
-  }
+  }, [
+    account,
+    addTransaction,
+    argentWalletContract,
+    baseCurrency,
+    chainId,
+    currencies,
+    deadline,
+    hasExistingPosition,
+    library,
+    manager,
+    noLiquidity,
+    parsedAmounts,
+    position,
+    quoteCurrency,
+    slippageTolerance,
+    tokenId,
+    useAccount,
+  ])
 
   /*=====================================================================
    *                          REACT COMPONENTS

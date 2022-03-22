@@ -1,3 +1,4 @@
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { createAction } from '@reduxjs/toolkit'
 import { TradeType } from '@uniswap/sdk-core'
 
@@ -37,6 +38,8 @@ export enum TransactionType {
   //
   ADD_LIQUIDITY_MUFFIN = 15,
   REMOVE_LIQUIDITY_MUFFIN = 16,
+  DEPOSIT_INTERNAL_ACCOUNT = 17,
+  WITHDRAW_INTERNAL_ACCOUNT = 18,
 }
 
 export interface BaseTransactionInfo {
@@ -141,6 +144,7 @@ export interface CollectFeesTransactionInfo {
   type: TransactionType.COLLECT_FEES
   currencyId0: string
   currencyId1: string
+  tokenDestination: BalanceSource
 }
 
 export interface RemoveLiquidityV3TransactionInfo {
@@ -175,6 +179,21 @@ export interface RemoveLiquidityMuffinTransactionInfo {
   sqrtGamma: number
   expectedAmountBaseRaw: string
   expectedAmountQuoteRaw: string
+  tokenDestination: BalanceSource
+}
+
+////////////////////////////////////////////////////////////
+
+export interface DepositInternalAccountTransactionInfo {
+  type: TransactionType.DEPOSIT_INTERNAL_ACCOUNT
+  tokenAddress: string
+  amount: string
+}
+
+export interface WithdrawInternalAccountTransactionInfo {
+  type: TransactionType.WITHDRAW_INTERNAL_ACCOUNT
+  tokenAddress: string
+  amount: string
 }
 
 ////////////////////////////////////////////////////////////
@@ -198,6 +217,8 @@ export type TransactionInfo =
   | SubmitProposalTransactionInfo
   | AddLiquidityMuffinTransactionInfo
   | RemoveLiquidityMuffinTransactionInfo
+  | DepositInternalAccountTransactionInfo
+  | WithdrawInternalAccountTransactionInfo
 
 export const addTransaction = createAction<{
   chainId: number

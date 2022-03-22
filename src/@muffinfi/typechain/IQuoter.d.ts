@@ -20,10 +20,14 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IQuoterInterface extends ethers.utils.Interface {
   functions: {
+    "hub()": FunctionFragment;
     "quote(bytes,int256)": FunctionFragment;
     "quoteSingle(address,address,uint256,int256)": FunctionFragment;
+    "simulate(bytes,int256)": FunctionFragment;
+    "simulateSingle(address,address,uint256,int256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "hub", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "quote",
     values: [BytesLike, BigNumberish]
@@ -32,10 +36,24 @@ interface IQuoterInterface extends ethers.utils.Interface {
     functionFragment: "quoteSingle",
     values: [string, string, BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "simulate",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "simulateSingle",
+    values: [string, string, BigNumberish, BigNumberish]
+  ): string;
 
+  decodeFunctionResult(functionFragment: "hub", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "quote", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "quoteSingle",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "simulate", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "simulateSingle",
     data: BytesLike
   ): Result;
 
@@ -86,6 +104,8 @@ export class IQuoter extends BaseContract {
   interface: IQuoterInterface;
 
   functions: {
+    hub(overrides?: CallOverrides): Promise<[string]>;
+
     quote(
       path: BytesLike,
       amountDesired: BigNumberish,
@@ -111,7 +131,63 @@ export class IQuoter extends BaseContract {
         gasUsed: BigNumber;
       }
     >;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[]
+      ] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[];
+      }
+    >;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        }
+      ] & {
+        hop: [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        };
+      }
+    >;
   };
+
+  hub(overrides?: CallOverrides): Promise<string>;
 
   quote(
     path: BytesLike,
@@ -139,7 +215,53 @@ export class IQuoter extends BaseContract {
     }
   >;
 
+  simulate(
+    path: BytesLike,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      BigNumber,
+      BigNumber,
+      ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      })[]
+    ] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      })[];
+    }
+  >;
+
+  simulateSingle(
+    tokenIn: string,
+    tokenOut: string,
+    tierChoices: BigNumberish,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      protocolFeeAmt: BigNumber;
+      tierAmountsIn: BigNumber[];
+      tierData: BigNumber[];
+    }
+  >;
+
   callStatic: {
+    hub(overrides?: CallOverrides): Promise<string>;
+
     quote(
       path: BytesLike,
       amountDesired: BigNumberish,
@@ -165,11 +287,57 @@ export class IQuoter extends BaseContract {
         gasUsed: BigNumber;
       }
     >;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[]
+      ] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[];
+      }
+    >;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      }
+    >;
   };
 
   filters: {};
 
   estimateGas: {
+    hub(overrides?: CallOverrides): Promise<BigNumber>;
+
     quote(
       path: BytesLike,
       amountDesired: BigNumberish,
@@ -177,6 +345,20 @@ export class IQuoter extends BaseContract {
     ): Promise<BigNumber>;
 
     quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    simulateSingle(
       tokenIn: string,
       tokenOut: string,
       tierChoices: BigNumberish,
@@ -186,6 +368,8 @@ export class IQuoter extends BaseContract {
   };
 
   populateTransaction: {
+    hub(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     quote(
       path: BytesLike,
       amountDesired: BigNumberish,
@@ -193,6 +377,20 @@ export class IQuoter extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    simulateSingle(
       tokenIn: string,
       tokenOut: string,
       tierChoices: BigNumberish,

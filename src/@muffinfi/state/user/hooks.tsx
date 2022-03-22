@@ -2,13 +2,13 @@ import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { updateUserInternalAccountMode } from './actions'
 
-export function useIsUseInternalAccount(): boolean {
+export function useIsUsingInternalAccount(): boolean {
   return useAppSelector((state) => state.user.userInternalAccountMode)
 }
 
 export function useInternalAccountModeManager(): [boolean, () => void] {
   const dispatch = useAppDispatch()
-  const isUsingInternalAccount = useIsUseInternalAccount()
+  const isUsingInternalAccount = useIsUsingInternalAccount()
 
   const toggle = useCallback(() => {
     dispatch(updateUserInternalAccountMode({ userInternalAccountMode: !isUsingInternalAccount }))

@@ -1,6 +1,7 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-v1-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
+import ms from 'ms.macro'
 import { useMemo } from 'react'
 import { usePositionTokenIdsQuery } from 'state/data/enhanced'
 import { PositionTokenIdsQuery } from 'state/data/generated'
@@ -83,12 +84,17 @@ export function useMuffinPositionDetailFromTokenId(tokenId: BigNumberish | undef
 }
 
 export function useMuffinPositionTokenIds(account: string | null | undefined) {
-  const { isLoading, data } = usePositionTokenIdsQuery(account ? { owner: account, skip: 0 } : skipToken)
+  const { isLoading, data } = usePositionTokenIdsQuery(account ? { owner: account, skip: 0 } : skipToken, {
+    pollingInterval: ms`30s`,
+  })
 
-  return {
-    isLoading,
-    tokenIds: data ? (data as PositionTokenIdsQuery).positions.map((position) => position.tokenId) : undefined,
-  }
+  return useMemo(
+    () => ({
+      isLoading,
+      tokenIds: data ? (data as PositionTokenIdsQuery).positions.map((position) => position.tokenId) : undefined,
+    }),
+    [isLoading, data]
+  )
 }
 
 export function useMuffinPositionDetails(account: string | null | undefined) {

@@ -353,18 +353,19 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
-    "Burn(bytes32,address,uint256,uint8,int24,int24,uint96,uint256,uint256,uint256,uint256)": EventFragment;
+    "Burn(bytes32,address,uint256,uint8,int24,int24,uint256,uint96,uint256,uint256,uint256,uint256)": EventFragment;
     "CollectProtocol(address,address,uint256)": EventFragment;
-    "CollectSettled(bytes32,address,uint256,uint8,int24,int24,uint96,uint256,uint256,uint256,uint256)": EventFragment;
-    "Deposit(address,uint256,address,uint256)": EventFragment;
+    "CollectSettled(bytes32,address,uint256,uint8,int24,int24,uint256,uint96,uint256,uint256,uint256,uint256)": EventFragment;
+    "Deposit(address,uint256,address,uint256,address)": EventFragment;
     "GovernanceUpdated(address)": EventFragment;
-    "Mint(bytes32,address,uint256,uint8,int24,int24,uint96,uint256,uint256)": EventFragment;
-    "PoolCreated(address,address)": EventFragment;
+    "Mint(bytes32,address,uint256,uint8,int24,int24,address,uint256,uint96,uint256,uint256)": EventFragment;
+    "PoolCreated(address,address,bytes32)": EventFragment;
     "SetLimitOrderType(bytes32,address,uint256,uint8,int24,int24,uint8)": EventFragment;
-    "Swap(bytes32,address,address,int256,int256,uint256,uint256[])": EventFragment;
+    "Swap(bytes32,address,address,uint256,uint256,int256,int256,uint256,uint256[])": EventFragment;
+    "UpdateDefaultParameters(uint8,uint8)": EventFragment;
     "UpdatePool(bytes32,uint8,uint8)": EventFragment;
     "UpdateTier(bytes32,uint8,uint24,uint8)": EventFragment;
-    "Withdraw(address,uint256,address,uint256)": EventFragment;
+    "Withdraw(address,uint256,address,uint256,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Burn"): EventFragment;
@@ -376,6 +377,7 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "PoolCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetLimitOrderType"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Swap"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateDefaultParameters"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UpdatePool"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UpdateTier"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
@@ -1179,7 +1181,7 @@ export class IMuffinHubCombined extends BaseContract {
       token: string,
       recipient: string,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     collectSettled(
       params: {
@@ -1210,7 +1212,7 @@ export class IMuffinHubCombined extends BaseContract {
       sqrtPrice: BigNumberish,
       senderAccRefId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
 
     deposit(
       recipient: string,
@@ -1519,6 +1521,7 @@ export class IMuffinHubCombined extends BaseContract {
       tierId?: null,
       tickLower?: null,
       tickUpper?: null,
+      ownerAccRefId?: null,
       liquidityD8?: null,
       amount0?: null,
       amount1?: null,
@@ -1536,6 +1539,7 @@ export class IMuffinHubCombined extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         BigNumber
       ],
       {
@@ -1545,6 +1549,7 @@ export class IMuffinHubCombined extends BaseContract {
         tierId: number;
         tickLower: number;
         tickUpper: number;
+        ownerAccRefId: BigNumber;
         liquidityD8: BigNumber;
         amount0: BigNumber;
         amount1: BigNumber;
@@ -1569,6 +1574,7 @@ export class IMuffinHubCombined extends BaseContract {
       tierId?: null,
       tickLower?: null,
       tickUpper?: null,
+      ownerAccRefId?: null,
       liquidityD8?: null,
       amount0?: null,
       amount1?: null,
@@ -1586,6 +1592,7 @@ export class IMuffinHubCombined extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         BigNumber
       ],
       {
@@ -1595,6 +1602,7 @@ export class IMuffinHubCombined extends BaseContract {
         tierId: number;
         tickLower: number;
         tickUpper: number;
+        ownerAccRefId: BigNumber;
         liquidityD8: BigNumber;
         amount0: BigNumber;
         amount1: BigNumber;
@@ -1607,19 +1615,21 @@ export class IMuffinHubCombined extends BaseContract {
       recipient?: string | null,
       recipientAccRefId?: BigNumberish | null,
       token?: string | null,
-      amount?: null
+      amount?: null,
+      sender?: null
     ): TypedEventFilter<
-      [string, BigNumber, string, BigNumber],
+      [string, BigNumber, string, BigNumber, string],
       {
         recipient: string;
         recipientAccRefId: BigNumber;
         token: string;
         amount: BigNumber;
+        sender: string;
       }
     >;
 
     GovernanceUpdated(
-      governance?: null
+      governance?: string | null
     ): TypedEventFilter<[string], { governance: string }>;
 
     Mint(
@@ -1629,6 +1639,8 @@ export class IMuffinHubCombined extends BaseContract {
       tierId?: null,
       tickLower?: null,
       tickUpper?: null,
+      sender?: null,
+      senderAccRefId?: null,
       liquidityD8?: null,
       amount0?: null,
       amount1?: null
@@ -1640,6 +1652,8 @@ export class IMuffinHubCombined extends BaseContract {
         number,
         number,
         number,
+        string,
+        BigNumber,
         BigNumber,
         BigNumber,
         BigNumber
@@ -1651,6 +1665,8 @@ export class IMuffinHubCombined extends BaseContract {
         tierId: number;
         tickLower: number;
         tickUpper: number;
+        sender: string;
+        senderAccRefId: BigNumber;
         liquidityD8: BigNumber;
         amount0: BigNumber;
         amount1: BigNumber;
@@ -1659,8 +1675,12 @@ export class IMuffinHubCombined extends BaseContract {
 
     PoolCreated(
       token0?: string | null,
-      token1?: string | null
-    ): TypedEventFilter<[string, string], { token0: string; token1: string }>;
+      token1?: string | null,
+      poolId?: BytesLike | null
+    ): TypedEventFilter<
+      [string, string, string],
+      { token0: string; token1: string; poolId: string }
+    >;
 
     SetLimitOrderType(
       poolId?: BytesLike | null,
@@ -1687,21 +1707,43 @@ export class IMuffinHubCombined extends BaseContract {
       poolId?: BytesLike | null,
       sender?: string | null,
       recipient?: string | null,
+      senderAccRefId?: null,
+      recipientAccRefId?: null,
       amount0?: null,
       amount1?: null,
       amountInDistribution?: null,
       tierData?: null
     ): TypedEventFilter<
-      [string, string, string, BigNumber, BigNumber, BigNumber, BigNumber[]],
+      [
+        string,
+        string,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber[]
+      ],
       {
         poolId: string;
         sender: string;
         recipient: string;
+        senderAccRefId: BigNumber;
+        recipientAccRefId: BigNumber;
         amount0: BigNumber;
         amount1: BigNumber;
         amountInDistribution: BigNumber;
         tierData: BigNumber[];
       }
+    >;
+
+    UpdateDefaultParameters(
+      tickSpacing?: null,
+      protocolFee?: null
+    ): TypedEventFilter<
+      [number, number],
+      { tickSpacing: number; protocolFee: number }
     >;
 
     UpdatePool(
@@ -1729,17 +1771,19 @@ export class IMuffinHubCombined extends BaseContract {
     >;
 
     Withdraw(
-      recipient?: string | null,
+      sender?: string | null,
       senderAccRefId?: BigNumberish | null,
       token?: string | null,
-      amount?: null
+      amount?: null,
+      recipient?: null
     ): TypedEventFilter<
-      [string, BigNumber, string, BigNumber],
+      [string, BigNumber, string, BigNumber, string],
       {
-        recipient: string;
+        sender: string;
         senderAccRefId: BigNumber;
         token: string;
         amount: BigNumber;
+        recipient: string;
       }
     >;
   };

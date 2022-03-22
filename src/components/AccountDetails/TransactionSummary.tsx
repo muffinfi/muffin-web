@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import { useCurrency, useToken } from '../../hooks/Tokens'
@@ -13,6 +14,7 @@ import {
   CollectFeesTransactionInfo,
   CreateV3PoolTransactionInfo,
   DelegateTransactionInfo,
+  DepositInternalAccountTransactionInfo,
   DepositLiquidityStakingTransactionInfo,
   ExactInputSwapTransactionInfo,
   ExactOutputSwapTransactionInfo,
@@ -22,6 +24,7 @@ import {
   SubmitProposalTransactionInfo,
   TransactionInfo,
   TransactionType,
+  WithdrawInternalAccountTransactionInfo,
   // VoteTransactionInfo,
   WithdrawLiquidityStakingTransactionInfo,
   WrapTransactionInfo,
@@ -67,6 +70,10 @@ function FormattedCurrencyAmountManaged({
       symbol={currency.symbol ?? '???'}
     />
   ) : null
+}
+
+function FormattedBalanceSource({ source }: { source: BalanceSource }) {
+  return <>{source === BalanceSource.INTERNAL_ACCOUNT ? 'internal account' : 'wallet'}</>
 }
 
 function ClaimSummary({ info: { recipient, uniAmountRaw } }: { info: ClaimTransactionInfo }) {
@@ -184,13 +191,17 @@ function CreateV3PoolSummary({ info: { quoteCurrencyId, baseCurrencyId } }: { in
   )
 }
 
-function CollectFeesSummary({ info: { currencyId0, currencyId1 } }: { info: CollectFeesTransactionInfo }) {
+function CollectFeesSummary({
+  info: { currencyId0, currencyId1, tokenDestination },
+}: {
+  info: CollectFeesTransactionInfo
+}) {
   const currency0 = useCurrency(currencyId0)
   const currency1 = useCurrency(currencyId1)
 
   return (
     <Trans>
-      Collect {currency0?.symbol}/{currency1?.symbol} fees
+      Collect {currency0?.symbol}/{currency1?.symbol} fees into <FormattedBalanceSource source={tokenDestination} />
     </Trans>
   )
 }
@@ -302,7 +313,7 @@ function AddLiquidityMuffinSummary({
 }
 
 function RemoveLiquidityMuffinSummary({
-  info: { baseCurrencyId, quoteCurrencyId, expectedAmountBaseRaw, expectedAmountQuoteRaw },
+  info: { baseCurrencyId, quoteCurrencyId, expectedAmountBaseRaw, expectedAmountQuoteRaw, tokenDestination },
 }: {
   info: RemoveLiquidityMuffinTransactionInfo
 }) {
@@ -310,14 +321,50 @@ function RemoveLiquidityMuffinSummary({
     <Trans>
       Remove{' '}
       <FormattedCurrencyAmountManaged rawAmount={expectedAmountBaseRaw} currencyId={baseCurrencyId} sigFigs={3} /> and{' '}
-      <FormattedCurrencyAmountManaged rawAmount={expectedAmountQuoteRaw} currencyId={quoteCurrencyId} sigFigs={3} />
+      <FormattedCurrencyAmountManaged rawAmount={expectedAmountQuoteRaw} currencyId={quoteCurrencyId} sigFigs={3} /> to{' '}
+      <FormattedBalanceSource source={tokenDestination} />
     </Trans>
   )
 }
+
+/////////////////////////////////////////////////////////
+
+function DepositInternalAccountSummary({
+  info: { amount, tokenAddress },
+}: {
+  info: DepositInternalAccountTransactionInfo
+}) {
+  return (
+    <Trans>
+      Deposit <FormattedCurrencyAmountManaged rawAmount={amount} currencyId={tokenAddress} sigFigs={3} /> into internal
+      account
+    </Trans>
+  )
+}
+
+function WithdrawInternalAccountSummary({
+  info: { amount, tokenAddress },
+}: {
+  info: WithdrawInternalAccountTransactionInfo
+}) {
+  return (
+    <Trans>
+      Withdraw <FormattedCurrencyAmountManaged rawAmount={amount} currencyId={tokenAddress} sigFigs={3} /> from internal
+      account
+    </Trans>
+  )
+}
+
 /////////////////////////////////////////////////////////
 
 export function TransactionSummary({ info }: { info: TransactionInfo }) {
   switch (info.type) {
+    case TransactionType.DEPOSIT_INTERNAL_ACCOUNT:
+      return <DepositInternalAccountSummary info={info} />
+
+    case TransactionType.WITHDRAW_INTERNAL_ACCOUNT:
+      return <WithdrawInternalAccountSummary info={info} />
+
     case TransactionType.ADD_LIQUIDITY_MUFFIN:
       return <AddLiquidityMuffinSummary info={info} />
 
