@@ -4,6 +4,7 @@ import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
+import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -22,11 +23,12 @@ import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
 import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTheme from 'hooks/useTheme'
 import useToggle from 'hooks/useToggle'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useActiveWeb3React } from 'hooks/web3'
+import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Redirect, RouteComponentProps } from 'react-router-dom'
@@ -37,6 +39,7 @@ import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { ThemedText } from 'theme'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
+import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import { TransactionType } from '../../state/transactions/actions'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { currencyId } from '../../utils/currencyId'
@@ -79,9 +82,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   // flag for receiving WETH (default collect as WETH)
   const [receiveWETH, setReceiveWETH] = useState(true)
-  const showCollectAsWeth = false // Boolean(currency0 && currency1 && (currency0.isNative || currency1.isNative))
   const _wantedCurrency0 = receiveWETH ? token0 : currency0
   const _wantedCurrency1 = receiveWETH ? token1 : currency1
+  // flag for receiving WETH
+  const nativeCurrency = useNativeCurrency()
+  const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
   /*=====================================================================
    *                   AMOUNTS FROM BURNED LIQUIDITY
@@ -104,7 +109,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
    *                 FEE AMOUNTS AND TOKEN DESTINATION
    *====================================================================*/
 
-  const [storeInInternalAccount, toggleStoreInInternalAccount] = useToggle(true)
+  const [storeInInternalAccount, toggleStoreInInternalAccount] = useUserStoreIntoInternalAccount()
   const [collectAllFees, toggleCollectAllFees] = useToggle(false)
 
   // wrap fee amount into CurrencyAmount
@@ -434,6 +439,15 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     </AutoColumn>
   )
 
+  const showCollectAsWeth = Boolean(
+    _wantedCurrency0 &&
+      _wantedCurrency1 &&
+      (_wantedCurrency0.isNative ||
+        _wantedCurrency1.isNative ||
+        WRAPPED_NATIVE_CURRENCY[_wantedCurrency0.chainId]?.equals(_wantedCurrency0.wrapped) ||
+        WRAPPED_NATIVE_CURRENCY[_wantedCurrency1.chainId]?.equals(_wantedCurrency1.wrapped))
+  )
+
   const makeTransactionModal = () => (
     <TransactionConfirmationModal
       isOpen={showConfirm}
@@ -491,7 +505,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               {showCollectAsWeth && (
                 <RowBetween>
                   <ThemedText.Main>
-                    <Trans>Collect as WETH</Trans>
+                    <Trans>Collect as {nativeWrappedSymbol}</Trans>
                   </ThemedText.Main>
                   <Toggle
                     id="receive-as-weth"

@@ -1,30 +1,15 @@
 import { Trans } from '@lingui/macro'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { ReactNode, useCallback, useMemo } from 'react'
+import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
 } from '../TransactionConfirmationModal'
 import SwapModalFooter from './SwapModalFooter'
 import SwapModalHeader from './SwapModalHeader'
-
-/**
- * Returns true if the trade requires a confirmation of details before we can submit it
- * @param args either a pair of V2 trades or a pair of V3 trades
- */
-function tradeMeaningfullyDiffers(
-  tradeA: Trade<Currency, Currency, TradeType>,
-  tradeB: Trade<Currency, Currency, TradeType>
-): boolean {
-  return (
-    tradeA.tradeType !== tradeB.tradeType ||
-    !tradeA.inputAmount.currency.equals(tradeB.inputAmount.currency) ||
-    !tradeA.inputAmount.equalTo(tradeB.inputAmount) ||
-    !tradeA.outputAmount.currency.equals(tradeB.outputAmount.currency) ||
-    !tradeA.outputAmount.equalTo(tradeB.outputAmount)
-  )
-}
 
 export default function ConfirmSwapModal({
   trade,
@@ -41,7 +26,7 @@ export default function ConfirmSwapModal({
   txHash,
 }: {
   isOpen: boolean
-  trade: Trade<Currency, Currency, TradeType> | undefined
+  trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
   originalTrade: Trade<Currency, Currency, TradeType> | undefined
   attemptingTxn: boolean
   txHash: string | undefined

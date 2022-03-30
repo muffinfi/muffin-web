@@ -1,6 +1,7 @@
+import { getAddress } from '@ethersproject/address'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { Token } from '@uniswap/sdk-core'
-import { useActiveWeb3React } from 'hooks/web3'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemo } from 'react'
 import { useAccountTokensQuery } from 'state/data/enhanced'
 import { AccountTokensQuery } from 'state/data/generated'
@@ -13,14 +14,13 @@ export function useAccountTokens(account: string | null | undefined) {
     if (!data || !chainId) {
       return { isLoading, tokens: undefined }
     }
-    const tokens = (data as AccountTokensQuery).accountTokenBalances.reduce<{ [address: string]: Token }>(
-      (memo, { token }) => {
-        const tokenObj = new Token(chainId, token.id, parseInt(token.decimals), token.symbol, token.name)
-        memo[tokenObj.address] = tokenObj
-        return memo
-      },
-      {}
-    )
-    return { isLoading, tokens }
+    const balances = (data as AccountTokensQuery).accountTokenBalances
+    const tokens = balances.reduce<{ [address: string]: Token }>((memo, { token }) => {
+      const tokenObj = new Token(chainId, token.id, parseInt(token.decimals), token.symbol, token.name)
+      memo[tokenObj.address] = tokenObj
+      return memo
+    }, {})
+    const order = balances.map(({ token }) => getAddress(token.id))
+    return { isLoading, tokens, order }
   }, [chainId, data, isLoading])
 }

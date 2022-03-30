@@ -12,30 +12,24 @@ export function useMuffinTierDistribution(pool: Pool | undefined): {
   largestTierId: number
   distributions: PercentagesByTierId
 } {
-  const tiers = useMemo(() => pool?.tiers || [], [pool])
-
   const data = useMemo(() => {
+    const tiers = pool?.tiers || []
     let totalLiq = JSBI.BigInt(0)
     for (const tier of tiers) totalLiq = JSBI.add(totalLiq, tier.liquidity)
 
-    let largestTier = tiers[0]
-    for (const tier of tiers.slice(1)) {
-      if (JSBI.greaterThan(tier.liquidity, largestTier.liquidity)) largestTier = tier
-    }
+    let largestTierId = 0
 
     const distributions: PercentagesByTierId = {}
     const hasLiquidity = JSBI.greaterThan(totalLiq, JSBI.BigInt(0))
     for (const [i, tier] of tiers.entries()) {
+      if (JSBI.greaterThan(tier.liquidity, tiers[largestTierId].liquidity)) largestTierId = i
       distributions[i] = hasLiquidity
         ? JSBI.toNumber(JSBI.divide(JSBI.multiply(tier.liquidity, JSBI.BigInt('10000')), totalLiq)) / 100
         : undefined
     }
 
-    return { largestTier, distributions }
-  }, [tiers])
+    return { largestTierId, distributions }
+  }, [pool?.tiers])
 
-  return {
-    largestTierId: tiers.indexOf(data.largestTier),
-    distributions: data.distributions,
-  }
+  return data
 }

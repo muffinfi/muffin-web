@@ -1,9 +1,9 @@
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
-import { DAI, USDC, USDT, WBTC, WETH9_EXTENDED } from '../../constants/tokens'
+import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 
-const STABLES_MAINNET = [DAI, USDC, USDT]
+const STABLES_MAINNET = [DAI, USDC_MAINNET, USDT]
 
 /**
  * Get the upper and lower tick prices of the position
@@ -44,8 +44,8 @@ export function usePricesFromPositionForUI(
     }
 
     // if token1 is an ETH-/BTC-stable asset, set it as the base token
-    const bases = [...Object.values(WETH9_EXTENDED), WBTC]
-    if (bases.some((base) => base.equals(token1))) {
+    const bases = [...Object.values(WRAPPED_NATIVE_CURRENCY), WBTC]
+    if (bases.some((base) => base?.equals(token1))) {
       return {
         priceLower: priceUpper.invert(),
         priceUpper: priceLower.invert(),

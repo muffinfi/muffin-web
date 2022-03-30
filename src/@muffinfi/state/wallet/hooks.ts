@@ -5,8 +5,8 @@ import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import ERC20ABI from 'abis/erc20.json'
 import { Erc20Interface } from 'abis/types/Erc20'
 import JSBI from 'jsbi'
+import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
-import { useMultipleContractSingleData, useSingleContractMultipleData } from 'state/multicall/hooks'
 import { isAddress } from 'utils'
 
 const ERC20Interface = new Interface(ERC20ABI) as Erc20Interface

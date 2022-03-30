@@ -1,11 +1,11 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-v1-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
+import { CallStateResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import ms from 'ms.macro'
 import { useMemo } from 'react'
 import { usePositionTokenIdsQuery } from 'state/data/enhanced'
 import { PositionTokenIdsQuery } from 'state/data/generated'
-import { CallStateResult, useSingleContractMultipleData } from 'state/multicall/hooks'
 import { useLensContract } from './useContract'
 
 export interface MuffinPositionDetail {

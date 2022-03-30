@@ -24,51 +24,52 @@ import {
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
-import { ButtonError, ButtonLight, ButtonPrimary, ButtonText, ButtonYellow } from 'components/Button'
-import { BlueCard, OutlineCard, YellowCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
-import CurrencyInputPanel from 'components/CurrencyInputPanel'
-import DowntimeWarning from 'components/DowntimeWarning'
-import HoverInlineText from 'components/HoverInlineText'
-import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
-import { AddRemoveTabs } from 'components/NavigationTabs'
-import { PositionPreview } from 'components/PositionPreview'
-import RangeSelector from 'components/RangeSelector'
-import PresetsButtons from 'components/RangeSelector/PresetsButtons'
-import RateToggle from 'components/RateToggle'
-import Row, { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
-import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import TierSelector from 'components/TierSelector'
-import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
-import { WETH9_EXTENDED } from 'constants/tokens'
-import { useCurrency } from 'hooks/Tokens'
-import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
-import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
-import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useUSDCValue } from 'hooks/useUSDCPrice'
-import { useActiveWeb3React } from 'hooks/web3'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { Dots } from 'pages/Pool/styleds'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
 import { Text } from 'rebass'
-import { useWalletModalToggle } from 'state/application/hooks'
-import { Bound, Field } from 'state/mint/v3/actions'
 import { useRangeHopCallbacks, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { tryParseTick } from 'state/mint/v3/utils'
 import { tryParseAmount } from 'state/swap/hooks'
-import { TransactionType } from 'state/transactions/actions'
-import { useTransactionAdder } from 'state/transactions/hooks'
-import { useIsExpertMode, useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useCurrencyBalances, useTokenBalance } from 'state/wallet/hooks'
 import { ThemeContext } from 'styled-components/macro'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { ButtonError, ButtonLight, ButtonPrimary, ButtonText, ButtonYellow } from '../../components/Button'
+import { BlueCard, OutlineCard, YellowCard } from '../../components/Card'
+import { AutoColumn } from '../../components/Column'
+import CurrencyInputPanel from '../../components/CurrencyInputPanel'
+import DowntimeWarning from '../../components/DowntimeWarning'
+import HoverInlineText from '../../components/HoverInlineText'
+import LiquidityChartRangeInput from '../../components/LiquidityChartRangeInput'
+import { AddRemoveTabs } from '../../components/NavigationTabs'
+import { PositionPreview } from '../../components/PositionPreview'
+import RangeSelector from '../../components/RangeSelector'
+import PresetsButtons from '../../components/RangeSelector/PresetsButtons'
+import RateToggle from '../../components/RateToggle'
+import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
+import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
+import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
+import { ZERO_PERCENT } from '../../constants/misc'
+import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
+import { useCurrency } from '../../hooks/Tokens'
+import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
+import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
+import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
+import useTransactionDeadline from '../../hooks/useTransactionDeadline'
+import { useUSDCValue } from '../../hooks/useUSDCPrice'
+import { useWalletModalToggle } from '../../state/application/hooks'
+import { Bound, Field } from '../../state/mint/v3/actions'
+import { TransactionType } from '../../state/transactions/actions'
+import { useTransactionAdder } from '../../state/transactions/hooks'
+import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
 import { ExternalLink, ThemedText } from '../../theme'
 import { Review } from './Review'
 import {
@@ -85,8 +86,6 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
-
-const ZERO_PERCENT = new Percent('0')
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
@@ -501,10 +500,12 @@ export default function AddLiquidity({
       } else {
         // prevent weth + eth
         const isETHOrWETHNew =
-          currencyIdNew === 'ETH' || (chainId !== undefined && currencyIdNew === WETH9_EXTENDED[chainId]?.address)
+          currencyIdNew === 'ETH' ||
+          (chainId !== undefined && currencyIdNew === WRAPPED_NATIVE_CURRENCY[chainId]?.address)
         const isETHOrWETHOther =
           currencyIdOther !== undefined &&
-          (currencyIdOther === 'ETH' || (chainId !== undefined && currencyIdOther === WETH9_EXTENDED[chainId]?.address))
+          (currencyIdOther === 'ETH' ||
+            (chainId !== undefined && currencyIdOther === WRAPPED_NATIVE_CURRENCY[chainId]?.address))
 
         if (isETHOrWETHNew && isETHOrWETHOther) {
           return [currencyIdNew, undefined]

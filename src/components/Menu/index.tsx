@@ -2,7 +2,7 @@
 import { t, Trans } from '@lingui/macro'
 import { PrivacyPolicyModal } from 'components/PrivacyPolicy'
 // import { L2_CHAIN_IDS } from 'constants/chains'
-import { LOCALE_LABEL, SUPPORTED_LOCALES, SupportedLocale } from 'constants/locales'
+import { LOCALE_LABEL, SupportedLocale, SUPPORTED_LOCALES } from 'constants/locales'
 import { useActiveLocale } from 'hooks/useActiveLocale'
 import { useLocationLinkProps } from 'hooks/useLocationLinkProps'
 import React, { useEffect, useRef, useState } from 'react'
@@ -16,19 +16,16 @@ import {
   // HelpCircle,
   Info,
   MessageCircle,
-  // Moon,
-  // Sun,
 } from 'react-feather'
 import { Link } from 'react-router-dom'
 // import { useDarkModeManager } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
-
 import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
-// import { useActiveWeb3React } from '../../hooks/web3'
 import { useModalOpen, useToggleModal } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { ExternalLink } from '../../theme'
+
 // import { ButtonPrimary } from '../Button'
 
 export enum FlyoutAlignment {
@@ -49,12 +46,11 @@ const StyledMenuButton = styled.button`
   background-color: transparent;
   margin: 0;
   padding: 0;
-  height: 38px;
+  height: 40px;
   background-color: ${({ theme }) => theme.bg0};
   border: 1px solid ${({ theme }) => theme.bg0};
-
   padding: 0.15rem 0.5rem;
-  border-radius: 12px;
+  border-radius: 16px;
 
   :hover,
   :focus {

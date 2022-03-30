@@ -1,17 +1,17 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { splitSignature } from '@ethersproject/bytes'
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
-import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useMemo, useState } from 'react'
-import { DAI, UNI, USDC } from '../constants/tokens'
-import { useSingleCallResult } from '../state/multicall/hooks'
+import { DAI, UNI, USDC_MAINNET } from '../constants/tokens'
 import { useEIP2612Contract } from './useContract'
 import useIsArgentWallet from './useIsArgentWallet'
-import useTransactionDeadline from './useTransactionDeadline'
-import { useActiveWeb3React } from './web3'
 
-enum PermitType {
+export enum PermitType {
   AMOUNT = 1,
   ALLOWED = 2,
 }
@@ -19,7 +19,7 @@ enum PermitType {
 // 20 minutes to submit after signing
 const PERMIT_VALIDITY_BUFFER = 20 * 60
 
-interface PermitInfo {
+export interface PermitInfo {
   type: PermitType
   name: string
   // version is optional, and if omitted, will not be included in the domain
@@ -33,7 +33,7 @@ const PERMITTABLE_TOKENS: {
   }
 } = {
   1: {
-    [USDC.address]: { type: PermitType.AMOUNT, name: 'USD Coin', version: '2' },
+    [USDC_MAINNET.address]: { type: PermitType.AMOUNT, name: 'USD Coin', version: '2' },
     [DAI.address]: { type: PermitType.ALLOWED, name: 'Dai Stablecoin', version: '1' },
     [UNI[1].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
   },
@@ -113,9 +113,10 @@ const PERMIT_ALLOWED_TYPE = [
   { name: 'allowed', type: 'bool' },
 ]
 
-function useERC20Permit(
+export function useERC20Permit(
   currencyAmount: CurrencyAmount<Currency> | null | undefined,
   spender: string | null | undefined,
+  transactionDeadline: BigNumber | undefined,
   overridePermitInfo: PermitInfo | undefined | null
 ): {
   signatureData: SignatureData | null
@@ -123,7 +124,6 @@ function useERC20Permit(
   gatherPermitSignature: null | (() => Promise<void>)
 } {
   const { account, chainId, library } = useActiveWeb3React()
-  const transactionDeadline = useTransactionDeadline()
   const tokenAddress = currencyAmount?.currency?.isToken ? currencyAmount.currency.address : undefined
 
   const eip2612Contract = useEIP2612Contract(tokenAddress)
@@ -260,28 +260,17 @@ function useERC20Permit(
   ])
 }
 
-const REMOVE_V2_LIQUIDITY_PERMIT_INFO: PermitInfo = {
-  version: '1',
-  name: 'Uniswap V2',
-  type: PermitType.AMOUNT,
-}
-
-export function useV2LiquidityTokenPermit(
-  liquidityAmount: CurrencyAmount<Token> | null | undefined,
-  spender: string | null | undefined
-) {
-  return useERC20Permit(liquidityAmount, spender, REMOVE_V2_LIQUIDITY_PERMIT_INFO)
-}
-
 export function useERC20PermitFromTrade(
   trade: Trade<Currency, Currency, TradeType> | undefined,
-  allowedSlippage: Percent
+  allowedSlippage: Percent,
+  transactionDeadline: BigNumber | undefined
 ) {
   const { chainId } = useActiveWeb3React()
-  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const managerAddress = trade && chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
   const amountToApprove = useMemo(
     () => (trade ? trade.maximumAmountIn(allowedSlippage) : undefined),
     [trade, allowedSlippage]
   )
-  return useERC20Permit(amountToApprove, trade ? managerAddress : undefined, null)
+
+  return useERC20Permit(amountToApprove, managerAddress, transactionDeadline, null)
 }

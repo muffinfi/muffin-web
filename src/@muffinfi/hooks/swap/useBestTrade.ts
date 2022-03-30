@@ -1,8 +1,8 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import useDebounce from 'hooks/useDebounce'
 import { useMemo } from 'react'
-import { V3TradeState } from 'state/routing/types'
+import { TradeState } from 'state/routing/types'
 import { useClientSideMuffinTrade } from './useClientSideTrade'
 
 /**
@@ -16,8 +16,8 @@ export function useBestMuffinTrade(
   amountSpecified?: CurrencyAmount<Currency>,
   otherCurrency?: Currency
 ): {
-  state: V3TradeState
-  trade: Trade<Currency, Currency, typeof tradeType> | null
+  state: TradeState
+  trade: InterfaceTrade<Currency, Currency, typeof tradeType> | undefined
 } {
   const [debouncedAmount, debouncedOtherCurrency] = useDebounce(
     useMemo(() => [amountSpecified, otherCurrency], [amountSpecified, otherCurrency]),
@@ -40,9 +40,9 @@ export function useBestMuffinTrade(
   const isLoading = amountSpecified !== undefined && debouncedAmount === undefined
 
   if (isLoading) {
-    return { ...result, state: V3TradeState.LOADING }
+    return { ...result, state: TradeState.LOADING }
   } else if (debouncing) {
-    return { ...result, state: V3TradeState.SYNCING }
+    return { ...result, state: TradeState.SYNCING }
   } else {
     return { ...result }
   }

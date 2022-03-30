@@ -2,17 +2,14 @@
 import { t, Trans } from '@lingui/macro'
 import { useInternalAccountModeManager } from '@muffinfi/state/user/hooks'
 import { Percent } from '@uniswap/sdk-core'
-import { SupportedChainId } from 'constants/chains'
-import { useActiveWeb3React } from 'hooks/web3'
 import { useContext, useRef, useState } from 'react'
 import { Settings, X } from 'react-feather'
-import ReactGA from 'react-ga'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components/macro'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalOpen, useToggleSettingsMenu } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
-import { useClientSideRouter, useExpertModeManager } from '../../state/user/hooks'
+import { useExpertModeManager } from '../../state/user/hooks'
 import { ThemedText } from '../../theme'
 import { ButtonError } from '../Button'
 import { AutoColumn } from '../Column'
@@ -27,7 +24,7 @@ const StyledMenuIcon = styled(Settings)`
   width: 20px;
 
   > * {
-    stroke: ${({ theme }) => theme.text2};
+    stroke: ${({ theme }) => theme.text1};
   }
 
   :hover {
@@ -125,7 +122,7 @@ export default function SettingsTab({
   placeholderSlippage: Percent
   noDeadline?: boolean
 }) {
-  const { chainId } = useActiveWeb3React()
+  // const { chainId } = useActiveWeb3React()
 
   const node = useRef<HTMLDivElement>()
   const open = useModalOpen(ApplicationModal.SETTINGS)
@@ -136,7 +133,7 @@ export default function SettingsTab({
   const [expertMode, toggleExpertMode] = useExpertModeManager()
   const [internalAccountMode, toggleInternalAccountMode] = useInternalAccountModeManager()
 
-  const [clientSideRouter, setClientSideRouter] = useClientSideRouter()
+  // const [clientSideRouter, setClientSideRouter] = useClientSideRouter()
 
   // show confirmation view before turning on
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -222,16 +219,13 @@ export default function SettingsTab({
             <Text fontWeight={600} fontSize={14}>
               <Trans>Interface Settings</Trans>
             </Text>
-
-            {chainId === SupportedChainId.MAINNET && (
+            {/* {chainId && AUTO_ROUTER_SUPPORTED_CHAINS.includes(chainId) && (
               <RowBetween>
                 <RowFixed>
                   <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                    <Trans>Auto Router</Trans>
+                    <Trans>Auto Router API</Trans>
                   </ThemedText.Black>
-                  <QuestionHelper
-                    text={<Trans>Use the Uniswap Labs API to get better pricing through a more efficient route.</Trans>}
-                  />
+                  <QuestionHelper text={<Trans>Use the Uniswap Labs API to get faster quotes.</Trans>} />
                 </RowFixed>
                 <Toggle
                   id="toggle-optimized-router-button"
@@ -245,8 +239,7 @@ export default function SettingsTab({
                   }}
                 />
               </RowBetween>
-            )}
-
+            )} */}
             <RowBetween>
               <RowFixed>
                 <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>

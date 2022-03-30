@@ -2,12 +2,12 @@ import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import { L2_CHAIN_IDS } from 'constants/chains'
 import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
-import { useActiveWeb3React } from 'hooks/web3'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useContext, useState } from 'react'
 import { useSetUserSlippageTolerance, useUserSlippageTolerance, useUserTransactionTTL } from 'state/user/hooks'
 import styled, { ThemeContext } from 'styled-components/macro'
-
 import { ThemedText } from '../../theme'
 import { AutoColumn } from '../Column'
 import QuestionHelper from '../QuestionHelper'
@@ -94,6 +94,8 @@ interface TransactionSettingsProps {
   noDeadline: boolean | undefined
 }
 
+const THREE_DAYS_IN_SECONDS = ms`3 days` / 1000
+
 export default function TransactionSettings({ placeholderSlippage, noDeadline }: TransactionSettingsProps) {
   const { chainId } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
@@ -143,7 +145,7 @@ export default function TransactionSettings({ placeholderSlippage, noDeadline }:
     } else {
       try {
         const parsed: number = Math.floor(Number.parseFloat(value) * 60)
-        if (!Number.isInteger(parsed) || parsed < 60 || parsed > 180 * 60) {
+        if (!Number.isInteger(parsed) || parsed < 60 || parsed > THREE_DAYS_IN_SECONDS) {
           setDeadlineError(DeadlineError.InvalidInput)
         } else {
           setDeadline(parsed)

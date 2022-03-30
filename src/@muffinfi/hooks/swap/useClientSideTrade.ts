@@ -1,11 +1,12 @@
-import { Route, SwapQuoter, Trade } from '@muffinfi/muffin-v1-sdk'
+import { Route, SwapQuoter } from '@muffinfi/muffin-v1-sdk'
+import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { SupportedChainId } from 'constants/chains'
-import { useActiveWeb3React } from 'hooks/web3'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
+import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
-import { useSingleContractWithCallData } from 'state/multicall/hooks'
-import { V3TradeState } from 'state/routing/types'
+import { TradeState } from 'state/routing/types'
 import { useQuoterContract } from '../useContract'
 import { useAllMuffinRoutes } from './useAllRoutes'
 
@@ -30,8 +31,8 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
   amountSpecified: CurrencyAmount<Currency> | undefined,
   otherCurrency: Currency | undefined
 ): {
-  state: V3TradeState
-  trade: Trade<Currency, Currency, TTradeType> | null
+  state: TradeState
+  trade: InterfaceTrade<Currency, Currency, TTradeType> | undefined
 } {
   const [currencyIn, currencyOut] = useMemo(
     () =>
@@ -57,6 +58,10 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
   const _quotesResults = useSingleContractWithCallData(useQuoterContract(), calldatas, { gasRequired })
   const quotesResults = _quotesResults.length > 0 ? _quotesResults : _EMPTY_CALLSTATES
 
+  // const gasPrice = useGasPrice()
+  // const nativeCurrency = useNativeCurrency()
+  // const nativeCurrencyPrice = useUSDCPrice(nativeCurrency)
+
   return useMemo(() => {
     if (
       !amountSpecified ||
@@ -66,15 +71,15 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
       amountSpecified.currency.equals(tradeType === TradeType.EXACT_INPUT ? currencyOut : currencyIn) // skip when tokens are the same
     ) {
       return {
-        state: V3TradeState.INVALID,
-        trade: null,
+        state: TradeState.INVALID,
+        trade: undefined,
       }
     }
 
     if (!routes || routesLoading || quotesResults.some(({ loading }) => loading)) {
       return {
-        state: V3TradeState.LOADING,
-        trade: null,
+        state: TradeState.LOADING,
+        trade: undefined,
       }
     }
 
@@ -92,6 +97,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
               bestRoute: routes[i],
               amountIn: amountSpecified,
               amountOut,
+              // gasUsed,
             }
           }
         } else {
@@ -100,6 +106,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
               bestRoute: routes[i],
               amountIn,
               amountOut: amountSpecified,
+              // gasUsed,
             }
           }
         }
@@ -110,27 +117,40 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
         bestRoute: null,
         amountIn: null,
         amountOut: null,
+        gasUsed: null,
       } as {
         bestRoute: Route<Currency, Currency> | null
         amountIn: CurrencyAmount<Currency> | null
         amountOut: CurrencyAmount<Currency> | null
+        // gasUsed: BigNumber | null
       }
     )
 
     if (!bestRoute || !amountIn || !amountOut) {
       return {
-        state: V3TradeState.NO_ROUTE_FOUND,
-        trade: null,
+        state: TradeState.NO_ROUTE_FOUND,
+        trade: undefined,
       }
     }
 
+    // const gasCost = gasPrice && gasUsed ? JSBI.multiply(gasPrice, JSBI.BigInt(gasUsed.toString())) : undefined
+    // const gasUseEstimateUSD =
+    //   nativeCurrency && gasCost && nativeCurrencyPrice
+    //     ? nativeCurrencyPrice.quote(CurrencyAmount.fromRawAmount(nativeCurrency, gasCost))
+    //     : undefined
+
     return {
-      state: V3TradeState.VALID,
-      trade: Trade.createUncheckedTrade({
-        route: bestRoute,
+      state: TradeState.VALID,
+      trade: new InterfaceTrade({
+        gasUseEstimateUSD: undefined,
+        routes: [
+          {
+            route: bestRoute,
+            inputAmount: amountIn,
+            outputAmount: amountOut,
+          },
+        ],
         tradeType,
-        inputAmount: amountIn,
-        outputAmount: amountOut,
       }),
     }
   }, [amountSpecified, currencyIn, currencyOut, quotesResults, routes, routesLoading, tradeType])

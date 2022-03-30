@@ -7,6 +7,7 @@ import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
 import { ADDRESS_ZERO, PositionManager, Tier } from '@muffinfi/muffin-v1-sdk'
+import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
@@ -20,9 +21,8 @@ import { RowBetween, RowFixed } from 'components/Row'
 import { Dots } from 'components/swap/styleds'
 import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { PoolState } from 'hooks/usePools'
-import useToggle from 'hooks/useToggle'
-import { useActiveWeb3React } from 'hooks/web3'
 import { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Link, RouteComponentProps } from 'react-router-dom'
@@ -303,9 +303,12 @@ export function PositionPage({
   const [collectMigrationHash, setCollectMigrationHash] = useState<string | null>(null)
   const isCollectPending = useIsTransactionPending(collectMigrationHash ?? undefined)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [storeInInternalAccount, toggleStoreInInternalAccount] = useToggle(true)
+  const [storeInInternalAccount, toggleStoreInInternalAccount] = useUserStoreIntoInternalAccount()
 
+  // flag for receiving WETH
   // const [receiveWETH, setReceiveWETH] = useState(true)
+  // const nativeCurrency = useNativeCurrency()
+  // const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
   // const onOptimisticChain = Boolean(
   //   chainId && [SupportedChainId.OPTIMISM, SupportedChainId.OPTIMISTIC_KOVAN].includes(chainId)
   // )
@@ -466,7 +469,7 @@ export function PositionPage({
   )
 
   const makeLiquidityValueCard = () => (
-    <DarkCard style={{ marginRight: 12 }}>
+    <DarkCard>
       <AutoColumn gap="md" style={{ width: '100%' }}>
         <AutoColumn gap="md">
           <Label>
@@ -592,20 +595,20 @@ export function PositionPage({
             </RowBetween>
           </AutoColumn>
         </LightCard>
-        {/* {showCollectAsWeth && (
-          <AutoColumn gap="md">
-            <RowBetween>
-              <ThemedText.Main>
-                <Trans>Collect as WETH</Trans>
-              </ThemedText.Main>
-              <Toggle
-                id="receive-as-weth"
-                isActive={receiveWETH}
-                toggle={() => setReceiveWETH((receiveWETH) => !receiveWETH)}
-              />
-            </RowBetween>
-          </AutoColumn>
-        )} */}
+        {/* showCollectAsWeth && (
+      <AutoColumn gap="md">
+        <RowBetween>
+          <ThemedText.Main>
+            <Trans>Collect as {nativeWrappedSymbol}</Trans>
+          </ThemedText.Main>
+          <Toggle
+            id="receive-as-weth"
+            isActive={receiveWETH}
+            toggle={() => setReceiveWETH((receiveWETH) => !receiveWETH)}
+          />
+        </RowBetween>
+      </AutoColumn>
+    ) */}
       </AutoColumn>
     </DarkCard>
   )
@@ -753,6 +756,43 @@ export function PositionPage({
           <ResponsiveRow align="flex-start">
             {makeLiquidityValueCard()}
             {makeFeeValueCard()}
+            {/* {'result' in metadata ? (
+              <DarkCard
+                width="100%"
+                height="100%"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  justifyContent: 'space-around',
+                  marginRight: '12px',
+                }}
+              >
+                <div style={{ marginRight: 12 }}>
+                  <NFT image={metadata.result.image} height={400} />
+                </div>
+                {typeof chainId === 'number' && owner && !ownsNFT ? (
+                  <ExternalLink href={getExplorerLink(chainId, owner, ExplorerDataType.ADDRESS)}>
+                    <Trans>Owner</Trans>
+                  </ExternalLink>
+                ) : null}
+              </DarkCard>
+            ) : (
+              <DarkCard
+                width="100%"
+                height="100%"
+                style={{
+                  marginRight: '12px',
+                  minWidth: '340px',
+                }}
+              >
+                <Loader />
+              </DarkCard>
+            )} */}
+            {/* <AutoColumn gap="sm" style={{ width: '100%', height: '100%' }}>
+
+
+            </AutoColumn> */}
           </ResponsiveRow>
           {makePriceRangeCard()}
         </AutoColumn>

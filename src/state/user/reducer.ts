@@ -1,4 +1,8 @@
-import { updateUserInternalAccountMode } from '@muffinfi/state/user/actions'
+import {
+  updateShowZeroBalanceTokens,
+  updateUserInternalAccountMode,
+  updateUserStoreIntoInternalAccount,
+} from '@muffinfi/state/user/actions'
 import { createReducer } from '@reduxjs/toolkit'
 import { SupportedLocale } from 'constants/locales'
 import { DEFAULT_DEADLINE_FROM_NOW } from '../../constants/misc'
@@ -10,10 +14,10 @@ import {
   removeSerializedToken,
   SerializedPair,
   SerializedToken,
-  updateArbitrumAlphaAcknowledged,
   updateHideClosedPositions,
   updateMatchesDarkMode,
-  updateOptimismAlphaAcknowledged,
+  updateShowDonationLink,
+  updateShowSurveyPopup,
   updateUserClientSideRouter,
   updateUserDarkMode,
   updateUserDeadline,
@@ -25,24 +29,24 @@ import {
 const currentTimestamp = () => new Date().getTime()
 
 export interface UserState {
-  arbitrumAlphaAcknowledged: boolean
-
   // the timestamp of the last updateVersion action
   lastUpdateVersionTimestamp?: number
 
   matchesDarkMode: boolean // whether the dark mode media query matches
-  optimismAlphaAcknowledged: boolean
 
   userDarkMode: boolean | null // the user's choice for dark mode or light mode
   userLocale: SupportedLocale | null
 
   userExpertMode: boolean
   userInternalAccountMode: boolean
+  userStoreIntoInternalAccount: boolean
 
   userClientSideRouter: boolean // whether routes should be calculated with the client side router only
 
   // hides closed (inactive) positions across the app
   userHideClosedPositions: boolean
+  // shows zero internal balance tokens across the app
+  userShowZeroBalanceTokens: boolean
 
   // user defined slippage tolerance in bips, used in all txns
   userSlippageTolerance: number | 'auto'
@@ -66,6 +70,11 @@ export interface UserState {
 
   timestamp: number
   URLWarningVisible: boolean
+
+  // undefined means has not gone through A/B split yet
+  showSurveyPopup: boolean | undefined
+
+  showDonationLink: boolean
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -73,15 +82,15 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
-  arbitrumAlphaAcknowledged: false,
   matchesDarkMode: false,
-  optimismAlphaAcknowledged: false,
   userDarkMode: null,
   userExpertMode: false,
   userInternalAccountMode: true,
+  userStoreIntoInternalAccount: true,
   userLocale: null,
   userClientSideRouter: false,
   userHideClosedPositions: false,
+  userShowZeroBalanceTokens: false,
   userSlippageTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
@@ -89,6 +98,8 @@ export const initialState: UserState = {
   pairs: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
+  showSurveyPopup: undefined,
+  showDonationLink: true,
 }
 
 export default createReducer(initialState, (builder) =>
@@ -134,18 +145,16 @@ export default createReducer(initialState, (builder) =>
       state.matchesDarkMode = action.payload.matchesDarkMode
       state.timestamp = currentTimestamp()
     })
-    .addCase(updateArbitrumAlphaAcknowledged, (state, action) => {
-      state.arbitrumAlphaAcknowledged = action.payload.arbitrumAlphaAcknowledged
-    })
-    .addCase(updateOptimismAlphaAcknowledged, (state, action) => {
-      state.optimismAlphaAcknowledged = action.payload.optimismAlphaAcknowledged
-    })
     .addCase(updateUserExpertMode, (state, action) => {
       state.userExpertMode = action.payload.userExpertMode
       state.timestamp = currentTimestamp()
     })
     .addCase(updateUserInternalAccountMode, (state, action) => {
       state.userInternalAccountMode = action.payload.userInternalAccountMode
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserStoreIntoInternalAccount, (state, action) => {
+      state.userStoreIntoInternalAccount = action.payload.userStoreIntoInternalAccount
       state.timestamp = currentTimestamp()
     })
     .addCase(updateUserLocale, (state, action) => {
@@ -165,6 +174,15 @@ export default createReducer(initialState, (builder) =>
     })
     .addCase(updateHideClosedPositions, (state, action) => {
       state.userHideClosedPositions = action.payload.userHideClosedPositions
+    })
+    .addCase(updateShowZeroBalanceTokens, (state, action) => {
+      state.userShowZeroBalanceTokens = action.payload.userShowZeroBalanceTokens
+    })
+    .addCase(updateShowSurveyPopup, (state, action) => {
+      state.showSurveyPopup = action.payload.showSurveyPopup
+    })
+    .addCase(updateShowDonationLink, (state, action) => {
+      state.showDonationLink = action.payload.showDonationLink
     })
     .addCase(addSerializedToken, (state, { payload: { serializedToken } }) => {
       if (!state.tokens) {

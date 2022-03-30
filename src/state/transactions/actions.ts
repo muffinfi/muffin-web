@@ -101,6 +101,7 @@ export interface WrapTransactionInfo {
   type: TransactionType.WRAP
   unwrapped: boolean
   currencyAmountRaw: string
+  chainId?: number
 }
 
 export interface ClaimTransactionInfo {

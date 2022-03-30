@@ -2,9 +2,9 @@ import { Pool } from '@muffinfi/muffin-v1-sdk'
 import { CallState } from '@uniswap/redux-multicall'
 import { Currency } from '@uniswap/sdk-core'
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils'
-import { useActiveWeb3React } from 'hooks/web3'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useSingleContractMultipleData, useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo, useRef } from 'react'
-import { useSingleContractMultipleData, useSingleContractWithCallData } from 'state/multicall/hooks'
 import { useHubContract } from './useContract'
 
 export enum PoolState {

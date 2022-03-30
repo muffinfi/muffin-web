@@ -1,3 +1,4 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { t, Trans } from '@lingui/macro' // eslint-disable-line no-restricted-imports
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
@@ -5,11 +6,10 @@ import { SwapManager, Trade } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import useENS from 'hooks/useENS'
 import { SignatureData } from 'hooks/useERC20Permit'
-import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useActiveWeb3React } from 'hooks/web3'
 import { ReactNode, useMemo } from 'react'
 import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -45,6 +45,21 @@ interface FailedCall extends SwapCallEstimate {
   error: Error
 }
 
+interface SwapCallbackArgs {
+  trade: Trade<Currency, Currency, TradeType> | undefined // trade to execute, required
+  allowedSlippage: Percent // in bips
+  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  toInternalAccount: boolean
+  signatureData: SignatureData | undefined | null
+  deadline?: BigNumber
+}
+
+interface SwapCallbackReturn {
+  state: SwapCallbackState
+  callback: null | (() => Promise<TransactionResponse>)
+  error: ReactNode | null
+}
+
 /**
  * Returns the swap calls that can be used to make the trade
  * @param trade trade to execute
@@ -57,13 +72,13 @@ function useSwapCallArguments(
   allowedSlippage: Percent, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   toAccount: boolean,
+  deadline: BigNumber | undefined,
   signatureData: SignatureData | null | undefined
 ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
-  const deadline = useTransactionDeadline()
   const argentWalletContract = useArgentWalletContract()
   const tryInternalAccount = useIsUsingInternalAccount()
 
@@ -206,13 +221,14 @@ function swapErrorToUserReadableMessage(error: any): ReactNode {
 
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
-export function useSwapCallback(
-  trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
-  allowedSlippage: Percent, // in bips
-  recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-  toInternalAccount: boolean,
-  signatureData: SignatureData | undefined | null
-): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
+export function useSwapCallback({
+  trade,
+  allowedSlippage,
+  recipientAddressOrName,
+  toInternalAccount,
+  deadline,
+  signatureData,
+}: SwapCallbackArgs): SwapCallbackReturn {
   const { account, chainId, library } = useActiveWeb3React()
 
   const swapCalls = useSwapCallArguments(
@@ -220,6 +236,7 @@ export function useSwapCallback(
     allowedSlippage,
     recipientAddressOrName,
     toInternalAccount,
+    deadline,
     signatureData
   )
 
@@ -242,7 +259,7 @@ export function useSwapCallback(
 
     return {
       state: SwapCallbackState.VALID,
-      callback: async function onSwap(): Promise<string> {
+      callback: async function onSwap(): Promise<TransactionResponse> {
         const estimatedCalls: SwapCallEstimate[] = await Promise.all(
           swapCalls.map((call) => {
             const { address, calldata, value } = call
@@ -338,7 +355,7 @@ export function useSwapCallback(
                   }
             )
 
-            return response.hash
+            return response
           })
           .catch((error) => {
             // if the user rejected the tx, pass this along

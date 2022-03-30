@@ -3,7 +3,6 @@ import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { ReactNode } from 'react'
 import { Text } from 'rebass'
-
 import { ButtonError } from '../Button'
 import { AutoRow } from '../Row'
 import { SwapCallbackError } from './styleds'

@@ -1,4 +1,3 @@
-import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
 import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
 import computeSurroundingTicks from './computeSurroundingTicks'
@@ -18,8 +17,7 @@ const getV3Tick = (tickIdx: number, liquidityNet: (number | undefined)[]) =>
 
 describe('#computeSurroundingTicks', () => {
   it('correctly compute active liquidity', () => {
-    const feeAmount = FeeAmount.LOW
-    const spacing = TICK_SPACINGS[feeAmount]
+    const spacing = 500
     const activeTickProcessed: TickProcessed = {
       tickIdx: 1000,
       liquidityActive: { 0: JSBI.BigInt(300), 1: JSBI.BigInt(300), 2: JSBI.BigInt(300) },
