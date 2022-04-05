@@ -39,6 +39,7 @@ const PERMITTABLE_TOKENS: {
   },
   4: {
     '0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735': { type: PermitType.ALLOWED, name: 'Dai Stablecoin', version: '1' },
+    '0x868CaC73fe792d68E8e91d0faC94Acdb0D385af9': { type: PermitType.AMOUNT, name: 'WBTC', version: '1' },
     [UNI[4].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
   },
   3: {

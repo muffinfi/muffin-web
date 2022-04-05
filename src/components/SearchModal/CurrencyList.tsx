@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { LightGreyCard } from 'components/Card'
 import QuestionHelper from 'components/QuestionHelper'
@@ -8,7 +9,6 @@ import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
-
 import TokenListLogo from '../../assets/svg/tokenlist.svg'
 import { useIsUserAddedToken } from '../../hooks/Tokens'
 import { useCombinedActiveList } from '../../state/lists/hooks'
@@ -106,6 +106,7 @@ function CurrencyRow({
   otherSelected,
   style,
   showCurrencyAmount,
+  balanceSource,
 }: {
   currency: Currency
   onSelect: () => void
@@ -113,13 +114,14 @@ function CurrencyRow({
   otherSelected: boolean
   style: CSSProperties
   showCurrencyAmount?: boolean
+  balanceSource?: BalanceSource
 }) {
   const { account } = useActiveWeb3React()
   const key = currencyKey(currency)
   const selectedTokenList = useCombinedActiveList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency.isToken ? currency : undefined)
   const customAdded = useIsUserAddedToken(currency)
-  const balance = useCurrencyBalance(account ?? undefined, currency)
+  const balance = useCurrencyBalance(account ?? undefined, currency, balanceSource)
 
   // only show add or remove buttons if not on selected list
   return (
@@ -195,6 +197,8 @@ export default function CurrencyList({
   showImportView,
   setImportToken,
   showCurrencyAmount,
+  balanceSource,
+  isCurrencySelected,
 }: {
   height: number
   currencies: Currency[]
@@ -206,6 +210,8 @@ export default function CurrencyList({
   showImportView: () => void
   setImportToken: (token: Token) => void
   showCurrencyAmount?: boolean
+  balanceSource?: BalanceSource
+  isCurrencySelected?: (iterCurrency: Currency, selectedCurrency: Currency | null | undefined) => boolean
 }) {
   const itemData: (Currency | BreakLine)[] = useMemo(() => {
     if (otherListTokens && otherListTokens?.length > 0) {
@@ -224,7 +230,10 @@ export default function CurrencyList({
 
       const currency = row
 
-      const isSelected = Boolean(currency && selectedCurrency && selectedCurrency.equals(currency))
+      const isSelected = Boolean(
+        (currency && selectedCurrency && selectedCurrency.equals(currency)) ||
+          isCurrencySelected?.(currency, selectedCurrency)
+      )
       const otherSelected = Boolean(currency && otherCurrency && otherCurrency.equals(currency))
       const handleSelect = () => currency && onCurrencySelect(currency)
 
@@ -245,6 +254,7 @@ export default function CurrencyList({
             onSelect={handleSelect}
             otherSelected={otherSelected}
             showCurrencyAmount={showCurrencyAmount}
+            balanceSource={balanceSource}
           />
         )
       } else {
@@ -258,7 +268,9 @@ export default function CurrencyList({
       selectedCurrency,
       setImportToken,
       showImportView,
+      isCurrencySelected,
       showCurrencyAmount,
+      balanceSource,
     ]
   )
 

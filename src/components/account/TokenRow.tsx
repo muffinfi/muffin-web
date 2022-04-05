@@ -1,13 +1,16 @@
+import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
-import { Token } from '@uniswap/sdk-core'
+import Badge, { BadgeVariant } from 'components/Badge'
 import { ButtonEmpty } from 'components/Button'
 import Column from 'components/Column'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
-import { RowBetween, RowFixed } from 'components/Row'
+import { AutoRow, RowBetween, RowFixed } from 'components/Row'
+import { MouseoverTooltip } from 'components/Tooltip'
+import { useCurrency } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { MouseEventHandler } from 'react'
-import { Minus, Plus } from 'react-feather'
+import { AlertCircle, Minus, Plus } from 'react-feather'
+import { Link } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useTokenBalance } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
@@ -52,33 +55,70 @@ const ButtonLabel = styled(ThemedText.White)`
   }
 `
 
+const BadgeWrapper = styled.div`
+  font-size: 14px;
+  display: flex;
+  justify-content: flex-end;
+`
+
 export default function TokenRow({
-  token,
-  hideOnZero,
-  onDeposit,
-  onWithdraw,
+  tokenId,
+  trusted,
+  showZeroBalance,
+  showUntrusted,
 }: {
-  token: Token
-  hideOnZero?: boolean
-  onDeposit?: MouseEventHandler<HTMLButtonElement>
-  onWithdraw?: MouseEventHandler<HTMLButtonElement>
+  tokenId: string
+  trusted?: boolean
+  showZeroBalance?: boolean
+  showUntrusted?: boolean
 }) {
   const { account } = useActiveWeb3React()
-  const key = token.address
-  const balance = useTokenBalance(account ?? undefined, token, BalanceSource.INTERNAL_ACCOUNT)
+  const token = useCurrency(tokenId)
+  const balance = useTokenBalance(
+    account ?? undefined,
+    token?.isToken ? token : undefined,
+    BalanceSource.INTERNAL_ACCOUNT
+  )
 
-  if (balance?.greaterThan(0) !== true && hideOnZero) {
+  if (
+    !token ||
+    !token.isToken ||
+    (!showZeroBalance && balance?.greaterThan(0) !== true) ||
+    (!showUntrusted && !trusted)
+  ) {
     return null
   }
 
   // only show add or remove buttons if not on selected list
   return (
-    <MenuItem className={`token-item-${key}`}>
+    <MenuItem className={`token-item-${tokenId}`}>
       <CurrencyLogo currency={token} size={'24px'} />
       <Column>
-        <Text title={token.name} fontWeight={500}>
-          {token.symbol}
-        </Text>
+        <AutoRow gap="4px">
+          <Text title={token.name} fontWeight={500}>
+            {token.symbol}
+          </Text>
+          {!trusted && (
+            <BadgeWrapper>
+              <MouseoverTooltip
+                text={
+                  <Trans>
+                    This token doesn&apos;t appear on the active token lists. Make sure this is a token you trust before
+                    using it.
+                  </Trans>
+                }
+              >
+                <Badge variant={BadgeVariant.DEFAULT}>
+                  <AlertCircle width={14} height={14} />
+                  &nbsp;
+                  <Text fontWeight={500} fontSize={14}>
+                    <Trans>Untrusted</Trans>
+                  </Text>
+                </Badge>
+              </MouseoverTooltip>
+            </BadgeWrapper>
+          )}
+        </AutoRow>
         <ThemedText.DarkGray ml="0px" fontSize={'12px'} fontWeight={300}>
           {token.name}
         </ThemedText.DarkGray>
@@ -91,12 +131,12 @@ export default function TokenRow({
         ) : null}
       </RowFixed>
       <RowFixed style={{ justifySelf: 'flex-end', columnGap: '4px' }}>
-        <SmallButton onClick={onDeposit} data-token={key}>
+        <SmallButton as={Link} to={`/account/deposit?currency=${token.address}`} data-token={tokenId}>
           <ButtonLabel>
             <Plus size={18} />
           </ButtonLabel>
         </SmallButton>
-        <SmallButton onClick={onWithdraw} data-token={key}>
+        <SmallButton as={Link} to={`/account/withdraw?currency=${token.address}`} data-token={tokenId}>
           <ButtonLabel>
             <Minus size={18} />
           </ButtonLabel>

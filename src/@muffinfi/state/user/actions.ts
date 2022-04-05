@@ -8,6 +8,10 @@ export const updateShowZeroBalanceTokens = createAction<{ userShowZeroBalanceTok
   'user/updateShowZeroBalanceTokens'
 )
 
+export const updateShowUntrustedTokens = createAction<{ userShowUntrustedTokens: boolean }>(
+  'user/updateShowUntrustedTokens'
+)
+
 export const updateUserStoreIntoInternalAccount = createAction<{ userStoreIntoInternalAccount: boolean }>(
   'user/updateUserStoreIntoInternalAccount'
 )

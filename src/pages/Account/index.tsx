@@ -1,22 +1,62 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { Trans } from '@lingui/macro'
 import { useAccountTokens } from '@muffinfi/hooks/account/useAccountTokens'
-import { useManagerContract } from '@muffinfi/hooks/useContract'
-import { useUserShowZeroBalanceTokens } from '@muffinfi/state/user/hooks'
-import { CurrencyAmount, Token } from '@uniswap/sdk-core'
+import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffinfi/state/user/hooks'
 import AccountHeader from 'components/account/AccountHeader'
 import { Wrapper } from 'components/account/styleds'
 import TokenRow from 'components/account/TokenRow'
+import { ButtonLight, ButtonPrimary } from 'components/Button'
 import { LoadingRows } from 'components/Loader/styled'
+import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
+import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { useApproveCallback } from 'hooks/useApproveCallback'
 import AppBody from 'pages/AppBody'
-import { MouseEventHandler, useCallback, useMemo, useState } from 'react'
-import { RouteComponentProps } from 'react-router-dom'
-import { TransactionType } from 'state/transactions/actions'
-import { useTransactionAdder } from 'state/transactions/hooks'
+import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { ThemedText } from 'theme'
+
+const TitleRow = styled(RowBetween)`
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+
+  padding: 0 4px;
+
+  color: ${({ theme }) => theme.text2};
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    flex-wrap: wrap;
+    gap: 12px;
+  `};
+`
+
+const ButtonRow = styled(RowFixed)`
+  & > * {
+    border-radius: 12px;
+    padding: 6px 8px;
+    width: fit-content;
+  }
+
+  & > *:not(:last-child) {
+    margin-right: 8px;
+  }
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+
+    & > * {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+
+    & > *:not(:last-child) {
+      margin-right: 0;
+      margin-left: 8px;
+    }
+  `};
+`
 
 const StyledLoadingRows = styled(LoadingRows)`
   row-gap: 8px;
@@ -40,88 +80,37 @@ const NoTokens = styled.div`
 
 export default function Account(props: RouteComponentProps) {
   const { account } = useActiveWeb3React()
-  const { isLoading, tokens, order: tokenOrder } = useAccountTokens(account)
+  const { isLoading, tokenIds } = useAccountTokens(account)
+  const allTokens = useAllTokens()
 
-  const [showZeroTokens, setShowZeroTokens] = useUserShowZeroBalanceTokens()
+  const [showZeroBalance, setShowZeroBalance] = useUserShowZeroBalanceTokens()
+  const [showUntrustedTokens, setShowUntrustedTokens] = useUserShowUntrustesTokens()
 
-  const [selectedToken, setSelectedToken] = useState<Token | undefined>()
-  const [isDepositDialogOpen, setIsDepositDialogOpen] = useState(false)
-  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false)
-
-  const addTransaction = useTransactionAdder()
-
-  const tokenList = useMemo(() => tokens && tokenOrder && tokenOrder.map((id) => tokens[id]), [tokens, tokenOrder])
-
-  const [amount, setAmount] = useState('10000000000000000000')
-  const [isApproved, approve] = useApproveCallback(
-    selectedToken && amount ? CurrencyAmount.fromRawAmount(selectedToken, amount) : undefined,
-    account ?? undefined
-  )
-
-  const managerContract = useManagerContract()
-  const deposit = useCallback(() => {
-    if (!account || !selectedToken || !managerContract) return
-    if (!isApproved) return approve()
-    return managerContract.estimateGas.deposit(account, selectedToken.address, amount).then((gas) =>
-      managerContract
-        .deposit(account, selectedToken.address, amount, { gasLimit: calculateGasMargin(gas) })
-        .then((response: TransactionResponse) => {
-          addTransaction(response, {
-            type: TransactionType.DEPOSIT_INTERNAL_ACCOUNT,
-            tokenAddress: selectedToken.address,
-            amount,
-          })
-        })
-        .catch((error: Error) => {
-          console.debug('Failed to deposit token', error)
-          throw error
-        })
-    )
-  }, [account, selectedToken, managerContract, isApproved, approve, amount, addTransaction])
-
-  const withdraw = useCallback(() => {
-    if (!account || !selectedToken || !managerContract) return
-    return managerContract.estimateGas.withdraw(account, selectedToken.address, amount).then((gas) =>
-      managerContract
-        .withdraw(account, selectedToken.address, amount, { gasLimit: calculateGasMargin(gas) })
-        .then((response: TransactionResponse) => {
-          addTransaction(response, {
-            type: TransactionType.WITHDRAW_INTERNAL_ACCOUNT,
-            tokenAddress: selectedToken.address,
-            amount,
-          })
-        })
-        .catch((error: Error) => {
-          console.debug('Failed to withdraw token', error)
-          throw error
-        })
-    )
-  }, [account, selectedToken, managerContract, amount, addTransaction])
-
-  const showDepositDialog = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    (event) => {
-      const token = tokens?.[event.currentTarget.dataset.token ?? '']
-      if (!token) return
-      setSelectedToken(token)
-      setIsDepositDialogOpen(true)
-    },
-    [tokens]
-  )
-
-  const showWithdrawDialog = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    (event) => {
-      const token = tokens?.[event.currentTarget.dataset.token ?? '']
-      if (!token) return
-      setSelectedToken(token)
-      setIsWithdrawDialogOpen(true)
-    },
-    [tokens]
-  )
+  const hasTokens = tokenIds && tokenIds.length > 0
 
   return (
     <>
+      <TitleRow style={{ marginTop: '1rem' }} padding={'0'}>
+        <ThemedText.Body fontSize={'20px'}>
+          <Trans>Account Overview</Trans>
+        </ThemedText.Body>
+        <ButtonRow>
+          <ButtonLight id="account-withdraw-button" as={Link} to="/account/withdraw">
+            <Trans>Withdraw</Trans>
+          </ButtonLight>
+          <ButtonPrimary id="account-deposit-button" as={Link} to="/account/deposit">
+            <Trans>Deposit</Trans>
+          </ButtonPrimary>
+        </ButtonRow>
+      </TitleRow>
       <AppBody>
-        <AccountHeader tokenList={tokenList} setShowZeroTokens={setShowZeroTokens} showZeroTokens={showZeroTokens} />
+        <AccountHeader
+          showFilter={hasTokens}
+          showZeroBalance={showZeroBalance}
+          setShowZeroBalance={setShowZeroBalance}
+          showUntrusted={showUntrustedTokens}
+          setShowUntrusted={setShowUntrustedTokens}
+        />
         <Wrapper>
           {isLoading ? (
             <StyledLoadingRows>
@@ -131,15 +120,15 @@ export default function Account(props: RouteComponentProps) {
               <div />
               <div />
             </StyledLoadingRows>
-          ) : tokenList && tokenList.length > 0 ? (
+          ) : hasTokens ? (
             <StyledList>
-              {tokenList?.map((token) => (
+              {tokenIds?.map((tokenId) => (
                 <TokenRow
-                  key={token.address}
-                  hideOnZero={!showZeroTokens}
-                  token={token}
-                  onDeposit={showDepositDialog}
-                  onWithdraw={showWithdrawDialog}
+                  key={tokenId}
+                  tokenId={tokenId}
+                  showZeroBalance={showZeroBalance}
+                  trusted={Boolean(allTokens[tokenId])}
+                  showUntrusted={showUntrustedTokens}
                 />
               ))}
             </StyledList>

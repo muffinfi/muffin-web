@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
+import { Fragment } from 'react'
 import { nativeOnChain } from '../../constants/tokens'
 import { useCurrency, useToken } from '../../hooks/Tokens'
 import useENSName from '../../hooks/useENSName'
@@ -71,6 +72,27 @@ function FormattedCurrencyAmountManaged({
       symbol={currency.symbol ?? '???'}
     />
   ) : null
+}
+
+function FormattedCurrencyAmountsManaged({
+  rawAmounts,
+  currencyIds,
+  sigFigs = 6,
+}: {
+  rawAmounts: string[]
+  currencyIds: string[]
+  sigFigs: number
+}) {
+  return (
+    <>
+      {currencyIds.map((currencyId, i) => (
+        <Fragment key={currencyId}>
+          <FormattedCurrencyAmountManaged rawAmount={rawAmounts[i]} currencyId={currencyId} sigFigs={sigFigs} />
+          {i < currencyIds.length - 1 && ', '}
+        </Fragment>
+      ))}
+    </>
+  )
 }
 
 function FormattedBalanceSource({ source }: { source: BalanceSource }) {
@@ -346,26 +368,26 @@ function RemoveLiquidityMuffinSummary({
 /////////////////////////////////////////////////////////
 
 function DepositInternalAccountSummary({
-  info: { amount, tokenAddress },
+  info: { amounts, tokenAddresses },
 }: {
   info: DepositInternalAccountTransactionInfo
 }) {
   return (
     <Trans>
-      Deposit <FormattedCurrencyAmountManaged rawAmount={amount} currencyId={tokenAddress} sigFigs={3} /> into internal
+      Deposit <FormattedCurrencyAmountsManaged rawAmounts={amounts} currencyIds={tokenAddresses} sigFigs={3} /> into
       account
     </Trans>
   )
 }
 
 function WithdrawInternalAccountSummary({
-  info: { amount, tokenAddress },
+  info: { amounts, tokenAddresses },
 }: {
   info: WithdrawInternalAccountTransactionInfo
 }) {
   return (
     <Trans>
-      Withdraw <FormattedCurrencyAmountManaged rawAmount={amount} currencyId={tokenAddress} sigFigs={3} /> from internal
+      Withdraw <FormattedCurrencyAmountsManaged rawAmounts={amounts} currencyIds={tokenAddresses} sigFigs={3} /> from
       account
     </Trans>
   )

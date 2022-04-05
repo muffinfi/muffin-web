@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import {
+  updateShowUntrustedTokens,
   updateShowZeroBalanceTokens,
   updateUserInternalAccountMode,
   updateUserStoreIntoInternalAccount,
@@ -34,6 +35,21 @@ export function useUserShowZeroBalanceTokens(): [boolean, (newShowZeroBalanceTok
   )
 
   return [showZeroBalanceTokens, setShowZeroBalanceTokens]
+}
+
+export function useUserShowUntrustesTokens(): [boolean, (newUserShowUntrustedTokens: boolean) => void] {
+  const dispatch = useAppDispatch()
+
+  const showUntrustedTokens = useAppSelector((state) => state.user.userShowUntrustedTokens)
+
+  const setShowUntrustedTokens = useCallback(
+    (newUserShowUntrustedTokens: boolean) => {
+      dispatch(updateShowUntrustedTokens({ userShowUntrustedTokens: newUserShowUntrustedTokens }))
+    },
+    [dispatch]
+  )
+
+  return [showUntrustedTokens, setShowUntrustedTokens]
 }
 
 export function useUserStoreIntoInternalAccount(): [boolean, () => void] {

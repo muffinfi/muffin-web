@@ -1,4 +1,5 @@
 import {
+  updateShowUntrustedTokens,
   updateShowZeroBalanceTokens,
   updateUserInternalAccountMode,
   updateUserStoreIntoInternalAccount,
@@ -47,6 +48,8 @@ export interface UserState {
   userHideClosedPositions: boolean
   // shows zero internal balance tokens across the app
   userShowZeroBalanceTokens: boolean
+  // shows zero internal balance tokens across the app
+  userShowUntrustedTokens: boolean
 
   // user defined slippage tolerance in bips, used in all txns
   userSlippageTolerance: number | 'auto'
@@ -91,6 +94,7 @@ export const initialState: UserState = {
   userClientSideRouter: false,
   userHideClosedPositions: false,
   userShowZeroBalanceTokens: false,
+  userShowUntrustedTokens: false,
   userSlippageTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
@@ -177,6 +181,9 @@ export default createReducer(initialState, (builder) =>
     })
     .addCase(updateShowZeroBalanceTokens, (state, action) => {
       state.userShowZeroBalanceTokens = action.payload.userShowZeroBalanceTokens
+    })
+    .addCase(updateShowUntrustedTokens, (state, action) => {
+      state.userShowUntrustedTokens = action.payload.userShowUntrustedTokens
     })
     .addCase(updateShowSurveyPopup, (state, action) => {
       state.showSurveyPopup = action.payload.showSurveyPopup

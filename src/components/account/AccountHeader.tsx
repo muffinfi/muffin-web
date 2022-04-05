@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
-import { Token } from '@uniswap/sdk-core'
 import { ButtonText } from 'components/Button'
+import { AutoRow } from 'components/Row'
+import { Text } from 'rebass'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from '../../theme'
 
@@ -18,11 +19,6 @@ const DesktopHeader = styled.div`
   @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
     align-items: center;
     display: flex;
-    justify-content: space-between;
-    & > div:last-child {
-      text-align: right;
-      margin-right: 12px;
-    }
   }
 `
 
@@ -37,24 +33,37 @@ const MobileHeader = styled.div`
 `
 
 export default function AccountHeader({
-  tokenList,
-  showZeroTokens,
-  setShowZeroTokens,
+  showFilter,
+  showZeroBalance,
+  setShowZeroBalance,
+  showUntrusted,
+  setShowUntrusted,
 }: {
-  tokenList?: Token[]
-  showZeroTokens: boolean
-  setShowZeroTokens: (show: boolean) => void
+  showFilter?: boolean
+  showZeroBalance?: boolean
+  setShowZeroBalance?: (show: boolean) => void
+  showUntrusted?: boolean
+  setShowUntrusted?: (show: boolean) => void
 }) {
   return (
     <StyledAccountHeader>
       <DesktopHeader>
-        <div>
+        <Text>
           <Trans>Balances</Trans>
-        </div>
-        {tokenList && tokenList.length > 0 && (
-          <ButtonText style={{ opacity: 0.6 }} onClick={() => setShowZeroTokens(!showZeroTokens)}>
-            {showZeroTokens ? <Trans>Hide zero balances</Trans> : <Trans>Show zero balances</Trans>}
-          </ButtonText>
+        </Text>
+        {showFilter && (
+          <AutoRow justify="flex-end" gap="8px" flexGrow={1}>
+            {setShowZeroBalance && (
+              <ButtonText style={{ opacity: 0.6 }} onClick={() => setShowZeroBalance(!showZeroBalance)}>
+                {showZeroBalance ? <Trans>Hide zero</Trans> : <Trans>Show zero</Trans>}
+              </ButtonText>
+            )}
+            {setShowUntrusted && (
+              <ButtonText style={{ opacity: 0.6 }} onClick={() => setShowUntrusted(!showUntrusted)}>
+                {showUntrusted ? <Trans>Hide untrusted tokens</Trans> : <Trans>Show untrusted tokens</Trans>}
+              </ButtonText>
+            )}
+          </AutoRow>
         )}
       </DesktopHeader>
       <MobileHeader>

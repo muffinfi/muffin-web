@@ -39,3 +39,8 @@ export function formatPrice(
 
   return formatLocaleNumber({ number: price, locale, sigFigs })
 }
+
+export function formatCurrencyAmountWithSymbol(...args: Parameters<typeof formatCurrencyAmount>) {
+  const amount = args[0]
+  return amount ? `${formatCurrencyAmount(...args)} ${amount.currency.symbol}` : '-'
+}

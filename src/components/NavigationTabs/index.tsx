@@ -49,7 +49,7 @@ const StyledNavLink = styled(NavLink).attrs({
   }
 `
 
-const StyledHistoryLink = styled(HistoryLink)<{ flex: string | undefined }>`
+const StyledHistoryLink = styled(HistoryLink)<{ flex?: string }>`
   flex: ${({ flex }) => flex ?? 'none'};
 
   ${({ theme }) => theme.mediaWidth.upToMedium`
@@ -158,6 +158,28 @@ export function CreateProposalTabs() {
         </HistoryLink>
         <ActiveText style={{ marginLeft: 'auto', marginRight: 'auto' }}>Create Proposal</ActiveText>
       </Row>
+    </Tabs>
+  )
+}
+
+export function DepositWithdrawTabs({ title }: { title: ReactNode }) {
+  const theme = useTheme()
+  return (
+    <Tabs>
+      <RowBetween style={{ padding: '1rem 1rem 0 1rem', position: 'relative' }}>
+        <StyledHistoryLink to="/account">
+          <StyledArrowLeft stroke={theme.text2} />
+        </StyledHistoryLink>
+        <ThemedText.MediumHeader
+          fontWeight={500}
+          fontSize={20}
+          textAlign="center"
+          flexGrow={1}
+          style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
+        >
+          {title}
+        </ThemedText.MediumHeader>
+      </RowBetween>
     </Tabs>
   )
 }

@@ -126,15 +126,15 @@ export const api = createApi({
       }),
     }),
     accountTokens: builder.query({
-      query: ({ owner, skip = 0 }) => ({
+      query: ({ accountHash, skip = 0 }) => ({
         document: gql`
-          query accountTokens($owner: Bytes!, $skip: Int!) {
+          query accountTokens($accountHash: String!, $skip: Int!) {
             accountTokenBalances(
               first: 1000
               skip: $skip
-              where: { owner: $owner }
+              where: { accountHash: $accountHash }
               orderBy: balance
-              orderDirection: asc
+              orderDirection: desc
             ) {
               token {
                 id
@@ -146,7 +146,7 @@ export const api = createApi({
           }
         `,
         variables: {
-          owner,
+          accountHash,
           skip,
         },
       }),

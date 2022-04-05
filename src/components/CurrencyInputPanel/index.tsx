@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { AutoColumn } from 'components/Column'
@@ -175,6 +176,8 @@ interface CurrencyInputPanelProps {
   renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
   locked?: boolean
   loading?: boolean
+  balanceSource?: BalanceSource
+  isCurrencySelected?: (iterCurrency: Currency, selectedCurrency: Currency | null | undefined) => boolean
 }
 
 export default function CurrencyInputPanel({
@@ -192,6 +195,8 @@ export default function CurrencyInputPanel({
   renderBalance,
   fiatValue,
   priceImpact,
+  balanceSource,
+  isCurrencySelected,
   hideBalance = false,
   pair = null, // used for double token logo
   hideInput = false,
@@ -201,7 +206,7 @@ export default function CurrencyInputPanel({
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const { account } = useActiveWeb3React()
-  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
+  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined, balanceSource)
   const theme = useTheme()
 
   const handleDismissSearch = useCallback(() => {
@@ -312,9 +317,11 @@ export default function CurrencyInputPanel({
           onCurrencySelect={onCurrencySelect}
           selectedCurrency={currency}
           otherSelectedCurrency={otherCurrency}
+          isCurrencySelected={isCurrencySelected}
           showCommonBases={showCommonBases}
           showCurrencyAmount={showCurrencyAmount}
           disableNonToken={disableNonToken}
+          balanceSource={balanceSource}
         />
       )}
     </InputPanel>

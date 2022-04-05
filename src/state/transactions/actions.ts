@@ -187,14 +187,14 @@ export interface RemoveLiquidityMuffinTransactionInfo {
 
 export interface DepositInternalAccountTransactionInfo {
   type: TransactionType.DEPOSIT_INTERNAL_ACCOUNT
-  tokenAddress: string
-  amount: string
+  tokenAddresses: string[]
+  amounts: string[]
 }
 
 export interface WithdrawInternalAccountTransactionInfo {
   type: TransactionType.WITHDRAW_INTERNAL_ACCOUNT
-  tokenAddress: string
-  amount: string
+  tokenAddresses: string[]
+  amounts: string[]
 }
 
 ////////////////////////////////////////////////////////////

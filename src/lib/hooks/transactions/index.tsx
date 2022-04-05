@@ -3,7 +3,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useAtomValue, useUpdateAtom } from 'jotai/utils'
 import { Transaction, TransactionInfo, transactionsAtom, TransactionType } from 'lib/state/transactions'
 import ms from 'ms.macro'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import invariant from 'tiny-invariant'
 import useBlockNumber from '../useBlockNumber'
 import Updater from './updater'
@@ -57,6 +57,37 @@ export function usePendingApproval(token?: Token, spender?: string): string | un
       tx.info.spenderAddress === spender &&
       isTransactionRecent(tx)
   )?.info.response.hash
+}
+
+export function useIsPendingApproval(token?: Token, spender?: string): boolean {
+  return Boolean(usePendingApproval(token, spender))
+}
+
+export function usePendingApprovals(tokens: (Token | undefined)[], spender?: string): (string | undefined)[] {
+  const { chainId } = useActiveWeb3React()
+  const txs = useAtomValue(transactionsAtom)
+
+  return useMemo(() => {
+    if (!chainId || !tokens.length || !spender) return []
+
+    const chainTxs = txs[chainId]
+    if (!chainTxs) return []
+
+    const txsValues = Object.values(chainTxs)
+    return tokens.map(
+      (token) =>
+        token &&
+        txsValues.find(
+          (tx) =>
+            tx &&
+            tx.receipt === undefined &&
+            tx.info.type === TransactionType.APPROVAL &&
+            tx.info.tokenAddress === token.address &&
+            tx.info.spenderAddress === spender &&
+            isTransactionRecent(tx)
+        )?.info.response.hash
+    )
+  }, [chainId, spender, tokens, txs])
 }
 
 export function TransactionsUpdater() {

@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Token } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useDebounce from 'hooks/useDebounce'
@@ -17,7 +18,6 @@ import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import { useAllTokenBalances } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
-
 import { useAllTokens, useIsUserAddedToken, useSearchInactiveTokenLists, useToken } from '../../hooks/Tokens'
 import { ButtonText, CloseIcon, IconWrapper, ThemedText } from '../../theme'
 import { isAddress } from '../../utils'
@@ -56,6 +56,8 @@ interface CurrencySearchProps {
   showManageView: () => void
   showImportView: () => void
   setImportToken: (token: Token) => void
+  isCurrencySelected?: (iterCurrency: Currency, selectedCurrency: Currency | null | undefined) => boolean
+  balanceSource?: BalanceSource
 }
 
 export function CurrencySearch({
@@ -70,6 +72,8 @@ export function CurrencySearch({
   showManageView,
   showImportView,
   setImportToken,
+  isCurrencySelected,
+  balanceSource,
 }: CurrencySearchProps) {
   const { chainId } = useActiveWeb3React()
   const theme = useTheme()
@@ -195,7 +199,13 @@ export function CurrencySearch({
           />
         </Row>
         {showCommonBases && (
-          <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} />
+          <CommonBases
+            disableNonToken={disableNonToken}
+            chainId={chainId}
+            onSelect={handleCurrencySelect}
+            selectedCurrency={selectedCurrency}
+            isCurrencySelected={isCurrencySelected}
+          />
         )}
       </PaddedColumn>
       <Separator />
@@ -218,6 +228,8 @@ export function CurrencySearch({
                 showImportView={showImportView}
                 setImportToken={setImportToken}
                 showCurrencyAmount={showCurrencyAmount}
+                isCurrencySelected={isCurrencySelected}
+                balanceSource={balanceSource}
               />
             )}
           </AutoSizer>

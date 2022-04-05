@@ -1,8 +1,8 @@
+import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Token } from '@uniswap/sdk-core'
 import { TokenList } from '@uniswap/token-lists'
 import usePrevious from 'hooks/usePrevious'
 import { useCallback, useEffect, useState } from 'react'
-
 import useLast from '../../hooks/useLast'
 import { WrappedTokenInfo } from '../../state/lists/wrappedTokenInfo'
 import Modal from '../Modal'
@@ -20,6 +20,8 @@ interface CurrencySearchModalProps {
   showCommonBases?: boolean
   showCurrencyAmount?: boolean
   disableNonToken?: boolean
+  isCurrencySelected?: (iterCurrency: Currency, selectedCurrency: Currency | null | undefined) => boolean
+  balanceSource?: BalanceSource
 }
 
 export enum CurrencyModalView {
@@ -35,6 +37,8 @@ export default function CurrencySearchModal({
   onCurrencySelect,
   selectedCurrency,
   otherSelectedCurrency,
+  isCurrencySelected,
+  balanceSource,
   showCommonBases = false,
   showCurrencyAmount = true,
   disableNonToken = false,
@@ -85,12 +89,14 @@ export default function CurrencySearchModal({
           onCurrencySelect={handleCurrencySelect}
           selectedCurrency={selectedCurrency}
           otherSelectedCurrency={otherSelectedCurrency}
+          isCurrencySelected={isCurrencySelected}
           showCommonBases={showCommonBases}
           showCurrencyAmount={showCurrencyAmount}
           disableNonToken={disableNonToken}
           showImportView={showImportView}
           setImportToken={setImportToken}
           showManageView={showManageView}
+          balanceSource={balanceSource}
         />
       )
       break

@@ -16,6 +16,8 @@ import { useModalOpen, useToggleModal } from '../state/application/hooks'
 import { ApplicationModal } from '../state/application/reducer'
 import DarkModeQueryParamReader from '../theme/DarkModeQueryParamReader'
 import Account from './Account'
+import Deposit from './Account/Deposit'
+import Withdraw from './Account/Withdraw'
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 // import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
@@ -121,6 +123,8 @@ export default function App() {
                 <Route exact strict path="/migrate/v2/:address" component={MigrateV2Pair} /> */}
 
                 <Route exact strict path="/account" component={Account} />
+                <Route exact strict path="/account/deposit" component={Deposit} />
+                <Route exact strict path="/account/withdraw" component={Withdraw} />
 
                 <Route component={RedirectPathToSwapOnly} />
               </Switch>
