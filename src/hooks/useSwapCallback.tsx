@@ -2,13 +2,12 @@
 import { Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { SwapCallbackState, useSwapCallback as useLibSwapCallBack } from 'lib/hooks/swap/useSwapCallback'
+import { SignatureData } from 'lib/utils/erc20Permit'
 import { ReactNode, useMemo } from 'react'
-
 import { TransactionType } from '../state/transactions/actions'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { currencyId } from '../utils/currencyId'
 import useENS from './useENS'
-import { SignatureData } from './useERC20Permit'
 import { AnyTrade } from './useSwapCallArguments'
 import useTransactionDeadline from './useTransactionDeadline'
 

@@ -18,10 +18,10 @@ import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
 import { useCurrency, useIsTokenActive } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { SignatureData } from 'hooks/useERC20Permit'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { ApprovalState, useMultipleApprovalStateForSpender } from 'lib/hooks/useApproval'
+import { SignatureData } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import AppBody from 'pages/AppBody'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -70,7 +70,7 @@ export default function Deposit({ history }: RouteComponentProps) {
     const amounts = ([...inputAmounts] as CurrencyAmount<Currency>[]).sort((a, b) =>
       a.currency.isNative ? -1 : b.currency.isNative ? 1 : 0
     )
-    const { calldata, value } = AccountManager.multiDepositCallParameters(amounts, {
+    const { calldata, value } = AccountManager.depositCallParameters(amounts, {
       managerAddress,
       recipient: account,
       inputTokenPermits: permitSignatures as { [address: string]: StandardPermitArguments },
@@ -261,15 +261,22 @@ export default function Deposit({ history }: RouteComponentProps) {
   )
 
   const onSignatureDataChange = useCallback((token: Token, signatureData: SignatureData | null) => {
-    if (!signatureData) return
-    setPermitSignatures((prev) => ({ ...prev, [token.address]: signatureData }))
+    if (signatureData) {
+      setPermitSignatures((prev) => ({ ...prev, [token.address]: signatureData }))
+    } else {
+      setPermitSignatures((prev) => {
+        const state = { ...prev }
+        delete state[token.address]
+        return state
+      })
+    }
   }, [])
 
   const makeApprovalButtons = () => (
     <>
-      {pendingApprovalCurrencyAmounts.filter(Boolean).map((amount) => (
+      {(inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).map((amount) => (
         <TokenApproveOrPermitButton
-          key={amount.currency.address}
+          key={amount.currency.isNative ? 'ETH' : amount.currency.address}
           amount={amount}
           deadline={deadline}
           onSignatureDataChange={onSignatureDataChange}

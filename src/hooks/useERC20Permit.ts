@@ -1,58 +1,18 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { splitSignature } from '@ethersproject/bytes'
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { PermitOptions, SelfPermit, Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { useMemo, useState } from 'react'
-import { DAI, UNI, USDC_MAINNET } from '../constants/tokens'
+import { NEVER_RELOAD, useSingleCallResult } from 'lib/hooks/multicall'
+import { generateObjectToSign, getPermitInfo, PermitInfo, SignatureData } from 'lib/utils/erc20Permit'
+import { useEffect, useMemo, useState } from 'react'
 import { useEIP2612Contract } from './useContract'
 import useIsArgentWallet from './useIsArgentWallet'
 
-export enum PermitType {
-  AMOUNT = 1,
-  ALLOWED = 2,
-}
-
 // 20 minutes to submit after signing
 const PERMIT_VALIDITY_BUFFER = 20 * 60
-
-export interface PermitInfo {
-  type: PermitType
-  name: string
-  // version is optional, and if omitted, will not be included in the domain
-  version?: string
-}
-
-// todo: read this information from extensions on token lists or elsewhere (permit registry?)
-const PERMITTABLE_TOKENS: {
-  [chainId: number]: {
-    [checksummedTokenAddress: string]: PermitInfo
-  }
-} = {
-  1: {
-    [USDC_MAINNET.address]: { type: PermitType.AMOUNT, name: 'USD Coin', version: '2' },
-    [DAI.address]: { type: PermitType.ALLOWED, name: 'Dai Stablecoin', version: '1' },
-    [UNI[1].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
-  },
-  4: {
-    '0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735': { type: PermitType.ALLOWED, name: 'Dai Stablecoin', version: '1' },
-    '0x868CaC73fe792d68E8e91d0faC94Acdb0D385af9': { type: PermitType.AMOUNT, name: 'WBTC', version: '1' },
-    [UNI[4].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
-  },
-  3: {
-    [UNI[3].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
-    '0x07865c6E87B9F70255377e024ace6630C1Eaa37F': { type: PermitType.AMOUNT, name: 'USD Coin', version: '2' },
-  },
-  5: {
-    [UNI[5].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
-  },
-  42: {
-    [UNI[42].address]: { type: PermitType.AMOUNT, name: 'Uniswap' },
-  },
-}
 
 export enum UseERC20PermitState {
   // returned for any reason, e.g. it is an argent wallet, or the currency does not support it
@@ -62,57 +22,11 @@ export enum UseERC20PermitState {
   SIGNED,
 }
 
-interface BaseSignatureData {
-  v: number
-  r: string
-  s: string
-  deadline: number
-  nonce: number
-  owner: string
-  spender: string
-  chainId: number
-  tokenAddress: string
-  permitType: PermitType
+enum CheckDomainState {
+  NOT_CHECK,
+  CHECKING,
+  CHECKED,
 }
-
-interface StandardSignatureData extends BaseSignatureData {
-  amount: string
-}
-
-interface AllowedSignatureData extends BaseSignatureData {
-  allowed: true
-}
-
-export type SignatureData = StandardSignatureData | AllowedSignatureData
-
-const EIP712_DOMAIN_TYPE = [
-  { name: 'name', type: 'string' },
-  { name: 'version', type: 'string' },
-  { name: 'chainId', type: 'uint256' },
-  { name: 'verifyingContract', type: 'address' },
-]
-
-const EIP712_DOMAIN_TYPE_NO_VERSION = [
-  { name: 'name', type: 'string' },
-  { name: 'chainId', type: 'uint256' },
-  { name: 'verifyingContract', type: 'address' },
-]
-
-const EIP2612_TYPE = [
-  { name: 'owner', type: 'address' },
-  { name: 'spender', type: 'address' },
-  { name: 'value', type: 'uint256' },
-  { name: 'nonce', type: 'uint256' },
-  { name: 'deadline', type: 'uint256' },
-]
-
-const PERMIT_ALLOWED_TYPE = [
-  { name: 'holder', type: 'address' },
-  { name: 'spender', type: 'address' },
-  { name: 'nonce', type: 'uint256' },
-  { name: 'expiry', type: 'uint256' },
-  { name: 'allowed', type: 'bool' },
-]
 
 export function useERC20Permit(
   currencyAmount: CurrencyAmount<Currency> | null | undefined,
@@ -133,15 +47,81 @@ export function useERC20Permit(
   // NOTE: fetch nonce from chain. invalid result = token no support permit
   const nonceInputs = useMemo(() => [account ?? undefined], [account])
   const tokenNonceState = useSingleCallResult(eip2612Contract, 'nonces', nonceInputs)
-
-  const permitInfo =
-    overridePermitInfo ?? (chainId && tokenAddress ? PERMITTABLE_TOKENS[chainId]?.[tokenAddress] : undefined)
+  const domainSeparatorState = useSingleCallResult(eip2612Contract, 'DOMAIN_SEPARATOR', undefined, NEVER_RELOAD)
 
   const [signatureData, setSignatureData] = useState<SignatureData | null>(null)
+  const [checkedState, setCheckedState] = useState(CheckDomainState.NOT_CHECK)
+  const [forceNotApplicable, setForceNotApplicable] = useState(false)
+
+  const domainSeparator = domainSeparatorState.result?.[0] as string | undefined
+  const permitInfo = useMemo(
+    () =>
+      overridePermitInfo ||
+      getPermitInfo(
+        {
+          name: currencyAmount?.currency?.isToken ? currencyAmount.currency.name : undefined,
+          chainId,
+          verifyingContract: tokenAddress,
+        },
+        domainSeparator
+      ),
+    [
+      chainId,
+      currencyAmount?.currency?.isToken,
+      currencyAmount?.currency?.name,
+      domainSeparator,
+      overridePermitInfo,
+      tokenAddress,
+    ]
+  )
+
+  const nonceNumber = tokenNonceState.result?.[0]?.toNumber()
+  const isSignatureDataValid = Boolean(
+    currencyAmount &&
+      transactionDeadline &&
+      signatureData &&
+      signatureData.owner === account &&
+      signatureData.deadline >= transactionDeadline.toNumber() &&
+      signatureData.tokenAddress === tokenAddress &&
+      signatureData.nonce === nonceNumber &&
+      signatureData.spender === spender &&
+      ('allowed' in signatureData || JSBI.greaterThan(JSBI.BigInt(signatureData.amount), currencyAmount.quotient))
+  )
+
+  useEffect(() => {
+    if (
+      !chainId ||
+      !library ||
+      !currencyAmount?.currency?.isToken ||
+      !signatureData ||
+      !isSignatureDataValid ||
+      !permitInfo?.isEstimated ||
+      checkedState !== CheckDomainState.NOT_CHECK
+    ) {
+      return
+    }
+    setCheckedState(CheckDomainState.CHECKING)
+    const data = SelfPermit.encodePermit(currencyAmount.currency, signatureData as PermitOptions)
+    library
+      .getSigner()
+      .estimateGas({ to: MUFFIN_MANAGER_ADDRESSES[chainId], data })
+      .catch(() => setForceNotApplicable(true))
+      .finally(() => setCheckedState(CheckDomainState.CHECKED))
+  }, [
+    chainId,
+    checkedState,
+    currencyAmount?.currency,
+    isSignatureDataValid,
+    library,
+    permitInfo?.isEstimated,
+    signatureData,
+    tokenAddress,
+  ])
 
   return useMemo(() => {
     if (
       isArgentWallet ||
+      forceNotApplicable ||
       !currencyAmount ||
       !eip2612Contract ||
       !account ||
@@ -160,8 +140,12 @@ export function useERC20Permit(
       }
     }
 
-    const nonceNumber = tokenNonceState.result?.[0]?.toNumber()
-    if (tokenNonceState.loading || typeof nonceNumber !== 'number') {
+    if (
+      tokenNonceState.loading ||
+      typeof nonceNumber !== 'number' ||
+      domainSeparatorState.loading ||
+      checkedState === CheckDomainState.CHECKING
+    ) {
       return {
         state: UseERC20PermitState.LOADING,
         signatureData: null,
@@ -169,62 +153,23 @@ export function useERC20Permit(
       }
     }
 
-    const isSignatureDataValid =
-      signatureData &&
-      signatureData.owner === account &&
-      signatureData.deadline >= transactionDeadline.toNumber() &&
-      signatureData.tokenAddress === tokenAddress &&
-      signatureData.nonce === nonceNumber &&
-      signatureData.spender === spender &&
-      ('allowed' in signatureData || JSBI.equal(JSBI.BigInt(signatureData.amount), currencyAmount.quotient))
-
     return {
       state: isSignatureDataValid ? UseERC20PermitState.SIGNED : UseERC20PermitState.NOT_SIGNED,
       signatureData: isSignatureDataValid ? signatureData : null,
       gatherPermitSignature: async function gatherPermitSignature() {
-        const allowed = permitInfo.type === PermitType.ALLOWED
         const signatureDeadline = transactionDeadline.toNumber() + PERMIT_VALIDITY_BUFFER
-        const value = currencyAmount.quotient.toString()
-
-        const message = allowed
-          ? {
-              holder: account,
-              spender,
-              allowed,
-              nonce: nonceNumber,
-              expiry: signatureDeadline,
-            }
-          : {
-              owner: account,
-              spender,
-              value,
-              nonce: nonceNumber,
-              deadline: signatureDeadline,
-            }
-        const domain = permitInfo.version
-          ? {
-              name: permitInfo.name,
-              version: permitInfo.version,
-              verifyingContract: tokenAddress,
-              chainId,
-            }
-          : {
-              name: permitInfo.name,
-              verifyingContract: tokenAddress,
-              chainId,
-            }
-        const data = JSON.stringify({
-          types: {
-            EIP712Domain: permitInfo.version ? EIP712_DOMAIN_TYPE : EIP712_DOMAIN_TYPE_NO_VERSION,
-            Permit: allowed ? PERMIT_ALLOWED_TYPE : EIP2612_TYPE,
-          },
-          domain,
-          primaryType: 'Permit',
-          message,
-        })
+        const object = generateObjectToSign(
+          permitInfo,
+          chainId,
+          tokenAddress,
+          account,
+          spender,
+          nonceNumber,
+          signatureDeadline
+        )
 
         return library
-          .send('eth_signTypedData_v4', [account, data])
+          .send('eth_signTypedData_v4', [account, JSON.stringify(object)])
           .then(splitSignature)
           .then((signature) => {
             setSignatureData({
@@ -232,7 +177,7 @@ export function useERC20Permit(
               r: signature.r,
               s: signature.s,
               deadline: signatureDeadline,
-              ...(allowed ? { allowed } : { amount: value }),
+              ...(object.message.allowed ? { allowed: true } : { amount: object.message.value }),
               nonce: nonceNumber,
               chainId,
               owner: account,
@@ -244,19 +189,23 @@ export function useERC20Permit(
       },
     }
   }, [
+    isArgentWallet,
+    forceNotApplicable,
     currencyAmount,
     eip2612Contract,
     account,
     chainId,
-    isArgentWallet,
     transactionDeadline,
     library,
-    tokenNonceState.loading,
     tokenNonceState.valid,
-    tokenNonceState.result,
+    tokenNonceState.loading,
     tokenAddress,
     spender,
     permitInfo,
+    checkedState,
+    nonceNumber,
+    domainSeparatorState.loading,
+    isSignatureDataValid,
     signatureData,
   ])
 }

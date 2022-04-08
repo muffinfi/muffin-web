@@ -6,9 +6,9 @@ import { ButtonConfirmed } from 'components/Button'
 import Loader from 'components/Loader'
 import { AutoRow } from 'components/Row'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { SignatureData } from 'hooks/useERC20Permit'
 import useApproveOrPermit, { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { TransactionType } from 'lib/state/transactions'
+import { SignatureData } from 'lib/utils/erc20Permit'
 import { useCallback, useEffect, useState } from 'react'
 import { Text } from 'rebass'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -49,6 +49,7 @@ export default function TokenApproveOrPermitButton({
   }, [onSignatureDataChange, amount.currency, signatureData])
 
   if (!amount.currency.isToken) return null
+  if (approvalState === ApproveOrPermitState.APPROVED) return null
 
   return (
     <ButtonConfirmed
@@ -56,18 +57,14 @@ export default function TokenApproveOrPermitButton({
       disabled={
         approvalState === ApproveOrPermitState.PENDING_APPROVAL ||
         approvalState === ApproveOrPermitState.PENDING_SIGNATURE ||
-        approvalState === ApproveOrPermitState.APPROVED ||
         approvalSubmitted
       }
       width="100%"
       altDisabledStyle={approvalState === ApproveOrPermitState.PENDING_APPROVAL} // show solid button while waiting
-      confirmed={approvalState === ApproveOrPermitState.APPROVED}
     >
       <AutoRow justify="center" gap="4px">
         <Text fontSize={20} fontWeight={500}>
-          {approvalState === ApproveOrPermitState.APPROVED ? (
-            <Trans>Allowed {amount.currency.symbol}</Trans>
-          ) : approvalState === ApproveOrPermitState.PENDING_APPROVAL ? (
+          {approvalState === ApproveOrPermitState.PENDING_APPROVAL ? (
             <Trans>Approving {amount.currency.symbol}</Trans>
           ) : approvalState === ApproveOrPermitState.PENDING_SIGNATURE ? (
             <Trans>Allowing {amount.currency.symbol}</Trans>

@@ -6,10 +6,9 @@ import { Percent } from '@uniswap/sdk-core'
 import { FeeOptions } from '@uniswap/v3-sdk'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useENS from 'hooks/useENS'
-import { SignatureData } from 'hooks/useERC20Permit'
 import { AnyTrade, useSwapCallArguments } from 'hooks/useSwapCallArguments'
+import { SignatureData } from 'lib/utils/erc20Permit'
 import { ReactNode, useMemo } from 'react'
-
 import useSendSwapTransaction from './useSendSwapTransaction'
 
 export enum SwapCallbackState {

@@ -62,7 +62,7 @@ export default function Withdraw({ history }: RouteComponentProps) {
     if (!account || !managerAddress || inputAmounts.length === 0) return
     // Sort currency amounts to prevent ETH/WETH race condition
     const amounts = inputAmounts as CurrencyAmount<Currency>[]
-    const { calldata, value } = AccountManager.multiWithdrawCallParameters(amounts, {
+    const { calldata, value } = AccountManager.withdrawCallParameters(amounts, {
       managerAddress,
       recipient: account,
     })
