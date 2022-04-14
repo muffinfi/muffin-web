@@ -1,7 +1,7 @@
 import { transparentize } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
+import { Box, BoxProps } from 'rebass'
 import styled from 'styled-components/macro'
-
 import Popover, { PopoverProps } from '../Popover'
 
 export const TooltipContainer = styled.div`
@@ -36,15 +36,19 @@ function TooltipContent({ content, wrap = false, ...rest }: TooltipContentProps)
   return <Popover content={wrap ? <TooltipContainer>{content}</TooltipContainer> : content} {...rest} />
 }
 
-export function MouseoverTooltip({ children, ...rest }: Omit<TooltipProps, 'show'>) {
+export function MouseoverTooltip({
+  children,
+  wrapperProps,
+  ...rest
+}: Omit<TooltipProps, 'show'> & { wrapperProps?: Omit<BoxProps, 'onMouseEnter' | 'onMouseLeave'> }) {
   const [show, setShow] = useState(false)
   const open = useCallback(() => setShow(true), [setShow])
   const close = useCallback(() => setShow(false), [setShow])
   return (
     <Tooltip {...rest} show={show}>
-      <div onMouseEnter={open} onMouseLeave={close}>
+      <Box {...wrapperProps} onMouseEnter={open} onMouseLeave={close}>
         {children}
-      </div>
+      </Box>
     </Tooltip>
   )
 }

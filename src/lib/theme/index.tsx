@@ -1,8 +1,6 @@
 import 'lib/assets/fonts.scss'
-
 import { mix, transparentize } from 'polished'
 import { createContext, ReactNode, useContext, useMemo, useState } from 'react'
-
 import styled, { ThemedProvider } from './styled'
 import { Colors, ComputedTheme, Theme } from './theme'
 
@@ -46,6 +44,8 @@ export const lightTheme: Colors = {
   // state
   ...stateColors,
 
+  white,
+  black,
   currentColor: 'currentColor',
 }
 
@@ -68,6 +68,8 @@ export const darkTheme: Colors = {
   // state
   ...stateColors,
 
+  white,
+  black,
   currentColor: 'currentColor',
 }
 

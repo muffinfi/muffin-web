@@ -4,7 +4,7 @@ import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffi
 import AccountHeader from 'components/account/AccountHeader'
 import { Wrapper } from 'components/account/styleds'
 import TokenRow from 'components/account/TokenRow'
-import { ButtonLight, ButtonPrimary } from 'components/Button'
+import { ButtonGray, ButtonPrimary } from 'components/Button'
 import { LoadingRows } from 'components/Loader/styled'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
@@ -95,9 +95,9 @@ export default function Account(props: RouteComponentProps) {
           <Trans>Account Overview</Trans>
         </ThemedText.Body>
         <ButtonRow>
-          <ButtonLight id="account-withdraw-button" as={Link} to="/account/withdraw">
+          <ButtonGray id="account-withdraw-button" as={Link} to="/account/withdraw">
             <Trans>Withdraw</Trans>
-          </ButtonLight>
+          </ButtonGray>
           <ButtonPrimary id="account-deposit-button" as={Link} to="/account/deposit">
             <Trans>Deposit</Trans>
           </ButtonPrimary>

@@ -10,7 +10,6 @@ import { loadingCss } from 'lib/css/loading'
 import styled, { Color, css, keyframes } from 'lib/theme'
 import { FunctionComponent, SVGProps } from 'react'
 /* eslint-disable no-restricted-imports */
-import { Icon as FeatherIcon } from 'react-feather'
 import {
   AlertTriangle as AlertTriangleIcon,
   ArrowDown as ArrowDownIcon,
@@ -22,6 +21,7 @@ import {
   Clock as ClockIcon,
   ExternalLink as LinkIcon,
   HelpCircle as HelpCircleIcon,
+  Icon as FeatherIcon,
   Info as InfoIcon,
   Settings as SettingsIcon,
   Slash as SlashIcon,
@@ -38,11 +38,11 @@ const StyledImage = styled.img`
   width: 1em;
 `
 function icon(Icon: FeatherIcon | SVGIcon) {
-  return styled(Icon)<{ color?: Color }>`
+  return styled(Icon)<{ color?: Color; size?: string }>`
     clip-path: stroke-box;
-    height: 1em;
+    height: ${({ size = '1em' }) => size};
     stroke: ${({ color = 'currentColor', theme }) => theme[color]};
-    width: 1em;
+    width: ${({ size = '1em' }) => size};
   `
 }
 

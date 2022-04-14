@@ -95,8 +95,8 @@ const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
   '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D': true, // Uniswap v2 router 02
 }
 
-// from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(): {
+// from the input swap inputs, compute the best trade and return it.
+export function useDerivedSwapInfo(swapState: SwapState): {
   currencies: { [field in Field]?: Currency | null }
   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
   parsedAmount: CurrencyAmount<Currency> | undefined
@@ -107,15 +107,15 @@ export function useDerivedSwapInfo(): {
   }
   allowedSlippage: Percent
 } {
-  const { account } = useActiveWeb3React()
-
   const {
     independentField,
     typedValue,
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
     recipient,
-  } = useSwapState()
+  } = swapState
+
+  const { account } = useActiveWeb3React()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -263,6 +263,23 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     independentField,
     recipient,
   }
+}
+
+export function swapStateToQueryParameters(swapState: SwapState) {
+  const params = new URLSearchParams()
+  if (swapState[Field.INPUT].currencyId && swapState[Field.INPUT].currencyId !== 'ETH') {
+    params.set('inputCurrency', swapState[Field.INPUT].currencyId as string)
+  }
+  if (swapState[Field.OUTPUT].currencyId && swapState[Field.OUTPUT].currencyId !== 'ETH') {
+    params.set('outputCurrency', swapState[Field.OUTPUT].currencyId as string)
+  }
+  if (swapState.typedValue) {
+    params.set('exactAmount', swapState.typedValue)
+  }
+  if (swapState.independentField) {
+    params.set('exactField', swapState.independentField)
+  }
+  return params.toString()
 }
 
 // updates the swap state to use the defaults for a given network

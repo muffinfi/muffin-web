@@ -1,8 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
+import { TabNavLink } from 'components/RouterTab'
+import { swapStateToQueryParameters } from 'state/swap/hooks'
+import { SwapState } from 'state/swap/reducer'
 import styled from 'styled-components/macro'
-
-import { ThemedText } from '../../theme'
 import { RowBetween, RowFixed } from '../Row'
 import SettingsTab from '../Settings'
 
@@ -12,14 +13,20 @@ const StyledSwapHeader = styled.div`
   color: ${({ theme }) => theme.text2};
 `
 
-export default function SwapHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
+const appendQuery = (base: string, search?: string) => {
+  return search ? `${base}?${search}` : base
+}
+
+export default function SwapHeader({ swapState, allowedSlippage }: { swapState: SwapState; allowedSlippage: Percent }) {
   return (
     <StyledSwapHeader>
       <RowBetween>
         <RowFixed>
-          <ThemedText.Black fontWeight={500} fontSize={16} style={{ marginRight: '8px' }}>
-            <Trans>Swap</Trans>
-          </ThemedText.Black>
+          <TabNavLink to={appendQuery('/swap', swapStateToQueryParameters(swapState))} title={<Trans>Swap</Trans>} />
+          <TabNavLink
+            to={appendQuery('/limit-range', swapStateToQueryParameters(swapState))}
+            title={<Trans>Limit Range</Trans>}
+          />
         </RowFixed>
         <RowFixed>
           <SettingsTab placeholderSlippage={allowedSlippage} />

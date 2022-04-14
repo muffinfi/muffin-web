@@ -38,7 +38,7 @@ export default function TokenDestinationToggleRow({
         <StyledToggleContainer onClick={onToggle}>
           <ToggleWrapper width="fit-content">
             <ToggleElement isActive={toInternalAccount} fontSize="12px">
-              <Trans>Internal Account</Trans>
+              <Trans>Muffin Account</Trans>
             </ToggleElement>
             <ToggleElement isActive={!toInternalAccount} fontSize="12px">
               <Trans>Wallet</Trans>

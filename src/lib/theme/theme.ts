@@ -20,6 +20,8 @@ export interface Colors {
   warning: string
   error: string
 
+  white: string
+  black: string
   currentColor: 'currentColor'
 }
 

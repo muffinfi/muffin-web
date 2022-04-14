@@ -20,6 +20,7 @@ export enum UseERC20PermitState {
   LOADING,
   NOT_SIGNED,
   SIGNED,
+  SIGNED_NOT_APPLICABLE, // we tried to sign and permit but failed
 }
 
 enum CheckDomainState {
@@ -85,29 +86,37 @@ export function useERC20Permit(
       signatureData.tokenAddress === tokenAddress &&
       signatureData.nonce === nonceNumber &&
       signatureData.spender === spender &&
-      ('allowed' in signatureData || JSBI.greaterThan(JSBI.BigInt(signatureData.amount), currencyAmount.quotient))
+      ('allowed' in signatureData ||
+        JSBI.greaterThanOrEqual(JSBI.BigInt(signatureData.amount), currencyAmount.quotient))
   )
 
+  // Fallback to not applicable if the signature cannot pass SelfPermit
   useEffect(() => {
     if (
+      forceNotApplicable ||
       !chainId ||
       !library ||
       !currencyAmount?.currency?.isToken ||
       !signatureData ||
       !isSignatureDataValid ||
       !permitInfo?.isEstimated ||
-      checkedState !== CheckDomainState.NOT_CHECK
+      checkedState === CheckDomainState.CHECKED
     ) {
       return
     }
     setCheckedState(CheckDomainState.CHECKING)
+    let ignore = false
     const data = SelfPermit.encodePermit(currencyAmount.currency, signatureData as PermitOptions)
     library
       .getSigner()
       .estimateGas({ to: MUFFIN_MANAGER_ADDRESSES[chainId], data })
-      .catch(() => setForceNotApplicable(true))
-      .finally(() => setCheckedState(CheckDomainState.CHECKED))
+      .catch(() => ignore || setForceNotApplicable(true))
+      .finally(() => ignore || setCheckedState(CheckDomainState.CHECKED))
+    return () => {
+      ignore = true
+    }
   }, [
+    forceNotApplicable,
     chainId,
     checkedState,
     currencyAmount?.currency,
@@ -118,10 +127,23 @@ export function useERC20Permit(
     tokenAddress,
   ])
 
+  // reset checking if currency changed
+  useEffect(() => {
+    setForceNotApplicable(false)
+    setCheckedState(CheckDomainState.NOT_CHECK)
+  }, [currencyAmount?.currency])
+
   return useMemo(() => {
+    if (forceNotApplicable) {
+      return {
+        state: UseERC20PermitState.SIGNED_NOT_APPLICABLE,
+        signatureData: null,
+        gatherPermitSignature: null,
+      }
+    }
+
     if (
       isArgentWallet ||
-      forceNotApplicable ||
       !currencyAmount ||
       !eip2612Contract ||
       !account ||

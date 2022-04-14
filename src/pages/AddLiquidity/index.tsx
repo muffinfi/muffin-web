@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPositionByTokenId } from '@muffinfi/hooks/useDerivedPosition'
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
@@ -12,6 +11,7 @@ import {
   MAX_TICK,
   MIN_TICK,
   nearestUsableTick,
+  PermitOptions,
   Pool,
   Position,
   PositionManager,
@@ -27,7 +27,11 @@ import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { Dots } from 'pages/Pool/styleds'
+import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
+import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
+import useCurrency from 'lib/hooks/useCurrency'
+import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
+import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -59,8 +63,6 @@ import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { ZERO_PERCENT } from '../../constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
-import { useCurrency } from '../../hooks/Tokens'
-import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
@@ -116,9 +118,12 @@ export default function AddLiquidity({
   const currencyA = useCurrency(currencyIdA) ?? undefined
   const _currencyB = useCurrency(currencyIdB) ?? undefined
   const currencyB = currencyA && _currencyB && currencyA.wrapped.equals(_currencyB.wrapped) ? undefined : _currencyB
-  const currencies = useMemo(() => ({ CURRENCY_A: currencyA, CURRENCY_B: currencyB }), [currencyA, currencyB])
   const baseCurrency = currencyA
   const quoteCurrency = currencyB
+  const currencies = useMemo(
+    () => ({ [Field.CURRENCY_A]: currencyA, [Field.CURRENCY_B]: currencyB }),
+    [currencyA, currencyB]
+  )
 
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
@@ -246,6 +251,7 @@ export default function AddLiquidity({
    *                       PARSED TOKEN AMOUNTS
    *====================================================================*/
 
+  const tryUseInternalAccount = useIsUsingInternalAccount()
   const { independentField, typedValue } = useV3MintState()
   const dependentField = independentField === Field.CURRENCY_A ? Field.CURRENCY_B : Field.CURRENCY_A
 
@@ -428,21 +434,13 @@ export default function AddLiquidity({
    *====================================================================*/
 
   // check whether the user has approved the router on the tokens
-  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
-  const [approvalA, approveACallback] = useApproveCallback(
-    argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_A],
-    managerAddress
-  )
-  const [approvalB, approveBCallback] = useApproveCallback(
-    argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_B],
-    managerAddress
-  )
+  const { permitSignatures, updatePermitSignature, approvalStates, updateApprovalStates } =
+    useTokenApproveOrPermitButtonHandler()
 
-  // we need an existence check on parsed amounts for single-asset deposits
-  const showApprovalAButton =
-    !argentWalletContract && approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
-  const showApprovalBButton =
-    !argentWalletContract && approvalB !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_B]
+  const amountsToApprove = {
+    [Field.CURRENCY_A]: useOutstandingAmountToApprove(account ?? undefined, parsedAmounts[Field.CURRENCY_A]),
+    [Field.CURRENCY_B]: useOutstandingAmountToApprove(account ?? undefined, parsedAmounts[Field.CURRENCY_B]),
+  }
 
   /*=====================================================================
    *                        CONFIRM MODAL TEXT
@@ -555,7 +553,11 @@ export default function AddLiquidity({
       // switch price
       onLeftRangeInput((invertPrice ? priceLower : priceUpper?.invert())?.toSignificant(6) ?? '')
       onRightRangeInput((invertPrice ? priceUpper : priceLower?.invert())?.toSignificant(6) ?? '')
-      onFieldAInput(formattedAmounts[Field.CURRENCY_B] ?? '')
+      if (independentField === Field.CURRENCY_A) {
+        onFieldBInput(formattedAmounts[Field.CURRENCY_A] ?? '')
+      } else {
+        onFieldAInput(formattedAmounts[Field.CURRENCY_B] ?? '')
+      }
     }
     history.push(`/add/${currencyIdB as string}/${currencyIdA as string}${sqrtGamma ? '/' + sqrtGamma : ''}`)
   }
@@ -578,7 +580,6 @@ export default function AddLiquidity({
    *                    ADD LIQUIDITY CHAIN ACTION
    *====================================================================*/
 
-  const tryUseInternalAccount = useIsUsingInternalAccount()
   const manager = useManagerContract()
   const deadline = useTransactionDeadline() // NOTE: not using currently
   const slippageTolerance = useUserSlippageToleranceWithDefault(
@@ -606,7 +607,6 @@ export default function AddLiquidity({
 
   /**
    * NOTE:
-   * - does not use SelfPermit to approve
    * - does not support deadline
    * - creating pool reduce position's received liquidity. UI not reminding user atm
    */
@@ -616,11 +616,14 @@ export default function AddLiquidity({
 
     const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
 
+    const isTokenAt0 = position.amount0.currency.equals(currencyA)
     const { calldata, value } = PositionManager.addCallParameters(position, {
       ...(hasExistingPosition && tokenId ? { tokenId } : { recipient: account, createPool: noLiquidity }),
       useAccount,
       slippageTolerance,
       useNative,
+      token0Permit: (permitSignatures[isTokenAt0 ? Field.CURRENCY_A : Field.CURRENCY_B] as PermitOptions) ?? undefined,
+      token1Permit: (permitSignatures[isTokenAt0 ? Field.CURRENCY_B : Field.CURRENCY_A] as PermitOptions) ?? undefined,
     })
 
     let txn = { to: manager.address, data: calldata, value }
@@ -665,23 +668,25 @@ export default function AddLiquidity({
       console.error('Failed to send transaction', error)
     }
   }, [
-    account,
-    addTransaction,
-    argentWalletContract,
-    baseCurrency,
     chainId,
-    currencies,
-    deadline,
-    hasExistingPosition,
     library,
-    manager,
-    noLiquidity,
-    parsedAmounts,
-    position,
+    account,
+    baseCurrency,
     quoteCurrency,
-    slippageTolerance,
+    manager,
+    position,
+    deadline,
+    currencyA,
+    hasExistingPosition,
     tokenId,
+    noLiquidity,
     useAccount,
+    slippageTolerance,
+    permitSignatures,
+    argentWalletContract,
+    parsedAmounts,
+    addTransaction,
+    currencies,
   ])
 
   /*=====================================================================
@@ -809,52 +814,33 @@ export default function AddLiquidity({
       </ButtonLight>
     ) : (
       <AutoColumn gap={'md'}>
-        {(approvalA === ApprovalState.NOT_APPROVED ||
-          approvalA === ApprovalState.PENDING ||
-          approvalB === ApprovalState.NOT_APPROVED ||
-          approvalB === ApprovalState.PENDING) &&
-          isValid && (
-            <RowBetween>
-              {showApprovalAButton && (
-                <ButtonPrimary
-                  onClick={approveACallback}
-                  disabled={approvalA === ApprovalState.PENDING}
-                  width={showApprovalBButton ? '48%' : '100%'}
-                >
-                  {approvalA === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencyA?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencyA?.symbol}</Trans>
-                  )}
-                </ButtonPrimary>
-              )}
-              {showApprovalBButton && (
-                <ButtonPrimary
-                  onClick={approveBCallback}
-                  disabled={approvalB === ApprovalState.PENDING}
-                  width={showApprovalAButton ? '48%' : '100%'}
-                >
-                  {approvalB === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencyB?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencyB?.symbol}</Trans>
-                  )}
-                </ButtonPrimary>
-              )}
-            </RowBetween>
-          )}
+        {!argentWalletContract &&
+          [Field.CURRENCY_A, Field.CURRENCY_B].map((field) => {
+            const key = field === Field.CURRENCY_A ? currencyIdA : currencyIdB
+            return (
+              <TokenApproveOrPermitButton
+                key={key ?? field}
+                buttonId={field}
+                amount={amountsToApprove[field]}
+                deadline={deadline}
+                hidden={!isValid || !key || approvalStates[field] === ApproveOrPermitState.APPROVED}
+                onSignatureDataChange={updatePermitSignature}
+                onStateChanged={updateApprovalStates}
+              />
+            )
+          })}
         <ButtonError
           onClick={() => {
             expertMode ? onAdd() : setShowTxModalConfirm(true)
           }}
           disabled={
             !isValid ||
-            (!argentWalletContract && approvalA !== ApprovalState.APPROVED && !depositADisabled) ||
-            (!argentWalletContract && approvalB !== ApprovalState.APPROVED && !depositBDisabled)
+            (!argentWalletContract &&
+              approvalStates[Field.CURRENCY_A] !== ApproveOrPermitState.APPROVED &&
+              !depositADisabled) ||
+            (!argentWalletContract &&
+              approvalStates[Field.CURRENCY_B] !== ApproveOrPermitState.APPROVED &&
+              !depositBDisabled)
           }
           error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
         >

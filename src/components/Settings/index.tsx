@@ -203,10 +203,14 @@ export default function SettingsTab({
             <RowBetween>
               <RowFixed>
                 <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  <Trans>Use Internal Account</Trans>
+                  <Trans>Use Muffin Account</Trans>
                 </ThemedText.Black>
                 <QuestionHelper
-                  text={<Trans>Include internal account balance and use them for swapping and adding liquidity.</Trans>}
+                  text={
+                    <Trans>
+                      Include internal Muffin account balance and use them for swapping and adding liquidity.
+                    </Trans>
+                  }
                 />
               </RowFixed>
               <Toggle

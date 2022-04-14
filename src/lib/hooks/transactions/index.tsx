@@ -59,10 +59,6 @@ export function usePendingApproval(token?: Token, spender?: string): string | un
   )?.info.response.hash
 }
 
-export function useIsPendingApproval(token?: Token, spender?: string): boolean {
-  return Boolean(usePendingApproval(token, spender))
-}
-
 export function usePendingApprovals(tokens: (Token | undefined)[], spender?: string): (string | undefined)[] {
   const { chainId } = useActiveWeb3React()
   const txs = useAtomValue(transactionsAtom)

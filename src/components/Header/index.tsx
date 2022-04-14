@@ -5,7 +5,7 @@ import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
 import { darken } from 'polished'
-import { NavLink } from 'react-router-dom'
+import { match, NavLink } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useDarkModeManager } from 'state/user/hooks'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
@@ -241,6 +241,11 @@ const StyledExternalLink = styled(ExternalLink).attrs({
 `
 */
 
+const isSwapActive = (matchOrNull: match | null, location: { pathname: string }) => {
+  if (matchOrNull) return true
+  return location.pathname.startsWith('/limit-range')
+}
+
 export default function Header() {
   const { account, chainId } = useActiveWeb3React()
 
@@ -276,7 +281,7 @@ export default function Header() {
         </UniIcon>
       </Title>
       <HeaderLinks>
-        <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
+        <StyledNavLink id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
           <Trans>Swap</Trans>
         </StyledNavLink>
         <StyledNavLink

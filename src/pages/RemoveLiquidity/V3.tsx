@@ -195,7 +195,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   /**
    * NOTE:
-   * - does not support internal account
    * - does not support collect as native eth
    * - does not support deadline
    */
@@ -428,7 +427,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <Trans>Store tokens into:</Trans>
             </Text>
             <Text fontSize={16} fontWeight={500}>
-              {storeInInternalAccount ? <Trans>Internal Account</Trans> : <Trans>Wallet</Trans>}
+              {storeInInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}
             </Text>
           </RowBetween>
         </>

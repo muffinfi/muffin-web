@@ -6,7 +6,6 @@ import { useBytes32TokenContract, useTokenContract } from 'hooks/useContract'
 import { NEVER_RELOAD, useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useMemo } from 'react'
-
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { isAddress } from '../../utils'
 import { supportedChainId } from '../../utils/supportedChainId'
@@ -43,31 +42,38 @@ export function useTokenFromNetwork(tokenAddress: string | null | undefined): To
   const symbolBytes32 = useSingleCallResult(tokenContractBytes32, 'symbol', undefined, NEVER_RELOAD)
   const decimals = useSingleCallResult(tokenContract, 'decimals', undefined, NEVER_RELOAD)
 
+  // Pick the result out of memo to prevent putting the whole call state result as dep
+  const decimalsString = decimals.result?.[0]
+  const symbolString = symbol.result?.[0]
+  const symbolBytes32String = symbolBytes32.result?.[0]
+  const tokenNameString = tokenName.result?.[0]
+  const tokenNameBytes32String = tokenNameBytes32.result?.[0]
+
   return useMemo(() => {
     if (typeof tokenAddress !== 'string' || !chainId || !formattedAddress) return undefined
     if (decimals.loading || symbol.loading || tokenName.loading) return null
-    if (decimals.result) {
+    if (decimalsString) {
       return new Token(
         chainId,
         formattedAddress,
-        decimals.result[0],
-        parseStringOrBytes32(symbol.result?.[0], symbolBytes32.result?.[0], 'UNKNOWN'),
-        parseStringOrBytes32(tokenName.result?.[0], tokenNameBytes32.result?.[0], 'Unknown Token')
+        decimalsString,
+        parseStringOrBytes32(symbolString, symbolBytes32String, 'UNKNOWN'),
+        parseStringOrBytes32(tokenNameString, tokenNameBytes32String, 'Unknown Token')
       )
     }
     return undefined
   }, [
-    formattedAddress,
-    chainId,
-    decimals.loading,
-    decimals.result,
-    symbol.loading,
-    symbol.result,
-    symbolBytes32.result,
     tokenAddress,
+    chainId,
+    formattedAddress,
+    decimals.loading,
+    decimalsString,
+    symbol.loading,
     tokenName.loading,
-    tokenName.result,
-    tokenNameBytes32.result,
+    symbolString,
+    symbolBytes32String,
+    tokenNameString,
+    tokenNameBytes32String,
   ])
 }
 

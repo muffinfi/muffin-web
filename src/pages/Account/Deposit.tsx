@@ -4,7 +4,6 @@ import { AccountManager, StandardPermitArguments } from '@muffinfi/muffin-v1-sdk
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
-import TokenApproveOrPermitButton from 'components/account/TokenApproveOrPermitButton'
 import { ButtonLight, ButtonPrimary, ButtonText } from 'components/Button'
 import { GreyCard, LightCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -18,10 +17,12 @@ import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
 import { useCurrency, useIsTokenActive } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { ApprovalState, useMultipleApprovalStateForSpender } from 'lib/hooks/useApproval'
-import { SignatureData } from 'lib/utils/erc20Permit'
+import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
+import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
+import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import AppBody from 'pages/AppBody'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -33,8 +34,10 @@ import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode } from 'state/user/hooks'
 import { ThemedText } from 'theme'
+import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { AlertWrapper, Wrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 
@@ -53,21 +56,21 @@ export default function Deposit({ history }: RouteComponentProps) {
   const [txnHash, setTxnHash] = useState('')
   const [inputAmounts, setInputAmounts] = useState<(CurrencyAmount<Currency> | undefined)[]>([undefined])
   const [maxInputAmounts, setMaxInputAmounts] = useState<(CurrencyAmount<Currency> | undefined)[]>([undefined])
-  const [permitSignatures, setPermitSignatures] = useState<{ [tokenAddress: string]: SignatureData }>({})
+  const { permitSignatures, updatePermitSignature, approvalStates, updateApprovalStates } =
+    useTokenApproveOrPermitButtonHandler()
 
-  const approvalStates = useMultipleApprovalStateForSpender(inputAmounts, managerAddress)
+  const argentWalletContract = useArgentWalletContract()
 
   const resetState = useCallback(() => {
     setInputAmounts([undefined])
     setMaxInputAmounts([undefined])
-    setPermitSignatures({})
     setTxnHash('')
   }, [])
 
   const deposit = useCallback(() => {
     if (!account || !managerAddress || inputAmounts.length === 0) return
     // Sort currency amounts to prevent ETH/WETH race condition
-    const amounts = ([...inputAmounts] as CurrencyAmount<Currency>[]).sort((a, b) =>
+    const amounts = (inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).sort((a, b) =>
       a.currency.isNative ? -1 : b.currency.isNative ? 1 : 0
     )
     const { calldata, value } = AccountManager.depositCallParameters(amounts, {
@@ -75,12 +78,29 @@ export default function Deposit({ history }: RouteComponentProps) {
       recipient: account,
       inputTokenPermits: permitSignatures as { [address: string]: StandardPermitArguments },
     })
-    const data = { to: managerAddress, data: calldata, value }
+    const req = argentWalletContract
+      ? {
+          to: argentWalletContract.address,
+          data: argentWalletContract.interface.encodeFunctionData('wc_multiCall', [
+            [
+              ...amounts
+                .filter((amount): amount is CurrencyAmount<Token> => amount.currency.isToken)
+                .map((amount) => approveAmountCalldata(amount, managerAddress)),
+              {
+                to: managerAddress,
+                value,
+                data: calldata,
+              },
+            ],
+          ]),
+          value,
+        }
+      : { to: managerAddress, data: calldata, value }
     setIsAttemptingTxn(true)
     library
       ?.getSigner()
-      .estimateGas(data)
-      .then((estimate) => library.getSigner().sendTransaction({ ...data, gasLimit: calculateGasMargin(estimate) }))
+      .estimateGas(req)
+      .then((estimate) => library.getSigner().sendTransaction({ ...req, gasLimit: calculateGasMargin(estimate) }))
       .then((response) => {
         setTxnHash(response.hash)
         setIsAttemptingTxn(false)
@@ -110,6 +130,7 @@ export default function Deposit({ history }: RouteComponentProps) {
       })
   }, [
     account,
+    argentWalletContract,
     managerAddress,
     inputAmounts,
     permitSignatures,
@@ -140,7 +161,7 @@ export default function Deposit({ history }: RouteComponentProps) {
     <AutoColumn gap={'md'} style={{ marginTop: '20px' }}>
       <LightCard padding="12px 16px">
         <AutoColumn gap="md">
-          {inputAmounts.map((amount, index) => (
+          {inputAmounts.filter(Boolean).map((amount, index) => (
             <RowBetween key={getRowKey(amount?.currency, index)}>
               <RowFixed>
                 <CurrencyLogo currency={amount?.currency} size={'20px'} style={{ marginRight: '0.5rem' }} />
@@ -198,10 +219,20 @@ export default function Deposit({ history }: RouteComponentProps) {
     setMaxInputAmounts((prev) => [...prev.slice(0, index), undefined, ...prev.slice(index + 1)])
   }, [])
 
-  const onRemoveRow = useCallback((index: number) => {
-    setInputAmounts((prev) => [...prev.slice(0, index), ...prev.slice(index + 1)])
-    setMaxInputAmounts((prev) => [...prev.slice(0, index), ...prev.slice(index + 1)])
-  }, [])
+  const onRemoveRow = useCallback(
+    (index: number) => {
+      setInputAmounts((prev) => {
+        const amount = prev[index]
+        if (amount?.currency.isToken) {
+          updatePermitSignature(null, amount.currency.address)
+          updateApprovalStates(ApproveOrPermitState.REQUIRES_SIGNATURE, amount.currency.address)
+        }
+        return [...prev.slice(0, index), ...prev.slice(index + 1)]
+      })
+      setMaxInputAmounts((prev) => [...prev.slice(0, index), ...prev.slice(index + 1)])
+    },
+    [updateApprovalStates, updatePermitSignature]
+  )
 
   const isCurrencySelected = useCallback(
     (currency: Currency) => inputAmounts.findIndex((amount) => amount?.currency.equals(currency)) > -1,
@@ -250,40 +281,28 @@ export default function Deposit({ history }: RouteComponentProps) {
   const deadline = useTransactionDeadline()
   const pendingApprovalCurrencyAmounts = useMemo(
     () =>
-      inputAmounts.filter(
-        (amount, i) =>
-          amount &&
-          approvalStates[i] !== ApprovalState.APPROVED &&
-          amount.currency.isToken &&
-          !permitSignatures[amount.currency.address]
-      ) as CurrencyAmount<Token>[],
-    [inputAmounts, approvalStates, permitSignatures]
+      argentWalletContract
+        ? []
+        : (inputAmounts.filter(
+            (amount, i) =>
+              amount?.currency.isToken && approvalStates[amount.currency.address] !== ApproveOrPermitState.APPROVED
+          ) as CurrencyAmount<Token>[]),
+    [argentWalletContract, inputAmounts, approvalStates]
   )
 
-  const onSignatureDataChange = useCallback((token: Token, signatureData: SignatureData | null) => {
-    if (signatureData) {
-      setPermitSignatures((prev) => ({ ...prev, [token.address]: signatureData }))
-    } else {
-      setPermitSignatures((prev) => {
-        const state = { ...prev }
-        delete state[token.address]
-        return state
-      })
-    }
-  }, [])
-
-  const makeApprovalButtons = () => (
-    <>
-      {(inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).map((amount) => (
-        <TokenApproveOrPermitButton
-          key={amount.currency.isNative ? 'ETH' : amount.currency.address}
-          amount={amount}
-          deadline={deadline}
-          onSignatureDataChange={onSignatureDataChange}
-        />
-      ))}
-    </>
-  )
+  const makeApprovalButtons = () =>
+    argentWalletContract
+      ? null
+      : (inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).map((amount) => (
+          <TokenApproveOrPermitButton
+            key={amount.currency.isNative ? 'ETH' : amount.currency.address}
+            buttonId={amount.currency.isNative ? 'ETH' : amount.currency.address}
+            amount={amount}
+            deadline={deadline}
+            onSignatureDataChange={updatePermitSignature}
+            onStateChanged={updateApprovalStates}
+          />
+        ))
 
   /*=====================================================================
    *                          Deposit button
@@ -291,7 +310,7 @@ export default function Deposit({ history }: RouteComponentProps) {
 
   const zeroCurrencyAmount = useMemo(() => inputAmounts.find((amount) => !amount || amount.equalTo(0)), [inputAmounts])
   const overflowCurrencyAmount = useMemo(
-    () => inputAmounts.find((amount, i) => amount && maxInputAmounts[i]?.lessThan(amount)),
+    () => inputAmounts.find((amount, i) => amount && maxAmountSpend(maxInputAmounts[i])?.lessThan(amount)),
     [inputAmounts, maxInputAmounts]
   )
 
@@ -366,7 +385,6 @@ export default function Deposit({ history }: RouteComponentProps) {
     if (!defaultCurrency) return
     if (isDefaultTokenActive) {
       setMaxInputAmounts([undefined])
-      setPermitSignatures({})
       setInputAmounts([CurrencyAmount.fromRawAmount(defaultCurrency, 0)])
     } else {
       setIsTokenWarningModelOpen(true)

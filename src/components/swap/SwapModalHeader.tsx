@@ -119,7 +119,7 @@ export default function SwapModalHeader({
           <Trans>Store token into</Trans>
         </ThemedText.Body>
         <Text color={theme.text1} fontWeight={500} fontSize={14}>
-          {toInternalAccount ? <Trans>Internal Account</Trans> : <Trans>Wallet</Trans>}
+          {toInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}
         </Text>
       </RowBetween>
 

@@ -20,6 +20,7 @@ import Deposit from './Account/Deposit'
 import Withdraw from './Account/Withdraw'
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
+import LimitRange from './LimitRange'
 // import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 // import Earn from './Earn'
 // import Manage from './Earn/Manage'
@@ -104,6 +105,8 @@ export default function App() {
                 <Route exact strict path="/send" component={RedirectPathToSwapOnly} />
                 <Route exact strict path="/swap/:outputCurrency" component={RedirectToSwap} />
                 <Route exact strict path="/swap" component={Swap} />
+
+                <Route exact strict path="/limit-range" component={LimitRange} />
 
                 {/* <Route exact strict path="/pool/v2/find" component={PoolFinder} /> */}
                 {/* <Route exact strict path="/pool/v2" component={PoolV2} /> */}
