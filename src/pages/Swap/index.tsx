@@ -425,43 +425,50 @@ export default function Swap({ history }: RouteComponentProps) {
 
   const makeButton = () => (
     <div>
-      {swapIsUnsupported ? (
-        <ButtonPrimary disabled={true}>
-          <ThemedText.Main mb="4px">
-            <Trans>Unsupported Asset</Trans>
-          </ThemedText.Main>
-        </ButtonPrimary>
-      ) : !account ? (
-        <ButtonLight onClick={toggleWalletModal}>
-          <Trans>Connect Wallet</Trans>
-        </ButtonLight>
-      ) : showWrap ? (
-        <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap}>
-          {wrapInputError ? (
-            <WrapErrorText wrapInputError={wrapInputError} />
-          ) : wrapType === WrapType.WRAP ? (
-            <Trans>Wrap</Trans>
-          ) : wrapType === WrapType.UNWRAP ? (
-            <Trans>Unwrap</Trans>
-          ) : null}
-        </ButtonPrimary>
-      ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
-        <GreyCard style={{ textAlign: 'center' }}>
-          <ThemedText.Main mb="4px">
-            <Trans>Insufficient liquidity for this trade.</Trans>
-          </ThemedText.Main>
-        </GreyCard>
-      ) : showApproveFlow ? (
-        <AutoRow style={{ flexWrap: 'nowrap', width: '100%' }}>
-          <AutoColumn style={{ width: '100%' }} gap="12px">
-            <TokenApproveOrPermitButton
-              buttonId={Field.INPUT}
-              amount={amountToApprove}
-              deadline={transactionDeadline}
-              onSignatureDataChange={setSignatureData}
-              onStateChanged={setApprovalState}
-              onSubmitApproval={onSubmitApproval}
-            />
+      <AutoRow style={{ flexWrap: 'nowrap', width: '100%' }}>
+        <AutoColumn style={{ width: '100%' }} gap="12px">
+          <TokenApproveOrPermitButton
+            buttonId={Field.INPUT}
+            amount={amountToApprove}
+            deadline={transactionDeadline}
+            hidden={
+              swapIsUnsupported ||
+              !account ||
+              showWrap ||
+              (routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing) ||
+              !showApproveFlow
+            }
+            onSignatureDataChange={setSignatureData}
+            onStateChanged={setApprovalState}
+            onSubmitApproval={onSubmitApproval}
+          />
+          {swapIsUnsupported ? (
+            <ButtonPrimary disabled={true}>
+              <ThemedText.Main mb="4px">
+                <Trans>Unsupported Asset</Trans>
+              </ThemedText.Main>
+            </ButtonPrimary>
+          ) : !account ? (
+            <ButtonLight onClick={toggleWalletModal}>
+              <Trans>Connect Wallet</Trans>
+            </ButtonLight>
+          ) : showWrap ? (
+            <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap}>
+              {wrapInputError ? (
+                <WrapErrorText wrapInputError={wrapInputError} />
+              ) : wrapType === WrapType.WRAP ? (
+                <Trans>Wrap</Trans>
+              ) : wrapType === WrapType.UNWRAP ? (
+                <Trans>Unwrap</Trans>
+              ) : null}
+            </ButtonPrimary>
+          ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
+            <GreyCard style={{ textAlign: 'center' }}>
+              <ThemedText.Main mb="4px">
+                <Trans>Insufficient liquidity for this trade.</Trans>
+              </ThemedText.Main>
+            </GreyCard>
+          ) : (
             <ButtonError
               onClick={() => {
                 if (isExpertMode) {
@@ -483,12 +490,15 @@ export default function Swap({ history }: RouteComponentProps) {
                 routeIsSyncing ||
                 routeIsLoading ||
                 approvalState !== ApproveOrPermitState.APPROVED ||
-                priceImpactTooHigh
+                priceImpactTooHigh ||
+                !!swapCallbackError
               }
-              error={isValid && priceImpactSeverity > 2}
+              error={isValid && priceImpactSeverity > 2 && !swapCallbackError}
             >
-              <Text fontSize={16} fontWeight={500}>
-                {priceImpactTooHigh ? (
+              <Text fontSize={20} fontWeight={500}>
+                {swapInputError ? (
+                  swapInputError
+                ) : priceImpactTooHigh ? (
                   <Trans>High Price Impact</Trans>
                 ) : trade && priceImpactSeverity > 2 ? (
                   <Trans>Swap Anyway</Trans>
@@ -497,42 +507,9 @@ export default function Swap({ history }: RouteComponentProps) {
                 )}
               </Text>
             </ButtonError>
-          </AutoColumn>
-        </AutoRow>
-      ) : (
-        <ButtonError
-          onClick={() => {
-            if (isExpertMode) {
-              handleSwap()
-            } else {
-              setSwapState({
-                tradeToConfirm: trade,
-                attemptingTxn: false,
-                swapErrorMessage: undefined,
-                showConfirm: true,
-                txHash: undefined,
-              })
-            }
-          }}
-          id="swap-button"
-          disabled={!isValid || routeIsSyncing || routeIsLoading || priceImpactTooHigh || !!swapCallbackError}
-          error={isValid && priceImpactSeverity > 2 && !swapCallbackError}
-        >
-          <Text fontSize={20} fontWeight={500}>
-            {swapInputError ? (
-              swapInputError
-            ) : routeIsSyncing || routeIsLoading ? (
-              <Trans>Swap</Trans>
-            ) : priceImpactSeverity > 2 ? (
-              <Trans>Swap Anyway</Trans>
-            ) : priceImpactTooHigh ? (
-              <Trans>Price Impact Too High</Trans>
-            ) : (
-              <Trans>Swap</Trans>
-            )}
-          </Text>
-        </ButtonError>
-      )}
+          )}
+        </AutoColumn>
+      </AutoRow>
       {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
     </div>
   )

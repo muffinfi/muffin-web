@@ -9,6 +9,7 @@ import Loader from 'components/Loader'
 import { AutoRow } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useApproveOrPermit, { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { CheckCircle, HelpCircle } from 'lib/icons'
 import { TransactionType } from 'lib/state/transactions'
@@ -106,6 +107,8 @@ export default function TokenApproveOrPermitButton({
   const [approvalSubmitted, setApprovalSubmitted] = useState(false)
   const [submitCount, setSubmitCount] = useState(0)
   const spender = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const tokenAddress = amount?.currency?.isToken ? amount.currency.address : undefined
+  const prevTokenAddress = usePreviousExclude(tokenAddress, EXCLUDE_NULL_OR_UNDEFINED)
 
   const approvalObject = useApproveOrPermit(amount, spender, deadline)
 
@@ -151,9 +154,10 @@ export default function TokenApproveOrPermitButton({
 
   // reset submit state
   useEffect(() => {
+    if (tokenAddress === prevTokenAddress || !tokenAddress) return
     setApprovalSubmitted(false)
     setSubmitCount(0)
-  }, [amount?.currency])
+  }, [tokenAddress, prevTokenAddress])
 
   // only display on currency is token and amount > 0
   if (hidden || !amount?.currency.isToken || amount?.equalTo(0)) return null

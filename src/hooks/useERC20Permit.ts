@@ -10,6 +10,7 @@ import { generateObjectToSign, getPermitInfo, PermitInfo, SignatureData } from '
 import { useEffect, useMemo, useState } from 'react'
 import { useEIP2612Contract } from './useContract'
 import useIsArgentWallet from './useIsArgentWallet'
+import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from './usePreviousExclude'
 
 // 20 minutes to submit after signing
 const PERMIT_VALIDITY_BUFFER = 20 * 60
@@ -41,6 +42,7 @@ export function useERC20Permit(
 } {
   const { account, chainId, library } = useActiveWeb3React()
   const tokenAddress = currencyAmount?.currency?.isToken ? currencyAmount.currency.address : undefined
+  const prevTokenAddress = usePreviousExclude(tokenAddress, EXCLUDE_NULL_OR_UNDEFINED)
 
   const eip2612Contract = useEIP2612Contract(tokenAddress)
   const isArgentWallet = useIsArgentWallet()
@@ -129,9 +131,10 @@ export function useERC20Permit(
 
   // reset checking if currency changed
   useEffect(() => {
+    if (prevTokenAddress === tokenAddress || !tokenAddress) return
     setForceNotApplicable(false)
     setCheckedState(CheckDomainState.NOT_CHECK)
-  }, [currencyAmount?.currency])
+  }, [prevTokenAddress, tokenAddress])
 
   return useMemo(() => {
     if (forceNotApplicable) {
