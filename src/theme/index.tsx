@@ -66,13 +66,13 @@ function colors(darkMode: boolean): Colors {
     text5: darkMode ? '#2C2F36' : '#EDEEF2',
 
     // backgrounds / greys
-    bg0: darkMode ? '#191B1F' : '#FFF',
-    bg1: darkMode ? '#212429' : '#F7F8FA',
-    bg2: darkMode ? '#2C2F36' : '#EDEEF2',
-    bg3: darkMode ? '#40444F' : '#CED0D9',
-    bg4: darkMode ? '#565A69' : '#888D9B',
-    bg5: darkMode ? '#6C7284' : '#888D9B',
-    bg6: darkMode ? '#1A2028' : '#6C7284',
+    bg0: darkMode ? '#191919' : '#FFF', //    '#FFF',
+    bg1: darkMode ? '#212121' : '#F8F8F8', // '#F7F8FA',
+    bg2: darkMode ? '#2C2C2C' : '#EEEEEE', // '#EDEEF2',
+    bg3: darkMode ? '#404040' : '#CCCCCC', // '#CED0D9',
+    bg4: darkMode ? '#565656' : '#B0B0B0', // '#888D9B',
+    bg5: darkMode ? '#6C6C6C' : '#989898', // '#888D9B',
+    bg6: darkMode ? '#1A1A1A' : '#818181', // '#6C7284',
 
     //specialty colors
     modalBG: darkMode ? 'rgba(0,0,0,.425)' : 'rgba(0,0,0,0.3)',
@@ -141,12 +141,66 @@ function theme(darkMode: boolean): DefaultTheme {
   }
 }
 
+/**
+ * Inject the theme object into css variables
+ */
+const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
+  html {
+    ${({ theme }) => `
+      --text1: ${theme.text1};
+      --text2: ${theme.text2};
+      --text3: ${theme.text3};
+      --text4: ${theme.text4};
+      --text5: ${theme.text5};
+      --bg0: ${theme.bg0};
+      --bg1: ${theme.bg1};
+      --bg2: ${theme.bg2};
+      --bg3: ${theme.bg3};
+      --bg4: ${theme.bg4};
+      --bg5: ${theme.bg5};
+      --bg6: ${theme.bg6};
+      --modalBG: ${theme.modalBG};
+      --advancedBG: ${theme.advancedBG};
+      --primary1: ${theme.primary1};
+      --primary2: ${theme.primary2};
+      --primary3: ${theme.primary3};
+      --primary4: ${theme.primary4};
+      --primary5: ${theme.primary5};
+      --primaryText1: ${theme.primaryText1};
+      --secondary1: ${theme.secondary1};
+      --secondary2: ${theme.secondary2};
+      --secondary3: ${theme.secondary3};
+      --red1: ${theme.red1};
+      --red2: ${theme.red2};
+      --red3: ${theme.red3};
+      --green1: ${theme.green1};
+      --yellow1: ${theme.yellow1};
+      --yellow2: ${theme.yellow2};
+      --yellow3: ${theme.yellow3};
+      --blue1: ${theme.blue1};
+      --blue2: ${theme.blue2};
+      --error: ${theme.error};
+      --success: ${theme.success};
+      --warning: ${theme.warning};
+
+      --fw-bold: 600;
+      --fw-semibold: 500;
+      --fw-regular: 400;
+    `}
+  }
+`
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const darkMode = useIsDarkMode()
 
   const themeObject = useMemo(() => theme(darkMode), [darkMode])
 
-  return <StyledComponentsThemeProvider theme={themeObject}>{children}</StyledComponentsThemeProvider>
+  return (
+    <StyledComponentsThemeProvider theme={themeObject}>
+      <ThemeCssVariables theme={themeObject} />
+      {children}
+    </StyledComponentsThemeProvider>
+  )
 }
 
 const TextWrapper = styled(Text)<{ color: keyof Colors }>`
@@ -214,6 +268,6 @@ html {
 }
 
 a {
- color: ${({ theme }) => theme.blue1}; 
+ color: ${({ theme }) => theme.blue1};
 }
 `

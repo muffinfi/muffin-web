@@ -38,20 +38,14 @@ import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 
 // const Vote = lazy(() => import('./Vote'))
 
-const AppWrapper = styled.div`
-  display: flex;
-  flex-flow: column;
-  align-items: flex-start;
-`
-
 const BodyWrapper = styled.div`
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  padding: 120px 16px 0px 16px;
   align-items: center;
-  flex: 1;
-  z-index: 1;
+
+  padding: 120px 16px 0px 16px;
+  margin-bottom: 40px;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     padding: 4rem 8px 16px 8px;
@@ -59,16 +53,10 @@ const BodyWrapper = styled.div`
 `
 
 const HeaderWrapper = styled.div`
-  ${({ theme }) => theme.flexRowNoWrap}
-  width: 100%;
-  justify-content: space-between;
   position: fixed;
   top: 0;
   z-index: 2;
-`
-
-const Marginer = styled.div`
-  margin-top: 5rem;
+  width: 100%;
 `
 
 function TopLevelModals() {
@@ -84,7 +72,7 @@ export default function App() {
       <Route component={DarkModeQueryParamReader} />
       <Route component={ApeModeQueryParamReader} />
       <Web3ReactManager>
-        <AppWrapper>
+        <>
           <HeaderWrapper>
             <Header />
           </HeaderWrapper>
@@ -132,9 +120,8 @@ export default function App() {
                 <Route component={RedirectPathToSwapOnly} />
               </Switch>
             </Suspense>
-            <Marginer />
           </BodyWrapper>
-        </AppWrapper>
+        </>
       </Web3ReactManager>
     </ErrorBoundary>
   )

@@ -17,6 +17,10 @@ import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 import { MouseoverTooltip } from '../Tooltip'
 import { ChainConnectivityWarning } from './ChainConnectivityWarning'
 
+// FIXME:
+// This is not used in Header, but rather in the bottom of the page,
+// even though this file is put inside the Header folder...
+
 const StyledPolling = styled.div<{ warning: boolean }>`
   position: fixed;
   display: flex;

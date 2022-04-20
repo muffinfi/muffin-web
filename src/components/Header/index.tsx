@@ -3,243 +3,103 @@ import useScrollPosition from '@react-hook/window-scroll'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import useTheme from 'hooks/useTheme'
-import { darken } from 'polished'
 import { match, NavLink } from 'react-router-dom'
-import { Text } from 'rebass'
 import { useDarkModeManager } from 'state/user/hooks'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
 import { ReactComponent as Logo } from '../../assets/svg/logo.svg'
 import Menu from '../Menu'
-import Row from '../Row'
 import Web3Status from '../Web3Status'
-import HolidayOrnament from './HolidayOrnament'
+import HeaderButton from './HeaderButton'
 import NetworkSelector from './NetworkSelector'
 
+///// HEADER /////
+
 const HeaderFrame = styled.div<{ showBackground: boolean }>`
-  display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  width: 100%;
-  top: 0;
-  position: relative;
-  padding: 1rem;
-  z-index: 21;
-  position: relative;
-  /* Background slide effect on scroll. */
-  background-image: ${({ theme }) => `linear-gradient(to bottom, transparent 50%, ${theme.bg0} 50% )}}`};
-  background-position: ${({ showBackground }) => (showBackground ? '0 -100%' : '0 0')};
-  background-size: 100% 200%;
-  box-shadow: 0px 0px 0px 1px ${({ theme, showBackground }) => (showBackground ? theme.bg2 : 'transparent;')};
-  transition: background-position 0.1s, box-shadow 0.1s;
-  background-blend-mode: hard-light;
 
-  ${({ theme }) => theme.mediaWidth.upToLarge`
-    grid-template-columns: 48px 1fr 1fr;
-  `};
+  padding: 16px;
+  transition: background 0.1s, box-shadow 0.1s;
 
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    padding:  1rem;
-    grid-template-columns: 1fr 1fr;
-  `};
+  font-size: 1rem;
+  font-weight: var(--fw-semibold);
 
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    padding:  1rem;
-    grid-template-columns: 36px 1fr;
+  ${({ theme, showBackground }) => `
+    background: ${showBackground ? (theme.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255, 0.3)') : 'transparent'};
+    backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
+    box-shadow: 0px 0px 0px 1px ${showBackground ? 'var(--bg2)' : 'transparent'};
   `};
 `
 
-const HeaderControls = styled.div`
+const Row = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-self: flex-end;
 `
 
-const HeaderElement = styled.div`
-  display: flex;
-  align-items: center;
+const HeaderLeft = styled(Row)``
 
-  &:not(:first-child) {
+const HeaderRight = styled(Row)`
+  & > :not(:first-child) {
     margin-left: 0.5em;
   }
+`
 
-  /* addresses safari's lack of support for "gap" */
-  & > *:not(:first-child) {
-    margin-left: 8px;
-  }
+///// LEFT /////
 
+const LogoAnchor = styled.a`
+  margin-right: 32px;
+  pointer-events: auto;
+  cursor: pointer;
+`
+
+const NavBar = styled(Row)`
   ${({ theme }) => theme.mediaWidth.upToMedium`
-    align-items: center;
+    display: none;
   `};
 `
 
-const HeaderLinks = styled(Row)`
-  justify-self: center;
-  background-color: ${({ theme }) => theme.bg0};
-  width: fit-content;
-  padding: 2px;
-  border-radius: 16px;
-  display: grid;
-  grid-auto-flow: column;
-  grid-gap: 10px;
-  overflow: auto;
-  align-items: center;
-  ${({ theme }) => theme.mediaWidth.upToLarge`
-    justify-self: start;
-    `};
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    justify-self: center;
-  `};
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    flex-direction: row;
-    justify-content: space-between;
-    justify-self: center;
-    z-index: 99;
-    position: fixed;
-    bottom: 0; right: 50%;
-    transform: translate(50%,-50%);
-    margin: 0 auto;
-    background-color: ${({ theme }) => theme.bg0};
-    border: 1px solid ${({ theme }) => theme.bg2};
-    box-shadow: 0px 6px 10px rgb(0 0 0 / 2%);
-  `};
-`
-
-const AccountElement = styled.div<{ active: boolean }>`
+const StyledNavLink = styled(NavLink).attrs({ activeClassName: 'ACTIVE' })`
   display: flex;
   flex-direction: row;
-  align-items: center;
-  background-color: ${({ theme, active }) => (!active ? theme.bg0 : theme.bg0)};
-  border-radius: 16px;
-  white-space: nowrap;
-  width: 100%;
-  height: 40px;
 
-  :focus {
-    border: 1px solid blue;
-  }
-`
+  margin-right: 16px;
+  padding: 8px 12px;
+  border-radius: 14px;
 
-/*
-const UNIAmount = styled(AccountElement)`
-  color: white;
-  padding: 4px 8px;
-  height: 36px;
-  font-weight: 500;
-  background-color: ${({ theme }) => theme.bg3};
-  background: radial-gradient(174.47% 188.91% at 1.84% 0%, #ff007a 0%, #2172e5 100%), #edeef2;
-`
+  color: var(--text2);
 
-const UNIWrapper = styled.span`
-  width: fit-content;
-  position: relative;
   cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  white-space: nowrap;
 
-  :hover {
-    opacity: 0.8;
+  &.ACTIVE {
+    font-weight: var(--fw-bold);
+    color: var(--text1);
+    background-color: var(--bg0);
   }
 
-  :active {
-    opacity: 0.9;
+  :hover,
+  :focus {
+    color: var(--text1);
   }
 `
-*/
 
-const BalanceText = styled(Text)`
+///// RIGHT /////
+
+const BalanceText = styled.div`
+  padding: 0.75rem 0.5rem;
+
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     display: none;
   `};
 `
 
-const Title = styled.a`
-  display: flex;
-  align-items: center;
-  pointer-events: auto;
-  justify-self: flex-start;
-  margin-right: 12px;
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    justify-self: center;
-  `};
-  :hover {
-    cursor: pointer;
-  }
-`
-
-const UniIcon = styled.div`
-  transition: transform 0.3s ease;
-  :hover {
-    transform: rotate(-5deg);
-  }
-
-  position: relative;
-`
-
-const activeClassName = 'ACTIVE'
-
-const StyledNavLink = styled(NavLink).attrs({
-  activeClassName,
-})`
-  ${({ theme }) => theme.flexRowNoWrap}
-  align-items: left;
-  border-radius: 3rem;
-  outline: none;
-  cursor: pointer;
-  text-decoration: none;
-  color: ${({ theme }) => theme.text2};
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 8px 12px;
-  word-break: break-word;
-  overflow: hidden;
-  white-space: nowrap;
-  &.${activeClassName} {
-    border-radius: 14px;
-    font-weight: 600;
-    justify-content: center;
-    color: ${({ theme }) => theme.text1};
-    background-color: ${({ theme }) => theme.bg1};
-  }
-
-  :hover,
-  :focus {
-    color: ${({ theme }) => darken(0.1, theme.text1)};
-  }
-`
-
-/*
-const StyledExternalLink = styled(ExternalLink).attrs({
-  activeClassName,
-})<{ isActive?: boolean }>`
-  ${({ theme }) => theme.flexRowNoWrap}
-  align-items: left;
-  border-radius: 3rem;
-  outline: none;
-  cursor: pointer;
-  text-decoration: none;
-  color: ${({ theme }) => theme.text2};
-  font-size: 1rem;
-  width: fit-content;
-  margin: 0 12px;
-  font-weight: 500;
-
-  &.${activeClassName} {
-    border-radius: 14px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.text1};
-  }
-
-  :hover,
-  :focus {
-    color: ${({ theme }) => darken(0.1, theme.text1)};
-    text-decoration: none;
-  }
-`
-*/
+/////////////////////
 
 const isSwapActive = (matchOrNull: match | null, location: { pathname: string }) => {
   if (matchOrNull) return true
@@ -251,7 +111,6 @@ export default function Header() {
 
   const userEthBalance = useNativeCurrencyBalances(account ? [account] : [])?.[account ?? '']
   const [darkMode] = useDarkModeManager()
-  const { white, black } = useTheme()
 
   // // related to claim UNI
   // const toggleClaimModal = useToggleSelfClaimModal()
@@ -274,79 +133,51 @@ export default function Header() {
       <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
         <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
       </Modal> */}
-      <Title href=".">
-        <UniIcon>
-          <Logo fill={darkMode ? white : black} width="24px" height="100%" title="logo" />
-          <HolidayOrnament />
-        </UniIcon>
-      </Title>
-      <HeaderLinks>
-        <StyledNavLink id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
-          <Trans>Swap</Trans>
-        </StyledNavLink>
-        <StyledNavLink
-          id={`pool-nav-link`}
-          to={'/pool'}
-          isActive={(match, { pathname }) =>
-            Boolean(match) ||
-            pathname.startsWith('/add') ||
-            pathname.startsWith('/remove') ||
-            pathname.startsWith('/increase') ||
-            pathname.startsWith('/find')
-          }
-        >
-          <Trans>Pool</Trans>
-        </StyledNavLink>
-        {/* {(!chainId || chainId === SupportedChainId.MAINNET) && (
-          <StyledNavLink id={`vote-nav-link`} to={'/vote'}>
-            <Trans>Vote</Trans>
+      <HeaderLeft>
+        <LogoAnchor href=".">
+          <Logo fill={darkMode ? 'white' : 'black'} width="24px" height="100%" title="logo" />
+        </LogoAnchor>
+        <NavBar>
+          <StyledNavLink id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
+            <Trans>Swap</Trans>
           </StyledNavLink>
-        )} */}
-        {/* <StyledExternalLink id={`charts-nav-link`} href={infoLink}>
-          <Trans>Charts</Trans>
-          <sup>↗</sup>
-        </StyledExternalLink> */}
-        <StyledNavLink id={`account-nav-link`} to={'/account'}>
-          <Trans>Account</Trans>
-        </StyledNavLink>
-      </HeaderLinks>
+          <StyledNavLink
+            id={`pool-nav-link`}
+            to={'/pool'}
+            isActive={(match, { pathname }) =>
+              Boolean(match) ||
+              pathname.startsWith('/add') ||
+              pathname.startsWith('/remove') ||
+              pathname.startsWith('/increase') ||
+              pathname.startsWith('/find')
+            }
+          >
+            <Trans>Pool</Trans>
+          </StyledNavLink>
+          <StyledNavLink id={`account-nav-link`} to={'/account'}>
+            <Trans>Account</Trans>
+          </StyledNavLink>
+          {/* <StyledExternalLink id={`charts-nav-link`} href={infoLink}>
+            <Trans>Charts</Trans>
+            <sup>↗</sup>
+          </StyledExternalLink> */}
+        </NavBar>
+      </HeaderLeft>
 
-      <HeaderControls>
-        <HeaderElement>
-          <NetworkSelector />
-        </HeaderElement>
-        <HeaderElement>
-          {/* {availableClaim && !showClaimPopup && (
-            <UNIWrapper onClick={toggleClaimModal}>
-              <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
-                <ThemedText.White padding="0 2px">
-                  {claimTxn && !claimTxn?.receipt ? (
-                    <Dots>
-                      <Trans>Claiming UNI</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Claim UNI</Trans>
-                  )}
-                </ThemedText.White>
-              </UNIAmount>
-              <CardNoise />
-            </UNIWrapper>
-          )} */}
-          <AccountElement active={!!account}>
-            {account && userEthBalance ? (
-              <BalanceText style={{ flexShrink: 0, userSelect: 'none' }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                <Trans>
-                  {userEthBalance?.toSignificant(3)} {nativeCurrencySymbol}
-                </Trans>
-              </BalanceText>
-            ) : null}
-            <Web3Status />
-          </AccountElement>
-        </HeaderElement>
-        <HeaderElement>
-          <Menu />
-        </HeaderElement>
-      </HeaderControls>
+      <HeaderRight>
+        <NetworkSelector />
+        <HeaderButton>
+          {account && userEthBalance ? (
+            <BalanceText>
+              <Trans>
+                {userEthBalance?.toSignificant(3)} {nativeCurrencySymbol}
+              </Trans>
+            </BalanceText>
+          ) : null}
+          <Web3Status />
+        </HeaderButton>
+        <Menu />
+      </HeaderRight>
     </HeaderFrame>
   )
 }

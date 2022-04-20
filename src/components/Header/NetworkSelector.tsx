@@ -16,128 +16,115 @@ import { ExternalLink, MEDIA_WIDTHS } from 'theme'
 import { replaceURLParam } from 'utils/routes'
 import { useAppDispatch } from '../../state/hooks'
 import { switchToNetwork } from '../../utils/switchToNetwork'
+import HeaderButton from './HeaderButton'
 
-const ActiveRowLinkList = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0 8px;
-  & > a {
-    align-items: center;
-    color: ${({ theme }) => theme.text2};
-    display: flex;
-    flex-direction: row;
-    font-size: 14px;
-    font-weight: 500;
-    justify-content: space-between;
-    padding: 8px 0 4px;
-    text-decoration: none;
-  }
-  & > a:first-child {
-    margin: 0;
-    margin-top: 0px;
-    padding-top: 10px;
-  }
-`
-const ActiveRowWrapper = styled.div`
-  background-color: ${({ theme }) => theme.bg1};
-  border-radius: 8px;
+///// Button on Header /////
+
+const SelectorButton = styled(HeaderButton)`
   cursor: pointer;
-  padding: 8px;
-  width: 100%;
-`
-const FlyoutHeader = styled.div`
-  color: ${({ theme }) => theme.text2};
-  font-weight: 400;
-`
-const FlyoutMenu = styled.div`
-  position: absolute;
-  top: 54px;
-  width: 272px;
-  z-index: 99;
-  padding-top: 10px;
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    top: 40px;
-  }
-`
-const FlyoutMenuContents = styled.div`
-  align-items: flex-start;
-  background-color: ${({ theme }) => theme.bg0};
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
-    0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
-  overflow: auto;
-  padding: 16px;
-  & > *:not(:last-child) {
-    margin-bottom: 12px;
-  }
-`
-const FlyoutRow = styled.div<{ active: boolean }>`
-  align-items: center;
-  background-color: ${({ active, theme }) => (active ? theme.bg1 : 'transparent')};
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  font-weight: 500;
-  justify-content: space-between;
   padding: 6px 8px;
-  text-align: left;
-  width: 100%;
 `
-const FlyoutRowActiveIndicator = styled.div`
-  background-color: ${({ theme }) => theme.green1};
-  border-radius: 50%;
-  height: 9px;
-  width: 9px;
-`
-const LinkOutCircle = styled(ArrowDownCircle)`
-  transform: rotate(230deg);
-  width: 16px;
-  height: 16px;
-`
+
 const Logo = styled.img`
   height: 20px;
   width: 20px;
   margin-right: 8px;
 `
+
+const SelectorLabel = styled.div`
+  margin-right: 8px;
+  display: none;
+
+  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall + 0.1}px) {
+    display: block;
+  }
+`
+
+///// Dropdown /////
+
+const FlyoutMenu = styled.div`
+  position: absolute;
+  width: 272px;
+  z-index: 99;
+  padding-top: 10px;
+`
+
+const FlyoutMenuContents = styled.div`
+  padding: 16px;
+  border-radius: 20px;
+  background-color: var(--bg0);
+  /* prettier-ignore */
+  box-shadow:
+    0px 0px 1px rgba(0, 0, 0, 0.01),
+    0px 4px 8px rgba(0, 0, 0, 0.04),
+    0px 16px 24px rgba(0, 0, 0, 0.04),
+    0px 24px 32px rgba(0, 0, 0, 0.01);
+
+  & > *:not(:last-child) {
+    margin-bottom: 12px;
+  }
+`
+
+const FlyoutHeader = styled.div`
+  color: var(--text2);
+`
+
+///// Row /////
+
+const FlyoutRow = styled.div<{ active: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: left;
+`
+
+const ActiveRowWrapper = styled.div`
+  background-color: var(--bg1);
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+`
+
+const FlyoutRowActiveIndicator = styled.div`
+  background-color: var(--green1);
+  border-radius: 50%;
+  height: 9px;
+  width: 9px;
+`
+
+const ActiveRowLinkList = styled.div`
+  padding: 0 8px;
+`
+
+const ActiveRowLink = styled(ExternalLink)`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  color: var(--text2);
+  font-size: 0.875em;
+  font-weight: 500;
+  padding: 8px 0 4px;
+  text-decoration: none;
+
+  &:first-child {
+    padding-top: 10px;
+  }
+`
+
 const NetworkLabel = styled.div`
   flex: 1 1 auto;
 `
-const SelectorLabel = styled(NetworkLabel)`
-  display: none;
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    display: block;
-    margin-right: 8px;
-  }
+
+const LinkOutCircle = styled(ArrowDownCircle).attrs({ size: 16 })`
+  transform: rotate(230deg);
 `
-const SelectorControls = styled.div<{ interactive: boolean }>`
-  align-items: center;
-  background-color: ${({ theme }) => theme.bg0};
-  border: 2px solid ${({ theme }) => theme.bg0};
-  border-radius: 16px;
-  color: ${({ theme }) => theme.text1};
-  cursor: ${({ interactive }) => (interactive ? 'pointer' : 'auto')};
-  display: flex;
-  font-weight: 500;
-  justify-content: space-between;
-  padding: 6px 8px;
-`
-const SelectorLogo = styled(Logo)<{ interactive?: boolean }>`
-  margin-right: ${({ interactive }) => (interactive ? 8 : 0)}px;
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    margin-right: 8px;
-  }
-`
-const SelectorWrapper = styled.div`
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    position: relative;
-  }
-`
-const StyledChevronDown = styled(ChevronDown)`
-  width: 16px;
-`
+
+///////////////
+
 const BridgeLabel = ({ chainId }: { chainId: SupportedChainId }) => {
   switch (chainId) {
     case SupportedChainId.ARBITRUM_ONE:
@@ -197,19 +184,19 @@ function Row({
         {rowContent}
         <ActiveRowLinkList>
           {bridge ? (
-            <ExternalLink href={bridge}>
+            <ActiveRowLink href={bridge}>
               <BridgeLabel chainId={chainId} /> <LinkOutCircle />
-            </ExternalLink>
+            </ActiveRowLink>
           ) : null}
           {explorer ? (
-            <ExternalLink href={explorer}>
+            <ActiveRowLink href={explorer}>
               <ExplorerLabel chainId={chainId} /> <LinkOutCircle />
-            </ExternalLink>
+            </ActiveRowLink>
           ) : null}
           {helpCenterUrl ? (
-            <ExternalLink href={helpCenterUrl}>
+            <ActiveRowLink href={helpCenterUrl}>
               <Trans>Help Center</Trans> <LinkOutCircle />
-            </ExternalLink>
+            </ActiveRowLink>
           ) : null}
         </ActiveRowLinkList>
       </ActiveRowWrapper>
@@ -241,9 +228,10 @@ export default function NetworkSelector() {
   const parsedQs = useParsedQueryString()
   const { urlChain, urlChainId } = getParsedChainId(parsedQs)
   const prevChainId = usePrevious(chainId)
-  const node = useRef<HTMLDivElement>()
+  const node = useRef<HTMLDivElement>(null)
   const open = useModalOpen(ApplicationModal.NETWORK_SELECTOR)
   const toggle = useToggleModal(ApplicationModal.NETWORK_SELECTOR)
+
   useOnClickOutside(node, open ? toggle : undefined)
 
   const history = useHistory()
@@ -307,12 +295,12 @@ export default function NetworkSelector() {
   }
 
   return (
-    <SelectorWrapper ref={node as any} onMouseEnter={toggle} onMouseLeave={toggle}>
-      <SelectorControls interactive>
-        <SelectorLogo interactive src={info.logoUrl} />
+    <div ref={node} onMouseEnter={toggle} onMouseLeave={toggle} style={{ position: 'relative' }}>
+      <SelectorButton>
+        <Logo src={info.logoUrl} />
         <SelectorLabel>{info.label}</SelectorLabel>
-        <StyledChevronDown />
-      </SelectorControls>
+        <ChevronDown size={16} />
+      </SelectorButton>
       {open && (
         <FlyoutMenu>
           <FlyoutMenuContents>
@@ -327,6 +315,6 @@ export default function NetworkSelector() {
           </FlyoutMenuContents>
         </FlyoutMenu>
       )}
-    </SelectorWrapper>
+    </div>
   )
 }

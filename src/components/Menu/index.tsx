@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
+import HeaderButton from 'components/Header/HeaderButton'
 import { PrivacyPolicyModal } from 'components/PrivacyPolicy'
-// import { L2_CHAIN_IDS } from 'constants/chains'
 import { LOCALE_LABEL, SupportedLocale, SUPPORTED_LOCALES } from 'constants/locales'
 import { useActiveLocale } from 'hooks/useActiveLocale'
 import { useLocationLinkProps } from 'hooks/useLocationLinkProps'
@@ -11,180 +11,135 @@ import {
   Check,
   ChevronLeft,
   // Coffee,
-  // FileText,
+  FileText,
   // Globe,
   // HelpCircle,
   Info,
-  MessageCircle,
+  // MessageCircle,
+  Moon,
+  Sun,
 } from 'react-feather'
 import { Link } from 'react-router-dom'
-// import { useDarkModeManager } from 'state/user/hooks'
-import styled, { css } from 'styled-components/macro'
-import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
+import { useDarkModeManager } from 'state/user/hooks'
+import styled from 'styled-components/macro'
+import { ReactComponent as RawMenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalOpen, useToggleModal } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { ExternalLink } from '../../theme'
-
-// import { ButtonPrimary } from '../Button'
 
 export enum FlyoutAlignment {
   LEFT = 'LEFT',
   RIGHT = 'RIGHT',
 }
 
-const StyledMenuIcon = styled(MenuIcon)`
-  path {
-    stroke: ${({ theme }) => theme.text1};
-  }
-`
+///// Button on Header /////
 
-const StyledMenuButton = styled.button`
-  width: 100%;
-  height: 100%;
-  border: none;
-  background-color: transparent;
-  margin: 0;
-  padding: 0;
-  height: 40px;
-  background-color: ${({ theme }) => theme.bg0};
-  border: 1px solid ${({ theme }) => theme.bg0};
-  padding: 0.15rem 0.5rem;
-  border-radius: 16px;
-
-  :hover,
-  :focus {
-    cursor: pointer;
-    outline: none;
-    border: 1px solid ${({ theme }) => theme.bg3};
-  }
-
-  svg {
-    margin-top: 2px;
-  }
-`
-
-// const UNIbutton = styled(ButtonPrimary)`
-//   background-color: ${({ theme }) => theme.bg3};
-//   background: radial-gradient(174.47% 188.91% at 1.84% 0%, #ff007a 0%, #2172e5 100%), #edeef2;
-//   border: none;
-// `
-
-const StyledMenu = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
+const MenuWrapper = styled.div`
   position: relative;
-  border: none;
-  text-align: left;
 `
 
-const MenuFlyout = styled.span<{ flyoutAlignment?: FlyoutAlignment }>`
-  min-width: 196px;
-  max-height: 350px;
-  overflow: auto;
-  background-color: ${({ theme }) => theme.bg1};
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
-    0px 24px 32px rgba(0, 0, 0, 0.01);
-  border: 1px solid ${({ theme }) => theme.bg0};
-  border-radius: 12px;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
+const MenuButton = styled(HeaderButton).attrs({ role: 'button' })`
+  justify-content: center;
+  width: 42px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  :hover {
+    border: 1px solid var(--bg3);
+  }
+`
+
+const MenuIcon = styled(RawMenuIcon)`
+  margin-top: 2px;
+
+  path {
+    stroke: var(--text1);
+  }
+`
+
+///// Dropdown menu /////
+
+const MenuFlyout = styled.div<{ flyoutAlignment?: FlyoutAlignment }>`
   position: absolute;
-  top: 3rem;
   z-index: 100;
+  transform: translateY(10px);
 
   ${({ flyoutAlignment = FlyoutAlignment.RIGHT }) =>
-    flyoutAlignment === FlyoutAlignment.RIGHT
-      ? css`
-          right: 0rem;
-        `
-      : css`
-          left: 0rem;
-        `};
+    flyoutAlignment === FlyoutAlignment.RIGHT ? `right: 0rem;` : `left: 0rem;`};
+
   ${({ theme }) => theme.mediaWidth.upToMedium`
     bottom: unset;
     right: 0;
     left: unset;
   `};
+
+  display: block;
+  min-width: 196px;
+  max-height: 350px;
+  overflow: auto;
+  padding: 0.5rem;
+
+  border-radius: 16px;
+  background-color: var(--bg0);
+  /* prettier-ignore */
+  box-shadow:
+    0px 0px 1px rgba(0, 0, 0, 0.01),
+    0px 4px 8px rgba(0, 0, 0, 0.04),
+    0px 16px 24px rgba(0, 0, 0, 0.04),
+    0px 24px 32px rgba(0, 0, 0, 0.01);
 `
 
-const MenuItem = styled(ExternalLink)`
-  display: flex;
-  flex: 1;
-  flex-direction: row;
-  align-items: center;
-  padding: 0.5rem 0.5rem;
-  justify-content: space-between;
-  color: ${({ theme }) => theme.text2};
-  :hover {
-    color: ${({ theme }) => theme.text1};
-    cursor: pointer;
-    text-decoration: none;
-  }
-`
-
-const InternalMenuItem = styled(Link)`
-  flex: 1;
-  padding: 0.5rem 0.5rem;
-  color: ${({ theme }) => theme.text2};
-  :hover {
-    color: ${({ theme }) => theme.text1};
-    cursor: pointer;
-    text-decoration: none;
-  }
-  > svg {
-    margin-right: 8px;
-  }
-`
-
-const InternalLinkMenuItem = styled(InternalMenuItem)`
+const MenuItem = styled.a.attrs({ role: 'button' })`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0.5rem 0.5rem;
   justify-content: space-between;
-  text-decoration: none;
-  :hover {
-    color: ${({ theme }) => theme.text1};
-    cursor: pointer;
-    text-decoration: none;
-  }
-`
 
-const ToggleMenuItem = styled.button`
-  background-color: transparent;
-  margin: 0;
-  padding: 0;
-  border: none;
-  display: flex;
-  flex: 1;
-  flex-direction: row;
-  align-items: center;
-  padding: 0.5rem 0.5rem;
-  justify-content: space-between;
-  font-size: 1rem;
+  padding: 0.5rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text2};
+  color: var(--text2);
   :hover {
-    color: ${({ theme }) => theme.text1};
-    cursor: pointer;
+    color: var(--text1);
+  }
+
+  cursor: pointer;
+  text-decoration: none;
+
+  :hover,
+  :focus,
+  :active {
+    outline: none;
     text-decoration: none;
   }
 `
+
+const MenuItemExternalLink = styled(MenuItem).attrs({ as: ExternalLink })``
+
+const MenuItemInternalLink = styled(MenuItem).attrs({ as: Link })<{ to: any }>``
+
+const MenuSeperator = styled.div`
+  margin: 0.5rem;
+  border-bottom: 1px solid var(--bg2);
+`
+
+const NavMenuItemList = styled.div`
+  display: none;
+  ${({ theme }) => theme.mediaWidth.upToMedium`
+    display: block;
+  `};
+`
+
+//////////
 
 function LanguageMenuItem({ locale, active, key }: { locale: SupportedLocale; active: boolean; key: string }) {
   const { to, onClick } = useLocationLinkProps(locale)
-
   if (!to) return null
 
   return (
-    <InternalLinkMenuItem onClick={onClick} key={key} to={to}>
+    <MenuItemInternalLink onClick={onClick} key={key} to={to}>
       <div>{LOCALE_LABEL[locale]}</div>
       {active && <Check opacity={0.6} size={16} />}
-    </InternalLinkMenuItem>
+    </MenuItemInternalLink>
   )
 }
 
@@ -193,9 +148,9 @@ function LanguageMenu({ close }: { close: () => void }) {
 
   return (
     <MenuFlyout>
-      <ToggleMenuItem onClick={close}>
+      <MenuItem onClick={close}>
         <ChevronLeft size={16} />
-      </ToggleMenuItem>
+      </MenuItem>
       {SUPPORTED_LOCALES.map((locale) => (
         <LanguageMenuItem locale={locale} active={activeLocale === locale} key={locale} />
       ))}
@@ -204,21 +159,16 @@ function LanguageMenu({ close }: { close: () => void }) {
 }
 
 export default function Menu() {
-  const node = useRef<HTMLDivElement>()
+  const node = useRef<HTMLDivElement>(null)
   const open = useModalOpen(ApplicationModal.MENU)
   const toggleMenu = useToggleModal(ApplicationModal.MENU)
   useOnClickOutside(node, open ? toggleMenu : undefined)
 
-  // // terms modal
-  // const togglePrivacyPolicy = useToggleModal(ApplicationModal.PRIVACY_POLICY)
+  // terms modal
+  const togglePrivacyPolicy = useToggleModal(ApplicationModal.PRIVACY_POLICY)
 
-  // // token claim
-  // const { account, chainId } = useActiveWeb3React()
-  // const openClaimModal = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
-  // const showUNIClaimOption = Boolean(!!account && !!chainId && !L2_CHAIN_IDS.includes(chainId))
-
-  // // dark mode
-  // const [darkMode, toggleDarkMode] = useDarkModeManager()
+  // dark mode
+  const [darkMode, toggleDarkMode] = useDarkModeManager()
 
   // locale
   const [menu, setMenu] = useState<'main' | 'lang'>('main')
@@ -229,11 +179,10 @@ export default function Menu() {
 
   return (
     <>
-      {/* // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/30451 */}
-      <StyledMenu ref={node as any}>
-        <StyledMenuButton onClick={toggleMenu} aria-label={t`Menu`}>
-          <StyledMenuIcon />
-        </StyledMenuButton>
+      <MenuWrapper ref={node}>
+        <MenuButton onClick={toggleMenu} aria-label={t`Menu`}>
+          <MenuIcon />
+        </MenuButton>
 
         {open &&
           (() => {
@@ -244,68 +193,70 @@ export default function Menu() {
               default:
                 return (
                   <MenuFlyout>
-                    <MenuItem href="/">
+                    <NavMenuItemList>
+                      <MenuItemInternalLink to="/swap" onClick={toggleMenu}>
+                        <Trans>Swap</Trans>
+                      </MenuItemInternalLink>
+                      <MenuItemInternalLink to="/pool" onClick={toggleMenu}>
+                        <Trans>Pool</Trans>
+                      </MenuItemInternalLink>
+                      <MenuItemInternalLink to="/account" onClick={toggleMenu}>
+                        <Trans>Account</Trans>
+                      </MenuItemInternalLink>
+                      <MenuSeperator />
+                    </NavMenuItemList>
+
+                    <MenuItemExternalLink href="/">
                       <div>
                         <Trans>About</Trans>
                       </div>
                       <Info opacity={0.6} size={16} />
-                    </MenuItem>
-                    {/* <MenuItem href="https://help.uniswap.org/">
+                    </MenuItemExternalLink>
+                    {/* <MenuItemExternalLink href="/">
                       <div>
                         <Trans>Help Center</Trans>
                       </div>
                       <HelpCircle opacity={0.6} size={16} />
-                    </MenuItem> */}
-                    {/* <MenuItem href="https://uniswap.canny.io/feature-requests">
+                    </MenuItemExternalLink> */}
+                    {/* <MenuItemExternalLink href="/">
                       <div>
                         <Trans>Request Features</Trans>
                       </div>
                       <Coffee opacity={0.6} size={16} />
-                    </MenuItem> */}
-                    <MenuItem href="/">
+                    </MenuItemExternalLink> */}
+                    {/* <MenuItemExternalLink href="/">
                       <div>
                         <Trans>Discord</Trans>
                       </div>
                       <MessageCircle opacity={0.6} size={16} />
-                    </MenuItem>
-                    {/* <ToggleMenuItem onClick={() => setMenu('lang')}>
+                    </MenuItemExternalLink> */}
+                    {/* <MenuItem onClick={() => setMenu('lang')}>
                       <div>
                         <Trans>Language</Trans>
                       </div>
                       <Globe opacity={0.6} size={16} />
-                    </ToggleMenuItem> */}
-                    {/* <ToggleMenuItem onClick={() => toggleDarkMode()}>
+                    </MenuItem> */}
+                    <MenuItem onClick={() => toggleDarkMode()}>
                       <div>{darkMode ? <Trans>Light Theme</Trans> : <Trans>Dark Theme</Trans>}</div>
                       {darkMode ? <Moon opacity={0.6} size={16} /> : <Sun opacity={0.6} size={16} />}
-                    </ToggleMenuItem> */}
-                    <MenuItem href="/">
+                    </MenuItem>
+                    <MenuItemExternalLink href="/">
                       <div>
                         <Trans>Docs</Trans>
                       </div>
                       <BookOpen opacity={0.6} size={16} />
-                    </MenuItem>
-                    {/* <ToggleMenuItem onClick={() => togglePrivacyPolicy()}>
+                    </MenuItemExternalLink>
+                    <MenuItem onClick={() => togglePrivacyPolicy()}>
                       <div>
                         <Trans>Legal & Privacy</Trans>
                       </div>
                       <FileText opacity={0.6} size={16} />
-                    </ToggleMenuItem> */}
-                    {/* {showUNIClaimOption && (
-                      <UNIbutton
-                        onClick={openClaimModal}
-                        padding="8px 16px"
-                        width="100%"
-                        $borderRadius="12px"
-                        mt="0.5rem"
-                      >
-                        <Trans>Claim UNI</Trans>
-                      </UNIbutton>
-                    )} */}
+                    </MenuItem>
                   </MenuFlyout>
                 )
             }
           })()}
-      </StyledMenu>
+      </MenuWrapper>
       <PrivacyPolicyModal />
     </>
   )
@@ -321,43 +272,32 @@ interface NewMenuProps {
   }[]
 }
 
-const NewMenuFlyout = styled(MenuFlyout)`
-  top: 3rem !important;
-`
-const NewMenuItem = styled(InternalMenuItem)`
-  width: max-content;
-  text-decoration: none;
-`
-
-const ExternalMenuItem = styled(MenuItem)`
-  width: max-content;
-  text-decoration: none;
-`
-
 export const NewMenu = ({ flyoutAlignment = FlyoutAlignment.RIGHT, ToggleUI, menuItems, ...rest }: NewMenuProps) => {
-  const node = useRef<HTMLDivElement>()
+  const node = useRef<HTMLDivElement>(null)
   const open = useModalOpen(ApplicationModal.POOL_OVERVIEW_OPTIONS)
   const toggle = useToggleModal(ApplicationModal.POOL_OVERVIEW_OPTIONS)
+
   useOnClickOutside(node, open ? toggle : undefined)
-  const ToggleElement = ToggleUI || StyledMenuIcon
+  const ToggleElement = ToggleUI || MenuIcon
+
   return (
-    <StyledMenu ref={node as any} {...rest}>
+    <MenuWrapper ref={node} {...rest}>
       <ToggleElement onClick={toggle} />
       {open && (
-        <NewMenuFlyout flyoutAlignment={flyoutAlignment}>
+        <MenuFlyout flyoutAlignment={flyoutAlignment}>
           {menuItems.map(({ content, link, external }, i) =>
             external ? (
-              <ExternalMenuItem href={link} key={i}>
+              <MenuItemExternalLink href={link} key={i}>
                 {content}
-              </ExternalMenuItem>
+              </MenuItemExternalLink>
             ) : (
-              <NewMenuItem to={link} key={i}>
+              <MenuItemInternalLink to={link} key={i}>
                 {content}
-              </NewMenuItem>
+              </MenuItemInternalLink>
             )
           )}
-        </NewMenuFlyout>
+        </MenuFlyout>
       )}
-    </StyledMenu>
+    </MenuWrapper>
   )
 }
