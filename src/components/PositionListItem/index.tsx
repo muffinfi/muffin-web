@@ -2,128 +2,93 @@ import { Trans } from '@lingui/macro'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
-import { Position, sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
-import Badge from 'components/Badge'
+import * as DS from 'components/@DS'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Loader'
-import { RowBetween } from 'components/Row'
 import { useToken } from 'hooks/Tokens'
+import { darken } from 'polished'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
-import { HideSmall, MEDIA_WIDTHS, SmallOnly } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 
 const LinkRow = styled(Link)`
+  display: grid;
   align-items: center;
-  border-radius: 20px;
-  display: flex;
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: 1.5em 1fr auto;
+  gap: 1.5em;
 
-  justify-content: space-between;
-  color: ${({ theme }) => theme.text1};
-  margin: 8px 0;
-  padding: 16px;
+  cursor: pointer;
   text-decoration: none;
-  font-weight: 500;
-  background-color: ${({ theme }) => theme.bg1};
+  color: inherit;
+
+  min-height: 88px;
+  padding: 16px 16px;
+  border-radius: 16px;
+  margin-bottom: 16px;
 
   &:last-of-type {
-    margin: 8px 0 0 0;
+    margin-bottom: 0;
   }
-  & > div:not(:first-child) {
-    text-align: center;
-  }
+
+  background: var(--bg1);
+  transition: background-color 150ms;
   :hover {
-    background-color: ${({ theme }) => theme.bg2};
-  }
-
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    /* flex-direction: row; */
+    background: ${({ theme }) => darken(0.03, theme.bg1)};
   }
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
+    display: flex;
     flex-direction: column;
-    row-gap: 12px;
+    align-items: flex-start;
+    gap: 12px;
   `};
 `
 
-const BadgeText = styled.div`
-  font-weight: 500;
-  font-size: 14px;
+const NftId = styled.div`
+  font-size: 0.875em;
+  font-weight: var(--regular);
+  color: var(--text2);
+`
+
+const PositionInfoWrapper = styled(DS.Row)`
+  flex-wrap: wrap;
+  gap: 1.25em;
   ${({ theme }) => theme.mediaWidth.upToSmall`
-    font-size: 12px;
-  `};
+    gap: 0.375em;
+  `}
 `
 
-const DataLineItem = styled.div`
-  font-size: 14px;
-`
+const PriceRange = styled.div`
+  font-size: 0.875em;
+  white-space: nowrap;
 
-const RangeLineItem = styled(DataLineItem)`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  margin-top: 4px;
-  width: 100%;
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-  background-color: ${({ theme }) => theme.bg2};
-    border-radius: 12px;
-    padding: 8px 0;
-`};
-`
-
-const DoubleArrow = styled.span`
-  margin: 0 2px;
-  color: ${({ theme }) => theme.text3};
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    margin: 4px;
-    padding: 20px;
-  `};
-`
-
-const RangeText = styled.span`
-  /* background-color: ${({ theme }) => theme.bg2}; */
-  padding: 0.25rem 0.5rem;
-  border-radius: 8px;
-`
-
-const ExtentsText = styled.span`
-  color: ${({ theme }) => theme.text3};
-  font-size: 14px;
-  margin-right: 4px;
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    display: none;
-  `};
-`
-
-const PrimaryPositionIdData = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  > * {
-    margin-right: 8px;
+  & > span {
+    display: inline-block;
+    vertical-align: baseline;
   }
 `
 
-const DataText = styled.div`
-  font-weight: 600;
-  font-size: 18px;
+const PriceRangeValue = styled.span`
+  font-weight: var(--fw-bold);
+`
 
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    font-size: 14px;
-  `};
+const PriceRangeArrow = styled.span`
+  font-weight: var(--fw-semibold);
+  margin: 0 0.75em;
+`
+
+const PriceRangeUnit = styled.span`
+  font-weight: var(--fw-semibold);
+  opacity: 0.625;
+  margin-left: 1em;
 `
 
 interface PositionListItemProps {
@@ -191,7 +156,15 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 }
 
 export default function PositionListItem({ positionDetails }: PositionListItemProps) {
-  const { token0: token0Address, token1: token1Address, tierId, liquidityD8, tickLower, tickUpper } = positionDetails
+  const {
+    token0: token0Address,
+    token1: token1Address,
+    tierId,
+    liquidityD8,
+    tickLower,
+    tickUpper,
+    tokenId,
+  } = positionDetails
 
   // NOTE: fetch token basic info, init Token objects from sdk-core
   const token0 = useToken(token0Address)
@@ -223,60 +196,34 @@ export default function PositionListItem({ positionDetails }: PositionListItemPr
   // check if price is within range
   const outOfRange: boolean = tier ? tier.computedTick < tickLower || tier.computedTick >= tickUpper : false
 
-  const positionSummaryLink = '/pool/' + positionDetails.tokenId
+  const positionSummaryLink = '/pool/' + tokenId
 
   const removed = liquidityD8?.eq(0)
 
   return (
     <LinkRow to={positionSummaryLink}>
-      <RowBetween>
-        <PrimaryPositionIdData>
-          <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
-          <DataText>
-            &nbsp;{currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
-          </DataText>
-          &nbsp;
-          {tier && (
-            <Badge>
-              <BadgeText>
-                <Trans>{sqrtGammaToFeePercent(tier.sqrtGamma).toSignificant(3)}%</Trans>
-              </BadgeText>
-            </Badge>
-          )}
-        </PrimaryPositionIdData>
-        <RangeBadge removed={removed} inRange={!outOfRange} />
-      </RowBetween>
-
-      {priceLower && priceUpper ? (
-        <RangeLineItem>
-          <RangeText>
-            <ExtentsText>
-              <Trans>Min: </Trans>
-            </ExtentsText>
-            <Trans>
-              {formatTickPrice(priceLower, tickAtLimit, Bound.LOWER)} <HoverInlineText text={currencyQuote?.symbol} />{' '}
-              per <HoverInlineText text={currencyBase?.symbol ?? ''} />
-            </Trans>
-          </RangeText>{' '}
-          <HideSmall>
-            <DoubleArrow>⟷</DoubleArrow>{' '}
-          </HideSmall>
-          <SmallOnly>
-            <DoubleArrow>⟷</DoubleArrow>{' '}
-          </SmallOnly>
-          <RangeText>
-            <ExtentsText>
-              <Trans>Max:</Trans>
-            </ExtentsText>
-            <Trans>
-              {formatTickPrice(priceUpper, tickAtLimit, Bound.UPPER)} <HoverInlineText text={currencyQuote?.symbol} />{' '}
-              per <HoverInlineText maxCharacters={10} text={currencyBase?.symbol} />
-            </Trans>
-          </RangeText>
-        </RangeLineItem>
+      <NftId>#{tokenId.toString()}</NftId>
+      {currencyBase && currencyQuote && priceLower && priceUpper ? (
+        <PositionInfoWrapper>
+          <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin em={1.5} />
+          <DS.Column gap="0.375em">
+            <DS.PoolTierName noLogo currencyBase={currencyBase} currencyQuote={currencyQuote} tier={tier} />
+            <PriceRange>
+              <PriceRangeValue>{formatTickPrice(priceLower, tickAtLimit, Bound.LOWER)}</PriceRangeValue>
+              <PriceRangeArrow>⟷</PriceRangeArrow>
+              <PriceRangeValue>{formatTickPrice(priceUpper, tickAtLimit, Bound.UPPER)}</PriceRangeValue>
+              <PriceRangeUnit>
+                <Trans>
+                  <HoverInlineText text={currencyQuote?.symbol} /> per <HoverInlineText text={currencyBase?.symbol} />
+                </Trans>
+              </PriceRangeUnit>
+            </PriceRange>
+          </DS.Column>
+        </PositionInfoWrapper>
       ) : (
         <Loader />
       )}
+      <RangeBadge removed={removed} inRange={!outOfRange} />
     </LinkRow>
   )
 }

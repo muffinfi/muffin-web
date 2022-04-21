@@ -6,30 +6,18 @@ import React from 'react'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 
-const DesktopHeader = styled.div`
-  display: none;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 8px;
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    & > div:last-child {
-      text-align: right;
-      margin-right: 12px;
-    }
-  }
-`
+  font-size: 0.875rem;
+  font-weight: var(--fw-bold);
 
-const MobileHeader = styled.div`
-  font-weight: medium;
-  font-size: 16px;
-  font-weight: 500;
+  margin-bottom: 24px;
   padding: 8px;
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall}px) {
-    display: none;
+  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall + 0.1}px) {
+    padding: 0px;
   }
 `
 
@@ -46,18 +34,15 @@ export default function PositionList({
 }: PositionListProps) {
   return (
     <>
-      <DesktopHeader>
+      <CardHeader>
         <div>
           <Trans>Your positions</Trans>
-          {positions && ' (' + positions.length + ')'}
+          {positions && ` (${positions.length})`}
         </div>
         <ButtonText style={{ opacity: 0.6 }} onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}>
           {userHideClosedPositions ? <Trans>Show closed positions</Trans> : <Trans>Hide closed positions</Trans>}
         </ButtonText>
-      </DesktopHeader>
-      <MobileHeader>
-        <Trans>Your positions</Trans>
-      </MobileHeader>
+      </CardHeader>
       {positions.map((p) => {
         return <PositionListItem key={p.tokenId.toString()} positionDetails={p} />
       })}

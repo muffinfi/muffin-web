@@ -60,17 +60,17 @@ function colors(darkMode: boolean): Colors {
 
     // text
     text1: darkMode ? '#FFFFFF' : '#000000',
-    text2: darkMode ? '#C3C5CB' : '#565A69',
-    text3: darkMode ? '#8F96AC' : '#6E727D',
-    text4: darkMode ? '#B2B9D2' : '#C3C5CB',
-    text5: darkMode ? '#2C2F36' : '#EDEEF2',
+    text2: darkMode ? '#C3C5CB' : '#606060',
+    text3: darkMode ? '#8F96AC' : '#909090',
+    text4: darkMode ? '#B2B9D2' : '#C0C0C0',
+    text5: darkMode ? '#2C2F36' : '#EEEEEE', // not using
 
     // backgrounds / greys
     bg0: darkMode ? '#191919' : '#FFF', //    '#FFF',
     bg1: darkMode ? '#212121' : '#F8F8F8', // '#F7F8FA',
     bg2: darkMode ? '#2C2C2C' : '#EEEEEE', // '#EDEEF2',
     bg3: darkMode ? '#404040' : '#CCCCCC', // '#CED0D9',
-    bg4: darkMode ? '#565656' : '#B0B0B0', // '#888D9B',
+    bg4: darkMode ? '#565656' : '#AAAAAA', // '#888D9B',
     bg5: darkMode ? '#6C6C6C' : '#989898', // '#888D9B',
     bg6: darkMode ? '#1A1A1A' : '#818181', // '#6C7284',
 
@@ -79,19 +79,19 @@ function colors(darkMode: boolean): Colors {
     advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.6)',
 
     //primary colors
-    primary1: darkMode ? '#2172E5' : '#E8006F',
-    primary2: darkMode ? '#3680E7' : '#FF8CC3',
-    primary3: darkMode ? '#4D8FEA' : '#FF99C9',
-    primary4: darkMode ? '#376bad70' : '#F6DDE8',
-    primary5: darkMode ? '#153d6f70' : '#FDEAF1',
+    primary1: darkMode ? '#2172E5' : '#F95F04', // '#E8006F',
+    primary2: darkMode ? '#3680E7' : '#F95F0470', // '#FF8CC3', // not using
+    primary3: darkMode ? '#4D8FEA' : '#F95F0470', // '#FF99C9',
+    primary4: darkMode ? '#376bad70' : '#F95F0440', // '#F6DDE8',
+    primary5: darkMode ? '#153d6f70' : '#F95F0440', // '#FDEAF1',
 
     // color text
-    primaryText1: darkMode ? '#5090ea' : '#D50066',
+    primaryText1: darkMode ? '#5090ea' : '#d05006', // '#D50066',
 
     // secondary colors
-    secondary1: darkMode ? '#2172E5' : '#E8006F',
-    secondary2: darkMode ? '#17000b26' : '#F6DDE8',
-    secondary3: darkMode ? '#17000b26' : '#FDEAF1',
+    secondary1: darkMode ? '#2172E5' : '#F95F04', // '#E8006F',
+    secondary2: darkMode ? '#17000b26' : '#f6e5dd', // '#F6DDE8',
+    secondary3: darkMode ? '#17000b26' : '#f6e5dd', //'#FDEAF1',
 
     // other
     red1: darkMode ? '#FF4343' : '#DA2D2B',

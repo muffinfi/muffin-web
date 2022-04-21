@@ -262,42 +262,42 @@ export default function Menu() {
   )
 }
 
-interface NewMenuProps {
-  flyoutAlignment?: FlyoutAlignment
-  ToggleUI?: React.FunctionComponent
-  menuItems: {
-    content: any
-    link: string
-    external: boolean
-  }[]
-}
+// interface NewMenuProps {
+//   flyoutAlignment?: FlyoutAlignment
+//   ToggleUI?: React.FunctionComponent
+//   menuItems: {
+//     content: any
+//     link: string
+//     external: boolean
+//   }[]
+// }
 
-export const NewMenu = ({ flyoutAlignment = FlyoutAlignment.RIGHT, ToggleUI, menuItems, ...rest }: NewMenuProps) => {
-  const node = useRef<HTMLDivElement>(null)
-  const open = useModalOpen(ApplicationModal.POOL_OVERVIEW_OPTIONS)
-  const toggle = useToggleModal(ApplicationModal.POOL_OVERVIEW_OPTIONS)
+// export const NewMenu = ({ flyoutAlignment = FlyoutAlignment.RIGHT, ToggleUI, menuItems, ...rest }: NewMenuProps) => {
+//   const node = useRef<HTMLDivElement>(null)
+//   const open = useModalOpen(ApplicationModal.POOL_OVERVIEW_OPTIONS)
+//   const toggle = useToggleModal(ApplicationModal.POOL_OVERVIEW_OPTIONS)
 
-  useOnClickOutside(node, open ? toggle : undefined)
-  const ToggleElement = ToggleUI || MenuIcon
+//   useOnClickOutside(node, open ? toggle : undefined)
+//   const ToggleElement = ToggleUI || MenuIcon
 
-  return (
-    <MenuWrapper ref={node} {...rest}>
-      <ToggleElement onClick={toggle} />
-      {open && (
-        <MenuFlyout flyoutAlignment={flyoutAlignment}>
-          {menuItems.map(({ content, link, external }, i) =>
-            external ? (
-              <MenuItemExternalLink href={link} key={i}>
-                {content}
-              </MenuItemExternalLink>
-            ) : (
-              <MenuItemInternalLink to={link} key={i}>
-                {content}
-              </MenuItemInternalLink>
-            )
-          )}
-        </MenuFlyout>
-      )}
-    </MenuWrapper>
-  )
-}
+//   return (
+//     <MenuWrapper ref={node} {...rest}>
+//       <ToggleElement onClick={toggle} />
+//       {open && (
+//         <MenuFlyout flyoutAlignment={flyoutAlignment}>
+//           {menuItems.map(({ content, link, external }, i) =>
+//             external ? (
+//               <MenuItemExternalLink href={link} key={i}>
+//                 {content}
+//               </MenuItemExternalLink>
+//             ) : (
+//               <MenuItemInternalLink to={link} key={i}>
+//                 {content}
+//               </MenuItemInternalLink>
+//             )
+//           )}
+//         </MenuFlyout>
+//       )}
+//     </MenuWrapper>
+//   )
+// }

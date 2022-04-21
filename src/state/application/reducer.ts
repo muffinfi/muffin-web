@@ -22,7 +22,6 @@ export enum ApplicationModal {
   MENU,
   DELEGATE,
   VOTE,
-  POOL_OVERVIEW_OPTIONS,
   NETWORK_SELECTOR,
   PRIVACY_POLICY,
 }

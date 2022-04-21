@@ -2,26 +2,18 @@ import { Trans } from '@lingui/macro'
 import Badge, { BadgeVariant } from 'components/Badge'
 import { AlertCircle } from 'react-feather'
 import styled from 'styled-components/macro'
-
 import { MouseoverTooltip } from '../../components/Tooltip'
 
-const BadgeWrapper = styled.div`
-  font-size: 14px;
-  display: flex;
-  justify-content: flex-end;
-`
-
-const BadgeText = styled.div`
-  font-weight: 500;
-  font-size: 14px;
+const StyledBadge = styled(Badge)`
+  font-size: 0.875em;
+  gap: 0.5em;
 `
 
 const ActiveDot = styled.span`
-  background-color: ${({ theme }) => theme.success};
+  background-color: var(--success);
   border-radius: 50%;
-  height: 8px;
-  width: 8px;
-  margin-right: 4px;
+  height: 0.6em;
+  width: 0.6em;
 `
 
 export default function RangeBadge({
@@ -32,16 +24,13 @@ export default function RangeBadge({
   inRange: boolean | undefined
 }) {
   return (
-    <BadgeWrapper>
+    <>
       {removed ? (
         <MouseoverTooltip text={<Trans>Your position has 0 liquidity, and is not earning fees.</Trans>}>
-          <Badge variant={BadgeVariant.DEFAULT}>
-            <AlertCircle width={14} height={14} />
-            &nbsp;
-            <BadgeText>
-              <Trans>Closed</Trans>
-            </BadgeText>
-          </Badge>
+          <StyledBadge variant={BadgeVariant.DEFAULT}>
+            <AlertCircle size="1em" />
+            <Trans>Closed</Trans>
+          </StyledBadge>
         </MouseoverTooltip>
       ) : inRange ? (
         <MouseoverTooltip
@@ -51,12 +40,10 @@ export default function RangeBadge({
             </Trans>
           }
         >
-          <Badge variant={BadgeVariant.DEFAULT}>
-            <ActiveDot /> &nbsp;
-            <BadgeText>
-              <Trans>In range</Trans>
-            </BadgeText>
-          </Badge>
+          <StyledBadge variant={BadgeVariant.DEFAULT}>
+            <ActiveDot />
+            <Trans>In range</Trans>
+          </StyledBadge>
         </MouseoverTooltip>
       ) : (
         <MouseoverTooltip
@@ -66,15 +53,12 @@ export default function RangeBadge({
             </Trans>
           }
         >
-          <Badge variant={BadgeVariant.WARNING}>
-            <AlertCircle width={14} height={14} />
-            &nbsp;
-            <BadgeText>
-              <Trans>Out of range</Trans>
-            </BadgeText>
-          </Badge>
+          <StyledBadge variant={BadgeVariant.WARNING}>
+            <AlertCircle size="1em" />
+            <Trans>Out of range</Trans>
+          </StyledBadge>
         </MouseoverTooltip>
       )}
-    </BadgeWrapper>
+    </>
   )
 }

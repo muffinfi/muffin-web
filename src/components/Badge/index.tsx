@@ -68,6 +68,9 @@ const Badge = styled.div<PropsWithChildren<BadgeProps>>`
   padding: 4px 6px;
   justify-content: center;
   font-weight: 500;
+
+  flex-wrap: nowrap;
+  white-space: nowrap;
 `
 
 export default Badge

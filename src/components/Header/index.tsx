@@ -92,7 +92,8 @@ const StyledNavLink = styled(NavLink).attrs({ activeClassName: 'ACTIVE' })`
 ///// RIGHT /////
 
 const BalanceText = styled.div`
-  padding: 0.75rem 0.5rem;
+  padding-left: 0.75rem;
+  padding-right: 0.5rem;
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     display: none;
