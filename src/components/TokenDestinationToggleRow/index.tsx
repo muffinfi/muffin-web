@@ -10,7 +10,7 @@ import { ThemedText } from 'theme'
 const StyledToggleContainer = styled.div`
   width: fit-content;
   display: flex;
-  alignitems: center;
+  align-items: center;
 `
 
 type TokenDestinationToggleRowProps = {

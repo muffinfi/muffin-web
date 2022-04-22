@@ -146,7 +146,7 @@ function theme(darkMode: boolean): DefaultTheme {
  */
 const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
   html {
-    ${({ theme }) => `
+    ${({ theme }) => css`
       --text1: ${theme.text1};
       --text2: ${theme.text2};
       --text3: ${theme.text3};
@@ -186,6 +186,13 @@ const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
       --fw-bold: 600;
       --fw-semibold: 500;
       --fw-regular: 400;
+
+      --text-xs: 0.75rem; /*  12px */
+      --text-sm: 0.875rem; /* 14px */
+      --text-base: 1rem; /*   16px */
+      --text-lg: 1.125rem; /* 18px */
+      --text-xl: 1.25rem; /*  20px */
+      --text-2xl: 1.5rem; /*  24px */
     `}
   }
 `

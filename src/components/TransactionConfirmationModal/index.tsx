@@ -25,7 +25,7 @@ import AnimatedConfirmation from './AnimatedConfirmation'
 
 const Wrapper = styled.div`
   width: 100%;
-  padding: 1rem;
+  padding: 24px;
 `
 const Section = styled(AutoColumn)<{ inline?: boolean }>`
   padding: ${({ inline }) => (inline ? '0' : '0')};
@@ -166,7 +166,7 @@ export function ConfirmationModalContent({
     <Wrapper>
       <Section>
         <RowBetween>
-          <Text fontWeight={500} fontSize={16}>
+          <Text fontWeight={600} fontSize={16}>
             {title}
           </Text>
           <CloseIcon onClick={onDismiss} />
