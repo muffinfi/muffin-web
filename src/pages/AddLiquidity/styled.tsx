@@ -1,41 +1,14 @@
 import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import Input from 'components/NumericalInput'
-import { BodyWrapper } from 'pages/AppBody'
+import AppBody from 'pages/AppBody'
 import styled from 'styled-components/macro'
 
-export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
+export const StyledAppBody = styled(AppBody)<{ wide: boolean }>`
+  padding: 32px;
   max-width: ${({ wide }) => (wide ? '880px' : '480px')};
-  width: 100%;
-
-  padding: ${({ wide }) => (wide ? '10px' : '0')};
-
   ${({ theme }) => theme.mediaWidth.upToMedium`
     max-width: 480px;
-  `};
-`
-
-export const Wrapper = styled.div`
-  position: relative;
-  padding: 26px 16px;
-  min-width: 480px;
-
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    min-width: 400px;
-  `};
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-  min-width: 340px;
-`};
-`
-
-export const ScrollablePage = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    max-width: 480px;
-    margin: 0 auto;
   `};
 `
 

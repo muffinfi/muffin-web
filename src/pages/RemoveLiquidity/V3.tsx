@@ -23,7 +23,6 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useToggle from 'hooks/useToggle'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Redirect, RouteComponentProps } from 'react-router-dom'
@@ -33,7 +32,6 @@ import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import { TransactionType } from '../../state/transactions/actions'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { currencyId } from '../../utils/currencyId'
@@ -46,7 +44,7 @@ const PoolTierNameWrapper = styled.div`
   font-size: var(--text-xl);
 `
 
-const TokenAmountCard = memo(function TokenAmountCard({
+const TokenAmountsCard = memo(function TokenAmountsCard({
   partialAmount0,
   partialAmount1,
   feeAmount0,
@@ -59,36 +57,32 @@ const TokenAmountCard = memo(function TokenAmountCard({
 }) {
   return (
     <LightCard>
-      <AutoColumn gap="lg">
+      <AutoColumn gap="md">
         <AutoColumn gap="md">
           <DS.Text color="text2" weight="semibold" size="sm">
-            <Trans>Liquidity you&#39;ll remove</Trans>
+            <Trans>Liquidity assets</Trans>
           </DS.Text>
-          <AutoColumn gap="sm">
-            <RowBetween>
-              <DS.CurrencyName currency={partialAmount0?.currency} />
-              {partialAmount0 && <FormattedCurrencyAmount currencyAmount={partialAmount0} significantDigits={6} />}
-            </RowBetween>
-            <RowBetween>
-              <DS.CurrencyName currency={partialAmount1?.currency} />
-              {partialAmount1 && <FormattedCurrencyAmount currencyAmount={partialAmount1} significantDigits={6} />}
-            </RowBetween>
-          </AutoColumn>
+          <RowBetween>
+            <DS.CurrencyName currency={partialAmount0?.currency} />
+            {partialAmount0 && <FormattedCurrencyAmount currencyAmount={partialAmount0} significantDigits={6} />}
+          </RowBetween>
+          <RowBetween>
+            <DS.CurrencyName currency={partialAmount1?.currency} />
+            {partialAmount1 && <FormattedCurrencyAmount currencyAmount={partialAmount1} significantDigits={6} />}
+          </RowBetween>
         </AutoColumn>
         <AutoColumn gap="md">
           <DS.Text color="text2" weight="semibold" size="sm">
-            <Trans>Fees you&#39;ll collect</Trans>
+            <Trans>Fees to collect</Trans>
           </DS.Text>
-          <AutoColumn gap="sm">
-            <RowBetween>
-              <DS.CurrencyName currency={feeAmount0?.currency} />
-              {feeAmount0 && <FormattedCurrencyAmount currencyAmount={feeAmount0} significantDigits={6} />}
-            </RowBetween>
-            <RowBetween>
-              <DS.CurrencyName currency={feeAmount1?.currency} />
-              {feeAmount1 && <FormattedCurrencyAmount currencyAmount={feeAmount1} significantDigits={6} />}
-            </RowBetween>
-          </AutoColumn>
+          <RowBetween>
+            <DS.CurrencyName currency={feeAmount0?.currency} />
+            {feeAmount0 && <FormattedCurrencyAmount currencyAmount={feeAmount0} significantDigits={6} />}
+          </RowBetween>
+          <RowBetween>
+            <DS.CurrencyName currency={feeAmount1?.currency} />
+            {feeAmount1 && <FormattedCurrencyAmount currencyAmount={feeAmount1} significantDigits={6} />}
+          </RowBetween>
         </AutoColumn>
       </AutoColumn>
     </LightCard>
@@ -127,13 +121,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
    *                        RECEIVE WETH OR ETH
    *====================================================================*/
 
+  // TODO: remove it. we do not support receiving as ETH
   // flag for receiving WETH (default collect as WETH)
-  const [receiveWETH, setReceiveWETH] = useState(true)
+  const receiveWETH = true
   const _wantedCurrency0 = receiveWETH ? token0 : currency0
   const _wantedCurrency1 = receiveWETH ? token1 : currency1
-  // flag for receiving WETH
-  const nativeCurrency = useNativeCurrency()
-  const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
   /*=====================================================================
    *                   AMOUNTS FROM BURNED LIQUIDITY
@@ -308,7 +300,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const makeSliderCard = () => (
     <LightCard>
       <AutoColumn gap="md">
-        <DS.Text color="text2" weight="bold">
+        <DS.Text color="text2" weight="semibold" size="sm">
           <Trans>% of Liquidity</Trans>
         </DS.Text>
         <RowBetween>
@@ -337,7 +329,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   const makeTransactionModalHeader = () => (
     <AutoColumn gap="lg">
-      <TokenAmountCard
+      <TokenAmountsCard
         partialAmount0={partialAmount0}
         partialAmount1={partialAmount1}
         feeAmount0={feeAmount0}
@@ -377,19 +369,10 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     />
   )
 
-  const showCollectAsWeth = Boolean(
-    _wantedCurrency0 &&
-      _wantedCurrency1 &&
-      (_wantedCurrency0.isNative ||
-        _wantedCurrency1.isNative ||
-        WRAPPED_NATIVE_CURRENCY[_wantedCurrency0.chainId]?.equals(_wantedCurrency0.wrapped) ||
-        WRAPPED_NATIVE_CURRENCY[_wantedCurrency1.chainId]?.equals(_wantedCurrency1.wrapped))
-  )
-
   return (
     <>
       {makeTransactionModal()}
-      <AppBody padding="32px" maxWidth="460px">
+      <AppBody padding="32px" maxWidth="450px">
         <AddRemoveTabs
           creating={false}
           adding={false}
@@ -405,6 +388,13 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <RangeBadge removed={removed} inRange={!outOfRange} />
             </RowBetween>
             {makeSliderCard()}
+
+            <TokenAmountsCard
+              partialAmount0={partialAmount0}
+              partialAmount1={partialAmount1}
+              feeAmount0={feeAmount0}
+              feeAmount1={feeAmount1}
+            />
 
             <RowBetween>
               <RowFixed>
@@ -424,31 +414,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               />
             </RowBetween>
 
-            <TokenAmountCard
-              partialAmount0={partialAmount0}
-              partialAmount1={partialAmount1}
-              feeAmount0={feeAmount0}
-              feeAmount1={feeAmount1}
-            />
-
             <TokenDestinationToggleRow
               toInternalAccount={storeInInternalAccount}
               questionHelperContent={<Trans>Choose the destination of the removed tokens and fee.</Trans>}
               onToggle={toggleStoreInInternalAccount}
             />
-
-            {showCollectAsWeth && (
-              <RowBetween>
-                <DS.Text weight="semibold">
-                  <Trans>Collect as {nativeWrappedSymbol}</Trans>
-                </DS.Text>
-                <Toggle
-                  id="receive-as-weth"
-                  isActive={receiveWETH}
-                  toggle={() => setReceiveWETH((receiveWETH) => !receiveWETH)}
-                />
-              </RowBetween>
-            )}
 
             <DS.ButtonRowPrimary
               disabled={removed || percent === 0 || !partialAmount0}

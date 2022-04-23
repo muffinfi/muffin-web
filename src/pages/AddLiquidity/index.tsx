@@ -79,14 +79,12 @@ import {
   DynamicSection,
   HideMedium,
   MediumOnly,
-  PageWrapper,
   ResponsiveTwoColumns,
   RightContainer,
-  ScrollablePage,
   StackedContainer,
   StackedItem,
+  StyledAppBody,
   StyledInput,
-  Wrapper,
 } from './styled'
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
@@ -1051,91 +1049,90 @@ export default function AddLiquidity({
 
   return (
     <>
-      <ScrollablePage>
+      <>
         <DowntimeWarning />
         {makeTransactionModal()}
-        <PageWrapper wide={!hasExistingPosition}>
+        <StyledAppBody wide={!hasExistingPosition}>
           {makeTabHeader()}
-          <Wrapper>
-            <ResponsiveTwoColumns wide={!hasExistingPosition}>
-              <AutoColumn gap="lg">
-                {hasExistingPosition && existingPosition ? (
-                  <PositionPreview
-                    position={existingPosition}
-                    title={<Trans>Selected Range</Trans>}
-                    inRange={!isOutOfRange}
-                    ticksAtLimit={areTicksAtLimit}
-                  />
-                ) : (
-                  makeSelectPairAndTierSection()
-                )}
-              </AutoColumn>
-              <div>{makeTokenAmountSection()}</div>
-              {!hasExistingPosition ? (
-                <>
-                  <HideMedium>{makeSubmitButtons()}</HideMedium>
-                  <RightContainer gap="lg">
-                    <DynamicSection gap="md" disabled={sqrtGamma == null || isInvalidPool}>
-                      {!noLiquidity ? (
-                        <>
-                          <RowBetween>
-                            <ThemedText.Label>
-                              <Trans>Set Price Range</Trans>
-                            </ThemedText.Label>
-                          </RowBetween>
 
-                          {!noLiquidity && price && baseCurrency && quoteCurrency && (
-                            <AutoRow gap="4px" justify="center" style={{ marginTop: '0.5rem' }}>
-                              <Trans>
-                                <ThemedText.Main fontWeight={500} textAlign="center" fontSize={12} color="text1">
-                                  Current Price:
-                                </ThemedText.Main>
-                                <ThemedText.Body fontWeight={500} textAlign="center" fontSize={12} color="text1">
-                                  <HoverInlineText
-                                    maxCharacters={20}
-                                    text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
-                                  />
-                                </ThemedText.Body>
-                                <ThemedText.Body color="text2" fontSize={12}>
-                                  {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                                </ThemedText.Body>
-                              </Trans>
-                            </AutoRow>
-                          )}
-                          <LiquidityChartRangeInput
-                            currencyA={baseCurrency ?? undefined}
-                            currencyB={quoteCurrency ?? undefined}
-                            pool={pool || undefined}
-                            tierId={tierId}
-                            ticksAtLimit={areTicksAtLimit}
-                            price={
-                              price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined
-                            }
-                            priceLower={priceLower}
-                            priceUpper={priceUpper}
-                            onLeftRangeInput={onLeftRangeInput}
-                            onRightRangeInput={onRightRangeInput}
-                            interactive={!hasExistingPosition}
-                          />
-                        </>
-                      ) : (
-                        makeCreatePoolStartPriceForm()
-                      )}
-                    </DynamicSection>
-
-                    {makeRangeFormSection()}
-
-                    <MediumOnly>{makeSubmitButtons()}</MediumOnly>
-                  </RightContainer>
-                </>
+          <ResponsiveTwoColumns wide={!hasExistingPosition}>
+            <AutoColumn gap="lg">
+              {hasExistingPosition && existingPosition ? (
+                <PositionPreview
+                  position={existingPosition}
+                  title={<Trans>Selected Range</Trans>}
+                  inRange={!isOutOfRange}
+                  ticksAtLimit={areTicksAtLimit}
+                />
               ) : (
-                makeSubmitButtons()
+                makeSelectPairAndTierSection()
               )}
-            </ResponsiveTwoColumns>
-          </Wrapper>
-        </PageWrapper>
+            </AutoColumn>
+            <div>{makeTokenAmountSection()}</div>
+            {!hasExistingPosition ? (
+              <>
+                <HideMedium>{makeSubmitButtons()}</HideMedium>
+                <RightContainer gap="lg">
+                  <DynamicSection gap="md" disabled={sqrtGamma == null || isInvalidPool}>
+                    {!noLiquidity ? (
+                      <>
+                        <RowBetween>
+                          <ThemedText.Label>
+                            <Trans>Set Price Range</Trans>
+                          </ThemedText.Label>
+                        </RowBetween>
+
+                        {!noLiquidity && price && baseCurrency && quoteCurrency && (
+                          <AutoRow gap="4px" justify="center" style={{ marginTop: '0.5rem' }}>
+                            <Trans>
+                              <ThemedText.Main fontWeight={500} textAlign="center" fontSize={12} color="text1">
+                                Current Price:
+                              </ThemedText.Main>
+                              <ThemedText.Body fontWeight={500} textAlign="center" fontSize={12} color="text1">
+                                <HoverInlineText
+                                  maxCharacters={20}
+                                  text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
+                                />
+                              </ThemedText.Body>
+                              <ThemedText.Body color="text2" fontSize={12}>
+                                {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                              </ThemedText.Body>
+                            </Trans>
+                          </AutoRow>
+                        )}
+                        <LiquidityChartRangeInput
+                          currencyA={baseCurrency ?? undefined}
+                          currencyB={quoteCurrency ?? undefined}
+                          pool={pool || undefined}
+                          tierId={tierId}
+                          ticksAtLimit={areTicksAtLimit}
+                          price={
+                            price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined
+                          }
+                          priceLower={priceLower}
+                          priceUpper={priceUpper}
+                          onLeftRangeInput={onLeftRangeInput}
+                          onRightRangeInput={onRightRangeInput}
+                          interactive={!hasExistingPosition}
+                        />
+                      </>
+                    ) : (
+                      makeCreatePoolStartPriceForm()
+                    )}
+                  </DynamicSection>
+
+                  {makeRangeFormSection()}
+
+                  <MediumOnly>{makeSubmitButtons()}</MediumOnly>
+                </RightContainer>
+              </>
+            ) : (
+              makeSubmitButtons()
+            )}
+          </ResponsiveTwoColumns>
+        </StyledAppBody>
         {addIsUnsupported && <UnsupportedCurrencyFooter show={addIsUnsupported} currencies={[currencyA, currencyB]} />}
-      </ScrollablePage>
+      </>
       <SwitchLocaleLink />
     </>
   )

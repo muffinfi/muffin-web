@@ -12,10 +12,8 @@ export const BodyWrapper = styled.main<BodyWrapperProps>`
   max-width: ${({ maxWidth }) => maxWidth ?? '480px'};
 
   padding: ${({ padding }) => padding};
-  margin-top: 1rem;
-
   border-radius: 24px;
-  background: ${({ theme }) => theme.bg0};
+  background: var(--bg0);
   /* prettier-ignore */
   box-shadow:
     0px 0px 1px rgba(0, 0, 0, 0.01),
