@@ -31,9 +31,14 @@ const BaseButton = styled.button`
   transition: background-color 150ms;
   text-align: center;
   font-weight: var(--fw-bold);
+
   &:disabled {
     pointer-events: none;
     cursor: auto;
+    &:is(button) {
+      pointer-events: auto;
+      cursor: not-allowed;
+    }
   }
 
   /* commonly changeable style */
@@ -55,20 +60,6 @@ const BaseButton = styled.button`
     color: var(--text3);
   }
 `
-
-// export const ButtonPrimary = styled(BaseButton)`
-//   --btnText: #fff;
-//   --btnBg: ${({ theme }) => theme.primary1};
-//   --btnBgHover: ${({ theme }) => darken(0.05, theme.primary1)};
-//   --btnBgActive: ${({ theme }) => darken(0.1, theme.primary1)};
-// `
-
-// export const ButtonSecondary = styled(BaseButton)`
-//   --btnText: var(--text1);
-//   --btnBg: ${({ theme }) => theme.bg2};
-//   --btnBgHover: ${({ theme }) => darken(0.05, theme.bg2)};
-//   --btnBgActive: ${({ theme }) => darken(0.1, theme.bg2)};
-// `
 
 const buttonMixins = {
   color: {
@@ -92,6 +83,11 @@ const buttonMixins = {
     `,
   },
   size: {
+    xs: css`
+      font-size: var(--text-xs);
+      font-weight: var(--fw-semibold);
+      padding: 6px 10px;
+    `,
     small: css`
       padding: 4px 8px;
     `,
@@ -119,6 +115,10 @@ export const ButtonPrimary = styled(Button)`
 
 export const ButtonSecondary = styled(Button)`
   ${buttonMixins.color.secondary}
+`
+
+export const ButtonTertiary = styled(Button)`
+  ${buttonMixins.color.tertiary}
 `
 
 export const ButtonRowPrimary = styled(Button)`

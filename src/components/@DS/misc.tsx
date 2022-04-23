@@ -3,17 +3,29 @@ import styled from 'styled-components/macro'
 
 //////////////////// TYPOGRAPHY ////////////////////
 
+interface TextProps {
+  size?: string
+  weight?: string
+  color?: string
+}
+
+export const Text = styled.span<TextProps>`
+  font-size: ${({ size }) => size && `var(--text-${size})`};
+  font-weight: ${({ weight }) => weight && `var(--fw-${weight})`};
+  color: ${({ color }) => color && `var(--${color})`};
+`
+
 export const H1 = styled.h1`
+  margin: 0;
+  padding: 0;
   font-size: 22px;
   font-weight: var(--fw-bold);
   color: var(--text1);
-  margin: 0;
-  padding: 0;
 `
 
 //////////////////// LAYOUT ////////////////////
 
-type RowProps = {
+interface RowProps {
   gap?: string
   wrap?: string
   columnGap?: string
@@ -38,10 +50,8 @@ export const RowBetween = styled(Row)`
 export const Column = styled.div<{ gap?: string; stretch?: boolean }>`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: ${({ stretch }) => (stretch ? 'stretch' : 'flex-start')};
   gap: ${({ gap }) => gap};
-
-  ${({ stretch }) => (stretch ? 'align-items: stretch;' : '')}
 `
 
 export const ColumnCenter = styled(Column)`

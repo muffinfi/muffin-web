@@ -106,17 +106,11 @@ const TokenProportionBadge = styled(Badge)`
 
 //////////
 
-const Text = styled.div<{ size?: string; weight?: string; color?: string }>`
-  font-size: ${({ size }) => size && `var(--text-${size})`};
-  font-weight: ${({ weight }) => weight && `var(--fw-${weight})`};
-  color: ${({ color }) => color && `var(--${color})`};
-`
+const SmallHeader = styled(DS.Text).attrs({ size: 'sm', weight: 'semibold', color: 'text2' })``
 
-const SmallHeader = styled(Text).attrs({ size: 'sm', weight: 'semibold', color: 'text2' })``
+const PriceText = styled(DS.Text).attrs({ size: 'xl', weight: 'semibold', color: 'text1' })``
 
-const PriceText = styled(Text).attrs({ size: 'xl', weight: 'semibold', color: 'text1' })``
-
-const HelpText = styled(Text).attrs({ size: 'xs', weight: 'regular', color: 'text3' })``
+const HelpText = styled(DS.Text).attrs({ size: 'xs', weight: 'regular', color: 'text3' })``
 
 //////////
 
@@ -633,16 +627,16 @@ export function PositionPage({
           <DS.RowBetween>
             <DS.Row>
               <CurrencyLogo currency={feeAmountUpper?.currency} size={'20px'} style={{ marginRight: '0.5rem' }} />
-              <Text weight="semibold">{feeAmountUpper?.currency?.wrapped.symbol}</Text>
+              <DS.Text weight="semibold">{feeAmountUpper?.currency?.wrapped.symbol}</DS.Text>
             </DS.Row>
-            <Text weight="semibold">{feeAmountUpper ? formatCurrencyAmount(feeAmountUpper, 4) : '-'}</Text>
+            <DS.Text weight="semibold">{feeAmountUpper ? formatCurrencyAmount(feeAmountUpper, 4) : '-'}</DS.Text>
           </DS.RowBetween>
           <DS.RowBetween>
             <DS.Row>
               <CurrencyLogo currency={feeAmountLower?.currency} size={'20px'} style={{ marginRight: '0.5rem' }} />
-              <Text weight="semibold">{feeAmountLower?.currency?.wrapped.symbol}</Text>
+              <DS.Text weight="semibold">{feeAmountLower?.currency?.wrapped.symbol}</DS.Text>
             </DS.Row>
-            <Text weight="semibold">{feeAmountLower ? formatCurrencyAmount(feeAmountLower, 4) : '-'}</Text>
+            <DS.Text weight="semibold">{feeAmountLower ? formatCurrencyAmount(feeAmountLower, 4) : '-'}</DS.Text>
           </DS.RowBetween>
         </DS.Column>
       </LightCard>
