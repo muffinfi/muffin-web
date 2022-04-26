@@ -1,7 +1,7 @@
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
-import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
+import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../constants/tokens'
 
 const STABLES_MAINNET = [DAI, USDC_MAINNET, USDT]
 

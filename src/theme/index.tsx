@@ -1,4 +1,4 @@
-import { GlobalStyle } from 'components/@M/theme'
+import { GlobalStyle } from 'components/@M/global'
 import React, { useMemo } from 'react'
 import { Text, TextProps as TextPropsOriginal } from 'rebass'
 import styled, {

@@ -7,12 +7,23 @@ interface TextProps {
   size?: string
   weight?: string
   color?: string
+
+  nowrap?: boolean
+  ellipsis?: boolean
 }
 
 const textMixin = css<TextProps>`
   font-size: ${({ size }) => size && `var(--text-${size})`};
   font-weight: ${({ weight }) => weight && `var(--${weight})`};
   color: ${({ color }) => color && `var(--${color})`};
+
+  ${({ nowrap }) => nowrap && `white-space: nowrap;`}
+  ${({ ellipsis }) =>
+    ellipsis &&
+    css`
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `}
 `
 
 export const Text = styled.span<TextProps>`
@@ -75,7 +86,7 @@ export const ColumnCenter = styled(Column)`
 //////////////////// GRID TABLE ////////////////////
 
 interface GridTableProps {
-  column: number
+  column?: number
   columnGap?: string
   rowGap?: string
   alignItems?: string
@@ -83,7 +94,7 @@ interface GridTableProps {
 
 export const GridTable = styled.div<GridTableProps>`
   display: grid;
-  grid-template-columns: ${({ column }) => `repeat(${column}, max-content)`};
+  grid-template-columns: ${({ column }) => (column ? `repeat(${column}, max-content)` : null)};
   column-gap: ${({ columnGap }) => columnGap};
   row-gap: ${({ rowGap }) => rowGap};
 
