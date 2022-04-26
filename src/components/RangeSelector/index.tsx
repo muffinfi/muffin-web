@@ -51,8 +51,6 @@ export default function RangeSelector({
           increment={isSorted ? getIncrementLower : getDecrementUpper}
           decrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
           incrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
-          tierId={tierId}
-          label={leftPrice ? `${currencyB?.symbol}` : '-'}
           title={<Trans>Min Price</Trans>}
           tokenA={currencyA?.symbol}
           tokenB={currencyB?.symbol}
@@ -65,8 +63,6 @@ export default function RangeSelector({
           increment={isSorted ? getIncrementUpper : getDecrementLower}
           incrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
           decrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
-          tierId={tierId}
-          label={rightPrice ? `${currencyB?.symbol}` : '-'}
           tokenA={currencyA?.symbol}
           tokenB={currencyB?.symbol}
           title={<Trans>Max Price</Trans>}

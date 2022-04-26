@@ -240,7 +240,7 @@ export default function Deposit({ history }: RouteComponentProps) {
   )
 
   const makeInputFields = () => (
-    <AutoColumn gap="lg" style={{ display: 'relative' }}>
+    <AutoColumn gap="lg" style={{ position: 'relative' }}>
       {inputAmounts.map((amount, index) => (
         <DepositWithdrawInputRow
           key={getRowKey(amount?.currency, index)}

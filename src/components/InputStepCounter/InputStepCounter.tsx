@@ -6,7 +6,6 @@ import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Minus, Plus } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
 import { Input as NumericalInput } from '../NumericalInput'
 
 const pulse = (color: string) => keyframes`
@@ -23,10 +22,10 @@ const pulse = (color: string) => keyframes`
   }
 `
 
-const InputRow = styled.div`
+const InputRow = styled.div<{ locked?: boolean }>`
   display: grid;
 
-  grid-template-columns: 30px 1fr 30px;
+  grid-template-columns: ${({ locked }) => (locked ? '1fr' : '30px 1fr 30px')};
 `
 
 const SmallButton = styled(ButtonGray)`
@@ -38,6 +37,9 @@ const FocusedOutlineCard = styled(OutlineCard)<{ active?: boolean; pulsing?: boo
   border-color: ${({ active, theme }) => active && theme.blue1};
   padding: 12px;
   animation: ${({ pulsing, theme }) => pulsing && pulse(theme.blue1)} 0.8s linear;
+  height: 100%;
+  display: flex;
+  align-items: center;
 `
 
 const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
@@ -73,13 +75,13 @@ interface StepCounterProps {
   increment: () => string
   decrementDisabled?: boolean
   incrementDisabled?: boolean
-  tierId?: number
-  label?: string
   width?: string
   locked?: boolean // disable input
   title: ReactNode
   tokenA: string | undefined
   tokenB: string | undefined
+  handleChangeImmediately?: boolean
+  disablePulsing?: boolean
 }
 
 const StepCounter = ({
@@ -94,6 +96,8 @@ const StepCounter = ({
   title,
   tokenA,
   tokenB,
+  handleChangeImmediately,
+  disablePulsing,
 }: StepCounterProps) => {
   //  for focus state, styled components doesnt let you select input parent container
   const [active, setActive] = useState(false)
@@ -127,17 +131,29 @@ const StepCounter = ({
     onUserInput(increment())
   }, [increment, onUserInput])
 
+  const handleInput = useCallback(
+    (val: string) => {
+      setLocalValue(val)
+      handleChangeImmediately && onUserInput(val)
+    },
+    [handleChangeImmediately, onUserInput]
+  )
+
   useEffect(() => {
     if (localValue !== value && !useLocalValue) {
-      setTimeout(() => {
-        setLocalValue(value) // reset local value to match parent
-        setPulsing(true) // trigger animation
-        setTimeout(function () {
-          setPulsing(false)
-        }, 1800)
-      }, 0)
+      if (disablePulsing) {
+        setLocalValue(value)
+      } else {
+        setTimeout(() => {
+          setLocalValue(value) // reset local value to match parent
+          setPulsing(true) // trigger animation
+          setTimeout(function () {
+            setPulsing(false)
+          }, 1800)
+        }, 0)
+      }
     }
-  }, [localValue, useLocalValue, value])
+  }, [disablePulsing, localValue, useLocalValue, value])
 
   return (
     <FocusedOutlineCard pulsing={pulsing} active={active} onFocus={handleOnFocus} onBlur={handleOnBlur} width={width}>
@@ -146,7 +162,7 @@ const StepCounter = ({
           {title}
         </InputTitle>
 
-        <InputRow>
+        <InputRow locked={locked}>
           {!locked && (
             <SmallButton onClick={handleDecrement} disabled={decrementDisabled}>
               <ButtonLabel disabled={decrementDisabled} fontSize="12px">
@@ -160,9 +176,7 @@ const StepCounter = ({
             value={localValue}
             fontSize="20px"
             disabled={locked}
-            onUserInput={(val) => {
-              setLocalValue(val)
-            }}
+            onUserInput={handleInput}
           />
 
           {!locked && (

@@ -3,6 +3,7 @@ import { Trans } from '@lingui/macro'
 import { useBestMuffinTrade } from '@muffinfi/hooks/swap/useBestTrade'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+import { BAD_RECIPIENT_ADDRESSES } from 'constants/addresses'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import useENS from 'hooks/useENS'
@@ -89,12 +90,6 @@ export function tryParseAmount<T extends Currency>(value?: string, currency?: T)
   return undefined
 }
 
-const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
-  '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f': true, // Uniswap v2 factory
-  '0xf164fC0Ec4E93095b804a4795bBe1e041497b92a': true, // Uniswap v2 router 01
-  '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D': true, // Uniswap v2 router 02
-}
-
 // from the input swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(swapState: SwapState): {
   currencies: { [field in Field]?: Currency | null }
@@ -115,7 +110,7 @@ export function useDerivedSwapInfo(swapState: SwapState): {
     recipient,
   } = swapState
 
-  const { account } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -178,7 +173,7 @@ export function useDerivedSwapInfo(swapState: SwapState): {
     if (!to || !formattedTo) {
       inputError = inputError ?? <Trans>Enter a recipient</Trans>
     } else {
-      if (BAD_RECIPIENT_ADDRESSES[formattedTo]) {
+      if (chainId && BAD_RECIPIENT_ADDRESSES[chainId]?.[formattedTo]) {
         inputError = inputError ?? <Trans>Invalid recipient</Trans>
       }
     }
@@ -191,7 +186,7 @@ export function useDerivedSwapInfo(swapState: SwapState): {
     }
 
     return inputError
-  }, [account, allowedSlippage, currencies, currencyBalances, parsedAmount, to, trade.trade])
+  }, [account, allowedSlippage, chainId, currencies, currencyBalances, parsedAmount, to, trade.trade])
 
   return useMemo(
     () => ({
@@ -267,10 +262,10 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
 export function swapStateToQueryParameters(swapState: SwapState) {
   const params = new URLSearchParams()
-  if (swapState[Field.INPUT].currencyId && swapState[Field.INPUT].currencyId !== 'ETH') {
+  if (swapState[Field.INPUT].currencyId) {
     params.set('inputCurrency', swapState[Field.INPUT].currencyId as string)
   }
-  if (swapState[Field.OUTPUT].currencyId && swapState[Field.OUTPUT].currencyId !== 'ETH') {
+  if (swapState[Field.OUTPUT].currencyId) {
     params.set('outputCurrency', swapState[Field.OUTPUT].currencyId as string)
   }
   if (swapState.typedValue) {
@@ -278,6 +273,9 @@ export function swapStateToQueryParameters(swapState: SwapState) {
   }
   if (swapState.independentField) {
     params.set('exactField', swapState.independentField)
+  }
+  if (swapState.recipient) {
+    params.set('recipient', swapState.recipient)
   }
   return params.toString()
 }

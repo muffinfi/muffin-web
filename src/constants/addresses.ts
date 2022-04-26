@@ -1,6 +1,5 @@
 import { FACTORY_ADDRESS as V2_FACTORY_ADDRESS } from '@uniswap/v2-sdk'
 import { FACTORY_ADDRESS as V3_FACTORY_ADDRESS } from '@uniswap/v3-sdk'
-
 import { constructSameAddressMap } from '../utils/constructSameAddressMap'
 import { SupportedChainId } from './chains'
 
@@ -111,4 +110,12 @@ export const V3_MIGRATOR_ADDRESSES: AddressMap = constructSameAddressMap('0xA564
 export const TICK_LENS_ADDRESSES: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xbfd8137f7d1516D3ea5cA83523914859ec47F573',
   [SupportedChainId.ARBITRUM_RINKEBY]: '0xbfd8137f7d1516D3ea5cA83523914859ec47F573',
+}
+
+export const BAD_RECIPIENT_ADDRESSES: { [chainId: number]: { [address: string]: true } } = {
+  [SupportedChainId.MAINNET]: {
+    '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f': true, // Uniswap v2 factory
+    '0xf164fC0Ec4E93095b804a4795bBe1e041497b92a': true, // Uniswap v2 router 01
+    '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D': true, // Uniswap v2 router 02
+  },
 }

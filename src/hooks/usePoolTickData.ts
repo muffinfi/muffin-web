@@ -29,7 +29,7 @@ export interface TickProcessed {
 export type StackedTick = Record<number, any> & Pick<Tick, 'tickIdx' | 'price0'>
 
 const getActiveTick = (tickCurrent: number | undefined, tickSpacing: number | undefined) =>
-  tickCurrent && tickSpacing ? Math.floor(tickCurrent / tickSpacing) * tickSpacing : undefined
+  tickCurrent != null && tickSpacing != null ? Math.floor(tickCurrent / tickSpacing) * tickSpacing : undefined
 
 // const REFRESH_FREQUENCY = { blocksPerFetch: 2 }
 
@@ -197,8 +197,7 @@ export function usePoolActiveLiquidity(
     // flat map and sort all the tick data
     const allTicks = (() => {
       const tickMap = AllV3TicksQueryResultKeys.reduce((acc, key) => {
-        const tierTicks = (ticks as AllV3TicksQuery)[key]
-        tierTicks.forEach((tick) => {
+        ticks[key].forEach((tick) => {
           if (!acc[tick.tickIdx]) {
             acc[tick.tickIdx] = {
               tickIdx: tick.tickIdx,

@@ -1,10 +1,13 @@
 import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { IMuffinHubCombined } from '@muffinfi/typechain'
 import { CallState } from '@uniswap/redux-multicall'
 import { Currency } from '@uniswap/sdk-core'
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { useSingleContractMultipleData, useSingleContractWithCallData } from 'lib/hooks/multicall'
-import { useMemo, useRef } from 'react'
+import useMemoWithEqualCheck, { EQUALS_CHECK, useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
+import { useSingleCallResult, useSingleContractMultipleData, useSingleContractWithCallData } from 'lib/hooks/multicall'
+import { useMemo } from 'react'
+import type { Optional } from 'types/optional'
 import { useHubContract } from './useContract'
 
 export enum PoolState {
@@ -12,19 +15,6 @@ export enum PoolState {
   NOT_EXISTS,
   EXISTS,
   INVALID,
-}
-
-const useMemoizePool = (pool: Pool | null) => {
-  const ref = useRef<Pool | null>(null)
-
-  return useMemo(() => {
-    const prevPool = ref.current
-    if (pool && prevPool && pool.equals(prevPool)) {
-      return prevPool
-    }
-    ref.current = pool
-    return pool
-  }, [pool])
 }
 
 export const useMuffinPool = (
@@ -75,7 +65,7 @@ export const useMuffinPool = (
   }, [token0, token1, poolParams, tiersData])
 
   // memoize pool
-  return [poolState, useMemoizePool(pool)]
+  return [poolState, useMemoWithEqualCheck(pool, EQUALS_CHECK) ?? null]
 }
 
 /////////////
@@ -131,4 +121,16 @@ export const useMuffinPools = (
       }
     })
   }, [pairs, poolParamsList, tiersDataList])
+}
+
+export const useLimitOrderTickSpacingMultipliers = (
+  hubContract: Optional<IMuffinHubCombined>,
+  pool: Optional<Pool>
+) => {
+  const calldata = useMemo(() => (pool ? [pool.poolId] : undefined), [pool])
+
+  const state = useSingleCallResult(calldata ? hubContract : undefined, 'getLimitOrderTickSpacingMultipliers', calldata)
+  return useMemoArrayWithEqualCheck(
+    state.result?.[0] as Awaited<ReturnType<IMuffinHubCombined['getLimitOrderTickSpacingMultipliers']>> | undefined
+  )
 }

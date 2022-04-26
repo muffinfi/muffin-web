@@ -381,7 +381,7 @@ export default function Swap({ history }: RouteComponentProps) {
    *====================================================================*/
 
   const makeInputFields = () => (
-    <div style={{ display: 'relative' }}>
+    <div style={{ position: 'relative' }}>
       <CurrencyInputPanel
         label={independentField === Field.OUTPUT && !showWrap ? <Trans>From (at most)</Trans> : <Trans>From</Trans>}
         value={formattedAmounts[Field.INPUT]}

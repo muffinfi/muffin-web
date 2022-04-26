@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import { TabNavLink } from 'components/RouterTab'
+import { ReactNode } from 'react'
 import { swapStateToQueryParameters } from 'state/swap/hooks'
 import { SwapState } from 'state/swap/reducer'
 import styled from 'styled-components/macro'
@@ -17,7 +18,15 @@ const appendQuery = (base: string, search?: string) => {
   return search ? `${base}?${search}` : base
 }
 
-export default function SwapHeader({ swapState, allowedSlippage }: { swapState: SwapState; allowedSlippage: Percent }) {
+export default function SwapHeader({
+  swapState,
+  allowedSlippage,
+  extraContents,
+}: {
+  swapState: SwapState
+  allowedSlippage: Percent
+  extraContents?: () => ReactNode
+}) {
   return (
     <StyledSwapHeader>
       <RowBetween>
@@ -29,6 +38,7 @@ export default function SwapHeader({ swapState, allowedSlippage }: { swapState: 
           />
         </RowFixed>
         <RowFixed>
+          {extraContents?.()}
           <SettingsTab placeholderSlippage={allowedSlippage} />
         </RowFixed>
       </RowBetween>
