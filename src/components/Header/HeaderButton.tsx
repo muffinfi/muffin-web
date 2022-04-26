@@ -1,14 +1,15 @@
+import { Row } from 'components/@M'
 import styled from 'styled-components/macro'
 
-const HeaderButton = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+const HeaderButton = styled(Row)`
+  justify-content: center;
 
-  background-color: var(--bg0);
+  background-color: var(--layer1);
+  border: 1px solid var(--borderColor);
   border-radius: 16px;
-  white-space: nowrap;
   height: 40px;
+  font-weight: var(--medium);
+  white-space: nowrap;
 `
 
 export default HeaderButton

@@ -40,12 +40,10 @@ const MenuWrapper = styled.div`
 `
 
 const MenuButton = styled(HeaderButton).attrs({ role: 'button' })`
-  justify-content: center;
   width: 42px;
   cursor: pointer;
-  border: 1px solid transparent;
   :hover {
-    border: 1px solid var(--bg3);
+    border: 1px solid var(--tertiary2);
   }
 `
 

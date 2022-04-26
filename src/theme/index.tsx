@@ -1,3 +1,4 @@
+import { GlobalStyle } from 'components/@M/theme'
 import React, { useMemo } from 'react'
 import { Text, TextProps as TextPropsOriginal } from 'rebass'
 import styled, {
@@ -145,7 +146,7 @@ function theme(darkMode: boolean): DefaultTheme {
  * Inject the theme object into css variables
  */
 const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
-  html {
+  :root {
     ${({ theme }) => css`
       --text1: ${theme.text1};
       --text2: ${theme.text2};
@@ -182,17 +183,9 @@ const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
       --error: ${theme.error};
       --success: ${theme.success};
       --warning: ${theme.warning};
-
       --fw-bold: 600;
       --fw-semibold: 500;
       --fw-regular: 400;
-
-      --text-xs: 0.75rem; /*  12px */
-      --text-sm: 0.875rem; /* 14px */
-      --text-base: 1rem; /*   16px */
-      --text-lg: 1.125rem; /* 18px */
-      --text-xl: 1.25rem; /*  20px */
-      --text-2xl: 1.5rem; /*  24px */
     `}
   }
 `
@@ -205,6 +198,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   return (
     <StyledComponentsThemeProvider theme={themeObject}>
       <ThemeCssVariables theme={themeObject} />
+      <GlobalStyle />
       {children}
     </StyledComponentsThemeProvider>
   )
@@ -269,12 +263,12 @@ export const ThemedText = {
 }
 
 export const ThemedGlobalStyle = createGlobalStyle`
-html {
+/* html {
   color: ${({ theme }) => theme.text1};
   background-color: ${({ theme }) => theme.bg1} !important;
 }
 
 a {
  color: ${({ theme }) => theme.blue1};
-}
+} */
 `

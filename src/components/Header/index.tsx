@@ -1,95 +1,53 @@
 import { Trans } from '@lingui/macro'
 import useScrollPosition from '@react-hook/window-scroll'
+import * as M from 'components/@M'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { match, NavLink } from 'react-router-dom'
 import { useDarkModeManager } from 'state/user/hooks'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
-import styled from 'styled-components/macro'
+import styled, { css } from 'styled-components/macro'
 import { ReactComponent as Logo } from '../../assets/svg/logo.svg'
 import Menu from '../Menu'
 import Web3Status from '../Web3Status'
 import HeaderButton from './HeaderButton'
 import NetworkSelector from './NetworkSelector'
 
-///// HEADER /////
+const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
+  padding: 16px 32px;
+  transition: background-color 100ms, box-shadow 100ms, backdrop-filter 100ms;
 
-const HeaderFrame = styled.div<{ showBackground: boolean }>`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 16px;
-  transition: background 0.1s, box-shadow 0.1s;
-
-  font-size: 1rem;
-  font-weight: var(--fw-semibold);
-
-  ${({ theme, showBackground }) => `
+  ${({ theme, showBackground }) => css`
     background: ${showBackground ? (theme.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255, 0.3)') : 'transparent'};
     backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
-    box-shadow: 0px 0px 0px 1px ${showBackground ? 'var(--bg2)' : 'transparent'};
+    box-shadow: 0px 0px 0px 1px ${showBackground ? 'var(--borderColor)' : 'transparent'};
+  `};
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    padding-left: 16px;
+    padding-right: 16px;
   `};
 `
 
-const Row = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`
-
-const HeaderLeft = styled(Row)``
-
-const HeaderRight = styled(Row)`
-  & > :not(:first-child) {
-    margin-left: 0.5em;
-  }
-`
-
-///// LEFT /////
-
-const LogoAnchor = styled.a`
-  margin-right: 32px;
-  pointer-events: auto;
-  cursor: pointer;
-`
-
-const NavBar = styled(Row)`
+const NavItemRow = styled(M.Row)`
   ${({ theme }) => theme.mediaWidth.upToMedium`
     display: none;
   `};
 `
 
-const StyledNavLink = styled(NavLink).attrs({ activeClassName: 'ACTIVE' })`
-  display: flex;
-  flex-direction: row;
-
-  margin-right: 16px;
-  padding: 8px 12px;
-  border-radius: 14px;
-
+const NavItem = styled(NavLink).attrs({ activeClassName: 'ACTIVE' })`
   color: var(--text2);
-
-  cursor: pointer;
-  outline: none;
-  text-decoration: none;
-  white-space: nowrap;
+  font-weight: var(--regular);
+  :hover {
+    color: var(--text1);
+  }
 
   &.ACTIVE {
-    font-weight: var(--fw-bold);
     color: var(--text1);
-    background-color: var(--bg0);
-  }
-
-  :hover,
-  :focus {
-    color: var(--text1);
+    font-weight: var(--semibold);
   }
 `
-
-///// RIGHT /////
 
 const BalanceText = styled.div`
   padding-left: 0.75rem;
@@ -113,13 +71,6 @@ export default function Header() {
   const userEthBalance = useNativeCurrencyBalances(account ? [account] : [])?.[account ?? '']
   const [darkMode] = useDarkModeManager()
 
-  // // related to claim UNI
-  // const toggleClaimModal = useToggleSelfClaimModal()
-  // const availableClaim: boolean = useUserHasAvailableClaim(account)
-  // const { claimTxn } = useUserHasSubmittedClaim(account ?? undefined)
-  // const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
-  // const showClaimPopup = useShowClaimPopup()
-
   const scrollY = useScrollPosition()
 
   // // link to info site
@@ -129,20 +80,16 @@ export default function Header() {
   } = CHAIN_INFO[chainId ?? SupportedChainId.MAINNET]
 
   return (
-    <HeaderFrame showBackground={scrollY > 45}>
-      {/* <ClaimModal />
-      <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
-        <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
-      </Modal> */}
-      <HeaderLeft>
-        <LogoAnchor href=".">
+    <HeaderWrapper showBackground={scrollY > 45}>
+      <M.Row gap="32px">
+        <M.Link to=".">
           <Logo fill={darkMode ? 'white' : 'black'} width="24px" height="100%" title="logo" />
-        </LogoAnchor>
-        <NavBar>
-          <StyledNavLink id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
+        </M.Link>
+        <NavItemRow gap="32px">
+          <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
             <Trans>Swap</Trans>
-          </StyledNavLink>
-          <StyledNavLink
+          </NavItem>
+          <NavItem
             id={`pool-nav-link`}
             to={'/pool'}
             isActive={(match, { pathname }) =>
@@ -154,18 +101,14 @@ export default function Header() {
             }
           >
             <Trans>Pool</Trans>
-          </StyledNavLink>
-          <StyledNavLink id={`account-nav-link`} to={'/account'}>
+          </NavItem>
+          <NavItem id={`account-nav-link`} to={'/account'}>
             <Trans>Account</Trans>
-          </StyledNavLink>
-          {/* <StyledExternalLink id={`charts-nav-link`} href={infoLink}>
-            <Trans>Charts</Trans>
-            <sup>↗</sup>
-          </StyledExternalLink> */}
-        </NavBar>
-      </HeaderLeft>
+          </NavItem>
+        </NavItemRow>
+      </M.Row>
 
-      <HeaderRight>
+      <M.Row gap="8px">
         <NetworkSelector />
         <HeaderButton>
           {account && userEthBalance ? (
@@ -178,7 +121,7 @@ export default function Header() {
           <Web3Status />
         </HeaderButton>
         <Menu />
-      </HeaderRight>
-    </HeaderFrame>
+      </M.Row>
+    </HeaderWrapper>
   )
 }

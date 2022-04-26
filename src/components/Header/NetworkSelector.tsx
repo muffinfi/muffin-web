@@ -1,4 +1,6 @@
 import { Trans } from '@lingui/macro'
+import * as M from 'components/@M'
+import { RowBetween } from 'components/Row'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { CHAIN_IDS_TO_NAMES, SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -12,7 +14,6 @@ import { useHistory } from 'react-router-dom'
 import { useModalOpen, useToggleModal } from 'state/application/hooks'
 import { addPopup, ApplicationModal } from 'state/application/reducer'
 import styled from 'styled-components/macro'
-import { ExternalLink, MEDIA_WIDTHS } from 'theme'
 import { replaceURLParam } from 'utils/routes'
 import { useAppDispatch } from '../../state/hooks'
 import { switchToNetwork } from '../../utils/switchToNetwork'
@@ -20,106 +21,64 @@ import HeaderButton from './HeaderButton'
 
 ///// Button on Header /////
 
-const SelectorButton = styled(HeaderButton)`
+const SelectorButton = styled(HeaderButton).attrs({ role: 'button' })`
   cursor: pointer;
-  padding: 6px 8px;
+  padding-left: 8px;
+  padding-right: 8px;
 `
 
 const Logo = styled.img`
-  height: 20px;
-  width: 20px;
-  margin-right: 8px;
+  height: 1.25rem;
+  width: 1.25rem;
 `
 
 const SelectorLabel = styled.div`
-  margin-right: 8px;
-  display: none;
-
-  @media screen and (min-width: ${MEDIA_WIDTHS.upToSmall + 0.1}px) {
-    display: block;
-  }
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    display: none;
+  `};
 `
 
 ///// Dropdown /////
 
-const FlyoutMenu = styled.div`
+const FlyoutMenuWrapper = styled.div`
   position: absolute;
   width: 272px;
   z-index: 99;
   padding-top: 10px;
 `
 
-const FlyoutMenuContents = styled.div`
+const FlyoutMenu = styled.div`
   padding: 16px;
-  border-radius: 20px;
-  background-color: var(--bg0);
+  border-radius: 16px;
+  background-color: var(--layer1);
   /* prettier-ignore */
   box-shadow:
     0px 0px 1px rgba(0, 0, 0, 0.01),
     0px 4px 8px rgba(0, 0, 0, 0.04),
     0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 24px 32px rgba(0, 0, 0, 0.01);
-
-  & > *:not(:last-child) {
-    margin-bottom: 12px;
-  }
 `
 
-const FlyoutHeader = styled.div`
-  color: var(--text2);
-`
-
-///// Row /////
-
-const FlyoutRow = styled.div<{ active: boolean }>`
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  cursor: pointer;
-  font-weight: 500;
-  text-align: left;
-`
-
-const ActiveRowWrapper = styled.div`
-  background-color: var(--bg1);
+const FlyoutItem = styled(M.Column).attrs({ stretch: true, gap: '0.75rem' })<{ active?: boolean }>`
   border-radius: 8px;
-  padding: 8px;
-  width: 100%;
+  background: ${({ active }) => (active ? 'var(--layer2)' : 'transparent')};
+  padding: ${({ active }) => (active ? '16px' : '8px 8px')};
 `
 
-const FlyoutRowActiveIndicator = styled.div`
+const GreenDot = styled.div`
   background-color: var(--green1);
   border-radius: 50%;
   height: 9px;
   width: 9px;
 `
 
-const ActiveRowLinkList = styled.div`
-  padding: 0 8px;
-`
-
-const ActiveRowLink = styled(ExternalLink)`
+const ResourceLink = styled(M.ExternalLink)`
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: center;
-
-  color: var(--text2);
-  font-size: 0.875em;
-  font-weight: 500;
-  padding: 8px 0 4px;
-  text-decoration: none;
-
-  &:first-child {
-    padding-top: 10px;
-  }
+  justify-content: space-between;
 `
 
-const NetworkLabel = styled.div`
-  flex: 1 1 auto;
-`
-
-const LinkOutCircle = styled(ArrowDownCircle).attrs({ size: 16 })`
+const LinkOutCircle = styled(ArrowDownCircle).attrs({ size: '1rem' })`
   transform: rotate(230deg);
 `
 
@@ -170,39 +129,42 @@ function Row({
   const active = chainId === targetChain
   const { helpCenterUrl, explorer, bridge, label, logoUrl } = CHAIN_INFO[targetChain]
 
-  const rowContent = (
-    <FlyoutRow onClick={() => onSelectChain(targetChain)} active={active}>
-      <Logo src={logoUrl} />
-      <NetworkLabel>{label}</NetworkLabel>
-      {chainId === targetChain && <FlyoutRowActiveIndicator />}
-    </FlyoutRow>
-  )
+  return (
+    <FlyoutItem active={active}>
+      <RowBetween onClick={() => onSelectChain(targetChain)} style={{ cursor: 'pointer' }} role="button">
+        <M.Row gap="0.5rem">
+          <Logo src={logoUrl} />
+          <M.Text weight="medium">{label}</M.Text>
+        </M.Row>
+        {chainId === targetChain && <GreenDot />}
+      </RowBetween>
 
-  if (active) {
-    return (
-      <ActiveRowWrapper>
-        {rowContent}
-        <ActiveRowLinkList>
-          {bridge ? (
-            <ActiveRowLink href={bridge}>
-              <BridgeLabel chainId={chainId} /> <LinkOutCircle />
-            </ActiveRowLink>
-          ) : null}
-          {explorer ? (
-            <ActiveRowLink href={explorer}>
-              <ExplorerLabel chainId={chainId} /> <LinkOutCircle />
-            </ActiveRowLink>
-          ) : null}
-          {helpCenterUrl ? (
-            <ActiveRowLink href={helpCenterUrl}>
-              <Trans>Help Center</Trans> <LinkOutCircle />
-            </ActiveRowLink>
-          ) : null}
-        </ActiveRowLinkList>
-      </ActiveRowWrapper>
-    )
-  }
-  return rowContent
+      {active && (
+        <M.TextContents color="text2" size="sm" weight="medium">
+          <M.Column stretch gap="0.75rem">
+            {bridge ? (
+              <ResourceLink href={bridge}>
+                <BridgeLabel chainId={chainId} />
+                <LinkOutCircle />
+              </ResourceLink>
+            ) : null}
+            {explorer ? (
+              <ResourceLink href={explorer}>
+                <ExplorerLabel chainId={chainId} />
+                <LinkOutCircle />
+              </ResourceLink>
+            ) : null}
+            {helpCenterUrl ? (
+              <ResourceLink href={helpCenterUrl}>
+                <Trans>Help Center</Trans>
+                <LinkOutCircle />
+              </ResourceLink>
+            ) : null}
+          </M.Column>
+        </M.TextContents>
+      )}
+    </FlyoutItem>
+  )
 }
 
 const getParsedChainId = (parsedQs?: ParsedQs) => {
@@ -296,24 +258,26 @@ export default function NetworkSelector() {
 
   return (
     <div ref={node} onMouseEnter={toggle} onMouseLeave={toggle} style={{ position: 'relative' }}>
-      <SelectorButton>
+      <SelectorButton gap="0.5em">
         <Logo src={info.logoUrl} />
         <SelectorLabel>{info.label}</SelectorLabel>
-        <ChevronDown size={16} />
+        <ChevronDown size="1em" />
       </SelectorButton>
       {open && (
-        <FlyoutMenu>
-          <FlyoutMenuContents>
-            <FlyoutHeader>
-              <Trans>Select a network</Trans>
-            </FlyoutHeader>
-            <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} />
-            <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.RINKEBY} />
-            {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.POLYGON} />
-            <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.OPTIMISM} />
-            <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.ARBITRUM_ONE} /> */}
-          </FlyoutMenuContents>
-        </FlyoutMenu>
+        <FlyoutMenuWrapper>
+          <FlyoutMenu>
+            <M.Column stretch gap="0.5rem">
+              <M.Text color="text2">
+                <Trans>Select a network</Trans>
+              </M.Text>
+              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} />
+              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.RINKEBY} />
+              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.POLYGON} />
+              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.OPTIMISM} />
+              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.ARBITRUM_ONE} />
+            </M.Column>
+          </FlyoutMenu>
+        </FlyoutMenuWrapper>
       )}
     </div>
   )
