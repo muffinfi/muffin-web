@@ -16,7 +16,7 @@ import NetworkSelector from './NetworkSelector'
 
 const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
   padding: 16px 32px;
-  transition: background-color 100ms, box-shadow 100ms, backdrop-filter 100ms;
+  transition: background-color 100ms, box-shadow 100ms;
 
   ${({ theme, showBackground }) => css`
     background: ${showBackground ? (theme.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255, 0.3)') : 'transparent'};

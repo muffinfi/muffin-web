@@ -31,8 +31,8 @@ const lightThemeMixin = css`
   --tertiary2: ${darken(0.06, '#ececec')};
   --tertiary-text: #171717;
 
-  --disabled: #999999;
-  --disabled-text: #717171;
+  --disabled: #ececec;
+  --disabled-text: #aaa;
 
   --badge-bg: #ececec;
   --badge-text: #717171;
@@ -68,8 +68,8 @@ const darkThemeMixin = css`
   --tertiary2: ${darken(0.06, '#404040')};
   --tertiary-text: #fff;
 
-  --disabled: #999999;
-  --disabled-text: #999;
+  --disabled: #404040;
+  --disabled-text: #666;
 
   --badge-bg: #404040;
   --badge-text: #999;

@@ -39,14 +39,29 @@ export const TextContents = styled.div<TextProps>`
   ${textMixin}
 `
 
-export const Anchor = styled.a<TextProps>`
-  color: inherit;
-  ${textMixin}
+//////////////////// LINK ////////////////////
+
+interface LinkProps extends TextProps {
+  hoverColor?: string
+}
+
+const linkMixin = css<LinkProps>`
+  transition: color 150ms;
+  &:hover {
+    color: ${({ hoverColor }) => hoverColor && `var(--${hoverColor})`};
+  }
 `
 
-export const Link = styled(RouterLink)<TextProps>`
+export const Anchor = styled.a<LinkProps>`
   color: inherit;
   ${textMixin}
+  ${linkMixin}
+`
+
+export const Link = styled(RouterLink)<LinkProps>`
+  color: inherit;
+  ${textMixin}
+  ${linkMixin}
 `
 
 //////////////////// LAYOUT ////////////////////
@@ -85,14 +100,14 @@ export const ColumnCenter = styled(Column)`
 
 //////////////////// GRID TABLE ////////////////////
 
-interface GridTableProps {
+interface GridProps {
   column?: number
   columnGap?: string
   rowGap?: string
   alignItems?: string
 }
 
-export const GridTable = styled.div<GridTableProps>`
+export const Grid = styled.div<GridProps>`
   display: grid;
   grid-template-columns: ${({ column }) => (column ? `repeat(${column}, max-content)` : null)};
   column-gap: ${({ columnGap }) => columnGap};
