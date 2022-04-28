@@ -9,16 +9,23 @@ import { Row, Text } from './misc'
 export const PriceUnit = ({
   currencyBase,
   currencyQuote,
+  price,
   ...rest
-}: {
-  currencyBase: Currency | undefined
-  currencyQuote: Currency | undefined
-} & Parameters<typeof Text>[0]) => {
+}: (
+  | { currencyBase: Currency | undefined; currencyQuote: Currency | undefined }
+  | { price: Price<Currency, Currency> | undefined }
+) &
+  Parameters<typeof Text>[0]) => {
+  const base = price ? unwrappedToken(price.baseCurrency) : currencyBase
+  const quote = price ? unwrappedToken(price.quoteCurrency) : currencyQuote
+
   return (
     <Text color="text2" weight="regular" {...rest}>
-      <Trans>
-        <HoverInlineText text={currencyQuote?.symbol} /> per <HoverInlineText text={currencyBase?.symbol} />
-      </Trans>
+      {base && quote && (
+        <Trans>
+          <HoverInlineText text={quote?.symbol} /> per <HoverInlineText text={base?.symbol} />
+        </Trans>
+      )}
     </Text>
   )
 }
@@ -42,7 +49,7 @@ export const PriceRangeExpr = ({
 }: {
   priceLower: Price<Token, Token> | undefined
   priceUpper: Price<Token, Token> | undefined
-  tickAtLimit: { [key in Bound]: boolean | undefined }
+  tickAtLimit: { [key in Bound]?: boolean | undefined }
 }) => {
   const currencyBase = priceLower ? unwrappedToken(priceLower.baseCurrency) : undefined
   const currencyQuote = priceLower ? unwrappedToken(priceLower.quoteCurrency) : undefined

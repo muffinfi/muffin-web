@@ -1,13 +1,7 @@
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Price } from '@uniswap/sdk-core'
-import { AutoColumn } from 'components/Column'
 import { PositionPreview } from 'components/PositionPreview'
-import styled from 'styled-components/macro'
 import { Bound, Field } from '../../state/mint/v3/actions'
-
-const Wrapper = styled.div`
-  padding-top: 12px;
-`
 
 export function Review({
   position,
@@ -23,17 +17,15 @@ export function Review({
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 }) {
   return (
-    <Wrapper>
-      <AutoColumn gap="lg">
-        {position ? (
-          <PositionPreview
-            position={position}
-            inRange={!outOfRange}
-            ticksAtLimit={ticksAtLimit}
-            title={'Selected Range'}
-          />
-        ) : null}
-      </AutoColumn>
-    </Wrapper>
+    <>
+      {position ? (
+        <PositionPreview
+          position={position}
+          inRange={!outOfRange}
+          ticksAtLimit={ticksAtLimit}
+          title={'Selected Range'}
+        />
+      ) : null}
+    </>
   )
 }

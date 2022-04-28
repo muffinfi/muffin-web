@@ -190,7 +190,7 @@ export default function LiquidityChartRangeInput({
   }, [hiddenKeyIndexes, tierId, previousTierId])
 
   return (
-    <AutoColumn gap="md" style={{ minHeight: '200px' }}>
+    <AutoColumn gap="md" style={{ minHeight: '175px' }}>
       {isUninitialized ? (
         <InfoBox
           message={<Trans>Your position will appear here.</Trans>}
@@ -216,7 +216,7 @@ export default function LiquidityChartRangeInput({
               keys={keys}
               hiddenKeyIndexes={hiddenKeyIndexes}
               selectedKeyIndex={tierId}
-              dimensions={{ width: 400, height: 200 }}
+              dimensions={{ width: 400, height: 175 }}
               margins={{ top: 10, right: 2, bottom: 20, left: 0 }}
               styles={{
                 area: {

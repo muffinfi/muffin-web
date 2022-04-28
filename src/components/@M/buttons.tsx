@@ -9,18 +9,18 @@ const BaseButton = styled.button`
 
   /* base style */
   border: 1px solid transparent;
-  transition: background-color 150ms;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
   font-weight: var(--semibold);
+
+  &:disabled {
+    color: var(--disabled-text) !important;
+    background: var(--disabled) !important;
+  }
 
   /* commonly changeable style */
   width: fit-content;
   padding: 6px 12px;
   border-radius: 8px;
-
-  &:disabled {
-    color: var(--disabled-text);
-    background: var(--disabled);
-  }
 
   color: var(--btn-text);
   background: var(--btn-bg);
@@ -51,6 +51,20 @@ export const buttonMixins = {
       --btn-bgHover: var(--tertiary1);
       --btn-bgActive: var(--tertiary2);
       --btn-text: var(--tertiary-text);
+      &:disabled {
+        opacity: 0.667;
+      }
+    `,
+    error: css`
+      --btn-bg: var(--error-bg);
+      --btn-bgHover: var(--error-bg);
+      --btn-bgActive: var(--error-bg);
+      --btn-text: var(--error-text);
+      &:disabled {
+        background: var(--error-bg) !important;
+        color: var(--error-text) !important;
+        opacity: 0.667;
+      }
     `,
     outline: css`
       --btn-bg: var(--layer1);
@@ -58,6 +72,9 @@ export const buttonMixins = {
       --btn-bgActive: var(--layer1);
       --btn-text: var(--text1);
       border: 1px solid var(--borderColor);
+      &:hover {
+        border-color: var(--borderColor1);
+      }
     `,
   },
   size: {
@@ -74,8 +91,8 @@ export const buttonMixins = {
     `,
     xs: css`
       font-size: var(--text-xs);
-      font-weight: var(--semibold);
-      padding: 6px 10px;
+      font-weight: var(--medium);
+      padding: 8px 10px;
     `,
   },
 }
@@ -98,7 +115,16 @@ export const ButtonSecondary = styled(Button)`
   ${buttonMixins.color.secondary}
 `
 
+export const ButtonRow = styled(Button)`
+  ${buttonMixins.size.row}
+`
+
 export const ButtonRowPrimary = styled(Button)`
   ${buttonMixins.color.primary}
+  ${buttonMixins.size.row}
+`
+
+export const ButtonRowSecondary = styled(Button)`
+  ${buttonMixins.color.secondary}
   ${buttonMixins.size.row}
 `

@@ -2,20 +2,19 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import * as M from 'components/@M'
 import { DesktopOnlyBox, MobileOnlyBox } from 'components/Box'
-import { ButtonConfirmed } from 'components/Button'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
-import { AutoRow } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useApproveOrPermit, { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { CheckCircle, HelpCircle } from 'lib/icons'
 import { TransactionType } from 'lib/state/transactions'
+import styled, { css } from 'lib/theme'
 import { SignatureData } from 'lib/utils/erc20Permit'
 import { useCallback, useEffect, useState } from 'react'
-import { Text } from 'rebass'
 import { useTransactionAdder } from 'state/transactions/hooks'
 
 function LongButtonText({
@@ -85,6 +84,33 @@ function ShortButtonText({
     <Trans>Approve {symbol}</Trans>
   )
 }
+
+enum ButtonState {
+  IDLE = 'IDLE',
+  LOADING = 'LOADING',
+  DISABLED = 'DISABLED',
+}
+
+interface StyledButtonProps {
+  $state: ButtonState
+}
+
+const ApproveButton = styled(M.Button).attrs<StyledButtonProps>(({ $state }) => ({
+  size: 'row',
+  disabled: $state === ButtonState.LOADING || $state === ButtonState.DISABLED,
+}))<StyledButtonProps>`
+  ${M.buttonMixins.color.primary}
+  /* min-height: 58px; */
+  ${({ $state }) =>
+    $state === ButtonState.LOADING &&
+    css`
+      &:disabled {
+        background: var(--primary0) !important;
+        color: var(--primary-text) !important;
+        opacity: 0.5;
+      }
+    `}
+`
 
 export default function TokenApproveOrPermitButton({
   amount,
@@ -167,73 +193,75 @@ export default function TokenApproveOrPermitButton({
   // hide if approved at first place (got approved but not yet approvalSubmitted)
   if (approvalState === ApproveOrPermitState.APPROVED && submitCount === 0) return null
 
+  const buttonState = (() => {
+    if (approvalState === ApproveOrPermitState.APPROVED) return ButtonState.DISABLED
+    if (approvalSubmitted) return ButtonState.LOADING
+    switch (approvalState) {
+      // should wait for confirmation
+      case ApproveOrPermitState.PENDING_APPROVAL:
+      case ApproveOrPermitState.PENDING_SIGNATURE:
+        return ButtonState.LOADING
+      // enable when require action
+      case ApproveOrPermitState.REQUIRES_APPROVAL:
+      case ApproveOrPermitState.REQUIRES_APPROVAL_FALLBACK:
+      case ApproveOrPermitState.REQUIRES_SIGNATURE:
+        return ButtonState.IDLE
+      default:
+        return ButtonState.DISABLED
+    }
+  })()
+
   return (
-    <ButtonConfirmed
-      onClick={onClick}
-      width="100%"
-      disabled={
-        // should wait for confirmation
-        approvalSubmitted ||
-        // or enable when require action
-        !(
-          approvalState === ApproveOrPermitState.REQUIRES_APPROVAL ||
-          approvalState === ApproveOrPermitState.REQUIRES_APPROVAL_FALLBACK ||
-          approvalState === ApproveOrPermitState.REQUIRES_SIGNATURE
-        )
-      }
-      altDisabledStyle={
-        // show solid button while waiting
-        approvalSubmitted ||
-        approvalState === ApproveOrPermitState.PENDING_APPROVAL ||
-        approvalState === ApproveOrPermitState.PENDING_SIGNATURE
-      }
-      confirmed={approvalState === ApproveOrPermitState.APPROVED}
-    >
-      <AutoRow style={{ flexWrap: 'nowrap' }}>
-        <CurrencyLogo currency={amount.currency} size={'20px'} />
-        <Text flexGrow={1} textAlign="center" px="2">
-          <MobileOnlyBox as="span">
-            <ShortButtonText
-              approvalState={approvalState}
-              approvalSubmitted={approvalSubmitted}
-              symbol={amount.currency.symbol}
-            />
-          </MobileOnlyBox>
-          <DesktopOnlyBox as="span">
-            <LongButtonText
-              approvalState={approvalState}
-              approvalSubmitted={approvalSubmitted}
-              symbol={amount.currency.symbol}
-            />
-          </DesktopOnlyBox>
-        </Text>
-        {approvalState === ApproveOrPermitState.APPROVED ? (
-          <CheckCircle size="20px" color="success" />
-        ) : approvalState === ApproveOrPermitState.PENDING_APPROVAL ||
-          approvalState === ApproveOrPermitState.PENDING_SIGNATURE ||
-          approvalSubmitted ? (
-          <Loader stroke="white" />
-        ) : (
-          <MouseoverTooltip
-            wrapperProps={{ display: 'flex' }}
-            text={
-              approvalState === ApproveOrPermitState.REQUIRES_APPROVAL_FALLBACK ? (
-                <Trans>
-                  You must give the Muffin smart contracts permission to use your {amount.currency.symbol}. You only
-                  have to do this once per token.
-                </Trans>
-              ) : (
-                <Trans>
-                  You must give the Muffin smart contracts permission to use your {amount.currency.symbol}. You only
-                  have to do this once per token.
-                </Trans>
-              )
-            }
-          >
-            <HelpCircle size="20px" color="white" />
-          </MouseoverTooltip>
-        )}
-      </AutoRow>
-    </ButtonConfirmed>
+    <>
+      <ApproveButton $state={buttonState} onClick={onClick}>
+        <M.RowBetween wrap="nowrap" gap="1em" style={{ flexGrow: 1 }}>
+          <CurrencyLogo currency={amount.currency} size="1.25em" />
+          <M.Text align="center" style={{ flexGrow: 1 }}>
+            <MobileOnlyBox as="span">
+              <ShortButtonText
+                approvalState={approvalState}
+                approvalSubmitted={approvalSubmitted}
+                symbol={amount.currency.symbol}
+              />
+            </MobileOnlyBox>
+            <DesktopOnlyBox as="span">
+              <LongButtonText
+                approvalState={approvalState}
+                approvalSubmitted={approvalSubmitted}
+                symbol={amount.currency.symbol}
+              />
+            </DesktopOnlyBox>
+          </M.Text>
+
+          {approvalState === ApproveOrPermitState.APPROVED ? (
+            <CheckCircle size="1.25em" color="success" />
+          ) : approvalState === ApproveOrPermitState.PENDING_APPROVAL ||
+            approvalState === ApproveOrPermitState.PENDING_SIGNATURE ||
+            approvalSubmitted ? (
+            <Loader stroke="white" />
+          ) : (
+            <span style={{ height: '1.25em' }}>
+              <MouseoverTooltip
+                text={
+                  approvalState === ApproveOrPermitState.REQUIRES_APPROVAL_FALLBACK ? (
+                    <Trans>
+                      You must give the Muffin smart contracts permission to use your {amount.currency.symbol}. You only
+                      have to do this once per token.
+                    </Trans>
+                  ) : (
+                    <Trans>
+                      You must give the Muffin smart contracts permission to use your {amount.currency.symbol}. You only
+                      have to do this once per token.
+                    </Trans>
+                  )
+                }
+              >
+                <HelpCircle size="1.25em" color="white" />
+              </MouseoverTooltip>
+            </span>
+          )}
+        </M.RowBetween>
+      </ApproveButton>
+    </>
   )
 }

@@ -1,24 +1,28 @@
-import { AutoColumn } from 'components/Column'
+import * as M from 'components/@M'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
+import { LoadingRows as BaseLoadingRows } from 'components/Loader/styled'
 import Input from 'components/NumericalInput'
-import AppBody from 'pages/AppBody'
 import styled from 'styled-components/macro'
 
-export const StyledAppBody = styled(AppBody)<{ wide: boolean }>`
-  padding: 32px;
-  max-width: ${({ wide }) => (wide ? '880px' : '480px')};
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    max-width: 480px;
-  `};
+export const LoadingRows = styled(BaseLoadingRows)`
+  width: 100%;
+  grid-column-gap: 0.5em;
+  grid-row-gap: 0.8em;
+  grid-template-columns: repeat(1, 1fr);
+
+  & > div:nth-child(3n) {
+    width: 50%;
+    margin-bottom: 2em;
+  }
 `
 
-export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
+export const ColumnDisableable = styled(M.Column)<{ disabled?: boolean }>`
   opacity: ${({ disabled }) => (disabled ? '0.2' : '1')};
   pointer-events: ${({ disabled }) => (disabled ? 'none' : 'initial')};
 `
 
 export const CurrencyDropdown = styled(CurrencyInputPanel)`
-  width: 48.5%;
+  width: 100%;
 `
 
 export const StyledInput = styled(Input)`
@@ -26,60 +30,4 @@ export const StyledInput = styled(Input)`
   text-align: left;
   font-size: 18px;
   width: 100%;
-`
-
-/* two-column layout where DepositAmount is moved at the very end on mobile. */
-export const ResponsiveTwoColumns = styled.div<{ wide: boolean }>`
-  display: grid;
-  grid-column-gap: 50px;
-  grid-row-gap: 15px;
-  grid-template-columns: ${({ wide }) => (wide ? '1fr 1fr' : '1fr')};
-  grid-template-rows: max-content;
-  grid-auto-flow: row;
-
-  padding-top: 20px;
-
-  border-top: 1px solid ${({ theme }) => theme.bg2};
-
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    grid-template-columns: 1fr;
-
-    margin-top: 0;
-  `};
-`
-
-export const RightContainer = styled(AutoColumn)`
-  grid-row: 1 / 3;
-  grid-column: 2;
-  height: fit-content;
-
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-  grid-row: 2 / 3;
-  grid-column: 1;
-  `};
-`
-
-export const StackedContainer = styled.div`
-  display: grid;
-`
-
-export const StackedItem = styled.div<{ zIndex?: number }>`
-  grid-column: 1;
-  grid-row: 1;
-  height: 100%;
-  z-index: ${({ zIndex }) => zIndex};
-`
-
-export const MediumOnly = styled.div`
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: none;
-  `};
-`
-
-export const HideMedium = styled.div`
-  display: none;
-
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: block;
-  `};
 `

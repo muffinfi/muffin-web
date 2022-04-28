@@ -10,6 +10,7 @@ const lightThemeMixin = css`
 
   /* border */
   --borderColor: #ececec;
+  --borderColor1: ${darken(0.12, '#ececec')};
 
   /* text color */
   --text1: #171717;
@@ -17,18 +18,18 @@ const lightThemeMixin = css`
 
   /* button color */
   --primary0: #f95f04;
-  --primary1: ${darken(0.03, '#F95F04')};
-  --primary2: ${darken(0.06, '#F95F04')};
+  --primary1: ${darken(0.04, '#F95F04')};
+  --primary2: ${darken(0.08, '#F95F04')};
   --primary-text: #fff;
 
   --secondary0: #fde7da;
-  --secondary1: ${darken(0.03, '#fde7da')};
-  --secondary2: ${darken(0.06, '#fde7da')};
+  --secondary1: ${darken(0.04, '#fde7da')};
+  --secondary2: ${darken(0.08, '#fde7da')};
   --secondary-text: #f95f04;
 
   --tertiary0: #ececec;
-  --tertiary1: ${darken(0.03, '#ececec')};
-  --tertiary2: ${darken(0.06, '#ececec')};
+  --tertiary1: ${darken(0.04, '#ececec')};
+  --tertiary2: ${darken(0.08, '#ececec')};
   --tertiary-text: #171717;
 
   --disabled: #ececec;
@@ -36,6 +37,9 @@ const lightThemeMixin = css`
 
   --badge-bg: #ececec;
   --badge-text: #717171;
+
+  --error-bg: #da2d2b;
+  --error-text: #fff;
 `
 
 const darkThemeMixin = css`
@@ -47,6 +51,7 @@ const darkThemeMixin = css`
 
   /* border */
   --borderColor: #404040;
+  --borderColor1: ${darken(0.12, '#404040')};
 
   /* text color */
   --text1: #fff;
@@ -54,18 +59,18 @@ const darkThemeMixin = css`
 
   /* button color */
   --primary0: #ce5212;
-  --primary1: ${darken(0.03, '#CE5212')};
-  --primary2: ${darken(0.06, '#CE5212')};
+  --primary1: ${darken(0.04, '#CE5212')};
+  --primary2: ${darken(0.08, '#CE5212')};
   --primary-text: #fff;
 
   --secondary0: #fde7da;
-  --secondary1: ${darken(0.03, '#fde7da')};
-  --secondary2: ${darken(0.06, '#fde7da')};
+  --secondary1: ${darken(0.04, '#fde7da')};
+  --secondary2: ${darken(0.08, '#fde7da')};
   --secondary-text: #f95f04;
 
   --tertiary0: ##404040;
-  --tertiary1: ${darken(0.03, '#404040')};
-  --tertiary2: ${darken(0.06, '#404040')};
+  --tertiary1: ${darken(0.04, '#404040')};
+  --tertiary2: ${darken(0.08, '#404040')};
   --tertiary-text: #fff;
 
   --disabled: #404040;
@@ -73,6 +78,9 @@ const darkThemeMixin = css`
 
   --badge-bg: #404040;
   --badge-text: #999;
+
+  --error-bg: #ff4343;
+  --error-text: #fff;
 `
 
 export const GlobalStyle = createGlobalStyle`

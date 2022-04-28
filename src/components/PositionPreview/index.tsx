@@ -1,19 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency } from '@uniswap/sdk-core'
+import * as M from 'components/@M'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/CurrencyLogo'
-import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { Break } from 'components/earn/styled'
 import RateToggle from 'components/RateToggle'
-import { RowBetween, RowFixed } from 'components/Row'
 import JSBI from 'jsbi'
-import { ReactNode, useCallback, useContext, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
-import { ThemeContext } from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
@@ -28,10 +23,8 @@ export const PositionPreview = ({
   title?: ReactNode
   inRange: boolean
   baseCurrencyDefault?: Currency | undefined
-  ticksAtLimit: { [bound: string]: boolean | undefined }
+  ticksAtLimit: { [key in Bound]?: boolean | undefined }
 }) => {
-  const theme = useContext(ThemeContext)
-
   const currency0 = unwrappedToken(position.pool.token0)
   const currency1 = unwrappedToken(position.pool.token1)
 
@@ -61,121 +54,99 @@ export const PositionPreview = ({
   const removed = position?.liquidity && JSBI.equal(position?.liquidity, JSBI.BigInt(0))
 
   return (
-    <AutoColumn gap="md" style={{ marginTop: '0.5rem' }}>
-      <RowBetween style={{ marginBottom: '0.5rem' }}>
-        <RowFixed>
-          <DoubleCurrencyLogo
-            currency0={currency0 ?? undefined}
-            currency1={currency1 ?? undefined}
-            size={24}
-            margin={true}
-          />
-          <ThemedText.Label ml="10px" fontSize="24px">
-            {currency0?.symbol} / {currency1?.symbol}
-          </ThemedText.Label>
-        </RowFixed>
+    <M.Column stretch gap="24px">
+      <M.RowBetween gap="1em" wrap="wrap">
+        <M.TextContents size="lg" weight="bold">
+          <M.PoolTierExpr currencyBase={currency1} currencyQuote={currency0} tier={position.poolTier} />
+        </M.TextContents>
         <RangeBadge removed={removed} inRange={inRange} />
-      </RowBetween>
+      </M.RowBetween>
 
       <LightCard>
-        <AutoColumn gap="md">
-          <RowBetween>
-            <RowFixed>
+        <M.Column stretch gap="8px">
+          <M.RowBetween>
+            <M.Row gap="0.75em">
               <CurrencyLogo currency={currency0} />
-              <ThemedText.Label ml="8px">{currency0?.symbol}</ThemedText.Label>
-            </RowFixed>
-            <RowFixed>
-              <ThemedText.Label mr="8px">{position.amount0.toSignificant(4)}</ThemedText.Label>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <RowFixed>
+              <M.Text weight="medium">{currency0?.symbol}</M.Text>
+            </M.Row>
+            <M.Text weight="medium">{position.amount0.toSignificant(4)}</M.Text>
+          </M.RowBetween>
+          <M.RowBetween>
+            <M.Row gap="0.75em">
               <CurrencyLogo currency={currency1} />
-              <ThemedText.Label ml="8px">{currency1?.symbol}</ThemedText.Label>
-            </RowFixed>
-            <RowFixed>
-              <ThemedText.Label mr="8px">{position.amount1.toSignificant(4)}</ThemedText.Label>
-            </RowFixed>
-          </RowBetween>
-          <Break />
-          <RowBetween>
-            <ThemedText.Label>
-              <Trans>Fee Tier</Trans>
-            </ThemedText.Label>
-            <ThemedText.Label>
-              <Trans>{position.poolTier.feePercent.toFixed(2)}%</Trans>
-            </ThemedText.Label>
-          </RowBetween>
-        </AutoColumn>
+              <M.Text weight="medium">{currency1?.symbol}</M.Text>
+            </M.Row>
+            <M.Text weight="medium">{position.amount1.toSignificant(4)}</M.Text>
+          </M.RowBetween>
+        </M.Column>
       </LightCard>
 
-      <AutoColumn gap="md">
-        <RowBetween>
-          {title ? <ThemedText.Main>{title}</ThemedText.Main> : <div />}
+      <M.Column stretch gap="12px">
+        <M.RowBetween>
+          {title ? <M.Text weight="semibold">{title}</M.Text> : <div />}
           <RateToggle
             currencyA={sorted ? currency0 : currency1}
             currencyB={sorted ? currency1 : currency0}
             handleRateToggle={handleRateChange}
           />
-        </RowBetween>
+        </M.RowBetween>
 
-        <RowBetween>
-          <LightCard width="48%" padding="8px">
-            <AutoColumn gap="4px" justify="center">
-              <ThemedText.Main fontSize="12px">
+        <M.RowBetween gap="12px">
+          <LightCard padding="8px">
+            <M.ColumnCenter gap="0.425em">
+              <M.Text size="xs" align="center">
                 <Trans>Min Price</Trans>
-              </ThemedText.Main>
-              <ThemedText.MediumHeader textAlign="center">{`${formatTickPrice(
-                priceLower,
-                ticksAtLimit,
-                Bound.LOWER
-              )}`}</ThemedText.MediumHeader>
-              <ThemedText.Main textAlign="center" fontSize="12px">
+              </M.Text>
+              <M.Text size="lg" weight="medium" align="center">
+                {`${formatTickPrice(priceLower, ticksAtLimit, Bound.LOWER)}`}
+              </M.Text>
+              <M.Text size="xs" align="center">
                 <Trans>
                   {quoteCurrency.symbol} per {baseCurrency.symbol}
                 </Trans>
-              </ThemedText.Main>
-              <ThemedText.Small textAlign="center" color={theme.text3} style={{ marginTop: '4px' }}>
+              </M.Text>
+              <M.Text size="xs" color="text2" align="center">
                 <Trans>Your position will be 100% composed of {baseCurrency?.symbol} at this price</Trans>
-              </ThemedText.Small>
-            </AutoColumn>
+              </M.Text>
+            </M.ColumnCenter>
           </LightCard>
 
-          <LightCard width="48%" padding="8px">
-            <AutoColumn gap="4px" justify="center">
-              <ThemedText.Main fontSize="12px">
+          <LightCard padding="8px">
+            <M.ColumnCenter gap="0.333em">
+              <M.Text size="xs" align="center">
                 <Trans>Max Price</Trans>
-              </ThemedText.Main>
-              <ThemedText.MediumHeader textAlign="center">{`${formatTickPrice(
-                priceUpper,
-                ticksAtLimit,
-                Bound.UPPER
-              )}`}</ThemedText.MediumHeader>
-              <ThemedText.Main textAlign="center" fontSize="12px">
+              </M.Text>
+              <M.Text size="lg" weight="medium" align="center">
+                {`${formatTickPrice(priceUpper, ticksAtLimit, Bound.UPPER)}`}
+              </M.Text>
+              <M.Text size="xs" align="center">
                 <Trans>
                   {quoteCurrency.symbol} per {baseCurrency.symbol}
                 </Trans>
-              </ThemedText.Main>
-              <ThemedText.Small textAlign="center" color={theme.text3} style={{ marginTop: '4px' }}>
+              </M.Text>
+              <M.Text size="xs" color="text2" align="center">
                 <Trans>Your position will be 100% composed of {quoteCurrency?.symbol} at this price</Trans>
-              </ThemedText.Small>
-            </AutoColumn>
+              </M.Text>
+            </M.ColumnCenter>
           </LightCard>
-        </RowBetween>
-        <LightCard padding="12px ">
-          <AutoColumn gap="4px" justify="center">
-            <ThemedText.Main fontSize="12px">
+        </M.RowBetween>
+
+        <LightCard padding="8px">
+          <M.ColumnCenter gap="0.333em">
+            <M.Text size="xs" color="text2">
               <Trans>Current price</Trans>
-            </ThemedText.Main>
-            <ThemedText.MediumHeader>{`${price.toSignificant(5)} `}</ThemedText.MediumHeader>
-            <ThemedText.Main textAlign="center" fontSize="12px">
+            </M.Text>
+            <M.Text size="lg" weight="medium">
+              {`${price.toSignificant(5)} `}
+            </M.Text>
+            <M.Text size="xs" color="text2">
               <Trans>
                 {quoteCurrency.symbol} per {baseCurrency.symbol}
               </Trans>
-            </ThemedText.Main>
-          </AutoColumn>
+            </M.Text>
+          </M.ColumnCenter>
         </LightCard>
-      </AutoColumn>
-    </AutoColumn>
+      </M.Column>
+    </M.Column>
   )
 }

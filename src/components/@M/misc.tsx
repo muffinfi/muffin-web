@@ -4,12 +4,18 @@ import styled, { css } from 'styled-components/macro'
 //////////////////// TYPOGRAPHY ////////////////////
 
 interface TextProps {
+  // common styles
   size?: string
   weight?: string
   color?: string
 
+  // for text overflow
   nowrap?: boolean
   ellipsis?: boolean
+
+  // for long text form
+  paragraphLineHeight?: boolean
+  align?: string
 }
 
 const textMixin = css<TextProps>`
@@ -24,6 +30,9 @@ const textMixin = css<TextProps>`
       overflow: hidden;
       text-overflow: ellipsis;
     `}
+
+  text-align: ${({ align }) => align};
+  ${({ paragraphLineHeight }) => paragraphLineHeight && `line-height: 1.5;`}
 `
 
 export const Text = styled.span<TextProps>`

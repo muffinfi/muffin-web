@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
+
+import * as M from 'components/@M'
 import Badge from 'components/Badge'
-import React from 'react'
-import { ThemedText } from 'theme'
 
 export function TierPercentageBadge({
   tierId,
@@ -13,13 +13,13 @@ export function TierPercentageBadge({
 }) {
   return (
     <Badge>
-      <ThemedText.Label fontSize={10}>
+      <M.Text size="xs" weight="regular" color="text1">
         {distributions?.[tierId] == null ? (
           <Trans>Not created</Trans>
         ) : (
-          <Trans>{distributions[tierId]?.toFixed(0)}% select</Trans>
+          <Trans>{distributions[tierId]?.toFixed(0)}% selected</Trans>
         )}
-      </ThemedText.Label>
+      </M.Text>
     </Badge>
   )
 }

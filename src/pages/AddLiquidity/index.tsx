@@ -23,6 +23,8 @@ import {
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
+import * as M from 'components/@M'
+import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -32,11 +34,12 @@ import useCurrency from 'lib/hooks/useCurrency'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
-import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
-import { Text } from 'rebass'
+import { useAppDispatch } from 'state/hooks'
+import { resetMintState as resetMintV3State } from 'state/mint/v3/actions'
 import { useRangeHopCallbacks, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { tryParseTick } from 'state/mint/v3/utils'
 import { tryParseAmount } from 'state/swap/hooks'
@@ -46,19 +49,13 @@ import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { ButtonError, ButtonLight, ButtonPrimary, ButtonText, ButtonYellow } from '../../components/Button'
-import { BlueCard, OutlineCard, YellowCard } from '../../components/Card'
-import { AutoColumn } from '../../components/Column'
+import { OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import DowntimeWarning from '../../components/DowntimeWarning'
-import HoverInlineText from '../../components/HoverInlineText'
 import LiquidityChartRangeInput from '../../components/LiquidityChartRangeInput'
-import { AddRemoveTabs } from '../../components/NavigationTabs'
 import { PositionPreview } from '../../components/PositionPreview'
 import RangeSelector from '../../components/RangeSelector'
-import PresetsButtons from '../../components/RangeSelector/PresetsButtons'
 import RateToggle from '../../components/RateToggle'
-import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { ZERO_PERCENT } from '../../constants/misc'
@@ -72,20 +69,9 @@ import { Bound, Field } from '../../state/mint/v3/actions'
 import { TransactionType } from '../../state/transactions/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
-import { ExternalLink, ThemedText } from '../../theme'
+import { ThemedText } from '../../theme'
 import { Review } from './Review'
-import {
-  CurrencyDropdown,
-  DynamicSection,
-  HideMedium,
-  MediumOnly,
-  ResponsiveTwoColumns,
-  RightContainer,
-  StackedContainer,
-  StackedItem,
-  StyledAppBody,
-  StyledInput,
-} from './styled'
+import { ColumnDisableable, CurrencyDropdown, LoadingRows, StyledInput } from './styled'
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
@@ -459,13 +445,13 @@ export default function AddLiquidity({
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(noLiquidity)
 
-  const clearAll = useCallback(() => {
-    onFieldAInput('')
-    onFieldBInput('')
-    onLeftRangeInput('')
-    onRightRangeInput('')
-    history.push(`/add`)
-  }, [history, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+  // const clearAll = useCallback(() => {
+  //   onFieldAInput('')
+  //   onFieldBInput('')
+  //   onLeftRangeInput('')
+  //   onRightRangeInput('')
+  //   history.push(`/add`)
+  // }, [history, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
 
   /*=====================================================================
    *                             UI STATES
@@ -477,10 +463,6 @@ export default function AddLiquidity({
 
   // hash of ongoing tx
   const [txHash, setTxHash] = useState('')
-
-  // capital efficiency warning
-  const [showCapitalEfficiencyWarning, setShowCapitalEfficiencyWarning] = useState(false)
-  useEffect(() => setShowCapitalEfficiencyWarning(false), [currencyIdA, currencyIdB, sqrtGamma])
 
   /*=====================================================================
    *                         UI ACTION HANDLER
@@ -528,6 +510,10 @@ export default function AddLiquidity({
   const handleCurrencyBSelect = useCallback(
     (currencyBNew: Currency) => {
       const [idB, idA] = handleCurrencySelect(currencyBNew, currencyIdA)
+      console.log(currencyBNew.symbol)
+      console.log(idB)
+      console.log(idA)
+
       if (idA === undefined) {
         history.push(`/add/${idB}`)
       } else {
@@ -693,84 +679,227 @@ export default function AddLiquidity({
 
   const theme = useContext(ThemeContext)
 
-  const makeTabHeader = () => (
-    <AddRemoveTabs
-      creating={false}
-      adding={true}
-      positionID={tokenId}
-      defaultSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE}
-      showBackLink={!hasExistingPosition}
-    >
-      {!hasExistingPosition && (
-        <Row justifyContent="flex-end" style={{ width: 'fit-content', minWidth: 'fit-content' }}>
-          <MediumOnly>
-            <ButtonText onClick={clearAll} margin="0 15px 0 0">
-              <ThemedText.Blue fontSize="12px">
-                <Trans>Clear All</Trans>
-              </ThemedText.Blue>
-            </ButtonText>
-          </MediumOnly>
-          {baseCurrency && quoteCurrency ? (
-            <RateToggle currencyA={baseCurrency} currencyB={quoteCurrency} handleRateToggle={handleRateToggle} />
+  const makeSelectPoolTierSection = () =>
+    tokenId == null &&
+    !hasExistingPosition && (
+      <M.SectionCard greedyMargin>
+        <M.Column stretch gap="24px">
+          <M.Column stretch gap="8px">
+            <M.Text weight="semibold">
+              <Trans>Select Token Pair</Trans>
+            </M.Text>
+            <M.RowBetween gap="16px">
+              <CurrencyDropdown
+                value={formattedAmounts[Field.CURRENCY_A]}
+                onUserInput={onFieldAInput}
+                hideInput={true}
+                onMax={() => {
+                  onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                }}
+                onCurrencySelect={handleCurrencyASelect}
+                showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
+                currency={currencies[Field.CURRENCY_A] ?? null}
+                id="add-liquidity-input-tokena"
+                showCommonBases
+              />
+              <CurrencyDropdown
+                value={formattedAmounts[Field.CURRENCY_B]}
+                hideInput={true}
+                onUserInput={onFieldBInput}
+                onCurrencySelect={handleCurrencyBSelect}
+                onMax={() => {
+                  onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
+                }}
+                showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
+                currency={currencies[Field.CURRENCY_B] ?? null}
+                id="add-liquidity-input-tokenb"
+                showCommonBases
+              />
+            </M.RowBetween>
+          </M.Column>
+
+          <M.Column stretch gap="8px">
+            <M.Text weight="semibold">
+              <Trans>Select Fee Tier</Trans>
+            </M.Text>
+            <TierSelector
+              disabled={!quoteCurrency || !baseCurrency}
+              pool={pool ?? undefined}
+              sqrtGammaSelected={sqrtGamma}
+              handleTierSelect={handleTierSelect}
+            />
+          </M.Column>
+        </M.Column>
+      </M.SectionCard>
+    )
+
+  const makeSetStartingPriceForm = () =>
+    tokenId == null &&
+    !hasExistingPosition &&
+    sqrtGamma != null &&
+    !isInvalidPool &&
+    noLiquidity && (
+      <M.SectionCard greedyMargin>
+        <M.Column stretch gap="24px">
+          <M.RowBetween>
+            <M.Text weight="semibold">
+              <Trans>Set Starting Price</Trans>
+            </M.Text>
+
+            {baseCurrency && quoteCurrency ? (
+              <RateToggle currencyA={baseCurrency} currencyB={quoteCurrency} handleRateToggle={handleRateToggle} />
+            ) : null}
+          </M.RowBetween>
+
+          <M.Row
+            style={{
+              padding: '1rem 1rem',
+              borderRadius: 16,
+              background: 'var(--secondary0)',
+              color: 'var(--primary2)',
+            }}
+          >
+            <M.Text size="sm" paragraphLineHeight>
+              <Trans>
+                This pool requires initialization. Please set a starting price for the pool. Also, gas fees will be
+                higher than usual due to initialization.
+              </Trans>
+            </M.Text>
+          </M.Row>
+
+          <M.DataGroup>
+            <M.DataLabel>
+              <Trans>Starting price</Trans>
+            </M.DataLabel>
+            <OutlineCard padding="12px">
+              <M.RowBetween gap="1em">
+                <StyledInput
+                  className="start-price-input"
+                  value={startPriceTypedValue}
+                  onUserInput={onStartPriceInput}
+                  style={{ flex: 1 }}
+                />
+                <M.PriceUnit
+                  currencyBase={baseCurrency}
+                  currencyQuote={quoteCurrency}
+                  style={{ width: 'max-content' }}
+                />
+              </M.RowBetween>
+            </OutlineCard>
+          </M.DataGroup>
+        </M.Column>
+      </M.SectionCard>
+    )
+
+  const makeSelectPriceRangeSection = () =>
+    tokenId == null &&
+    !hasExistingPosition && (
+      <M.SectionCard greedyMargin>
+        <ColumnDisableable
+          stretch
+          gap="24px"
+          disabled={!sqrtGamma || isInvalidPool || (isCreatingPool && !startPriceTypedValue)}
+        >
+          <M.RowBetween>
+            <M.Text weight="semibold">
+              <Trans>Select Price Range</Trans>
+            </M.Text>
+
+            {baseCurrency && quoteCurrency ? (
+              <RateToggle currencyA={baseCurrency} currencyB={quoteCurrency} handleRateToggle={handleRateToggle} />
+            ) : null}
+          </M.RowBetween>
+
+          <M.Column stretch gap="16px">
+            <M.Row gap="1em">
+              <M.Text color="text2" size="sm">
+                <Trans>Current Price:</Trans>
+              </M.Text>
+              <M.Text weight="semibold">
+                <M.PriceExpr price={invertPrice ? price?.invert() : price} />
+              </M.Text>
+            </M.Row>
+
+            {noLiquidity ? null : (
+              <LiquidityChartRangeInput
+                currencyA={baseCurrency ?? undefined}
+                currencyB={quoteCurrency ?? undefined}
+                pool={pool || undefined}
+                tierId={tierId}
+                ticksAtLimit={areTicksAtLimit}
+                price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
+                priceLower={priceLower}
+                priceUpper={priceUpper}
+                onLeftRangeInput={onLeftRangeInput}
+                onRightRangeInput={onRightRangeInput}
+                interactive={!hasExistingPosition}
+              />
+            )}
+          </M.Column>
+
+          <M.Column stretch gap="16px">
+            <RangeSelector
+              priceLower={priceLower}
+              priceUpper={priceUpper}
+              getDecrementLower={getDecrementLower}
+              getIncrementLower={getIncrementLower}
+              getDecrementUpper={getDecrementUpper}
+              getIncrementUpper={getIncrementUpper}
+              onLeftRangeInput={onLeftRangeInput}
+              onRightRangeInput={onRightRangeInput}
+              currencyA={baseCurrency}
+              currencyB={quoteCurrency}
+              tierId={tierId}
+              ticksAtLimit={areTicksAtLimit}
+            />
+
+            <M.Row gap="1em">
+              <M.Button color="outline" size="xs" onClick={getSetFullRange}>
+                Full range
+              </M.Button>
+            </M.Row>
+          </M.Column>
+
+          {isOutOfRange ? (
+            <YellowCard padding="12px" $borderRadius="12px">
+              <M.RowBetween gap="12px">
+                <AlertTriangle stroke={theme.yellow3} size="16px" />
+                <ThemedText.Yellow fontSize="12px">
+                  <Trans>
+                    Your position will not earn fees or be used in trades until the market price moves into your range.
+                  </Trans>
+                </ThemedText.Yellow>
+              </M.RowBetween>
+            </YellowCard>
           ) : null}
-        </Row>
-      )}
-    </AddRemoveTabs>
-  )
 
-  const makeSelectPairAndTierSection = () => (
-    <AutoColumn gap="md">
-      <RowBetween paddingBottom="20px">
-        <ThemedText.Label>
-          <Trans>Select Pair</Trans>
-        </ThemedText.Label>
-      </RowBetween>
+          {isInvalidRange ? (
+            <YellowCard padding="12px" $borderRadius="12px">
+              <M.RowBetween gap="12px">
+                <AlertTriangle stroke={theme.yellow3} size="16px" />
+                <ThemedText.Yellow fontSize="12px">
+                  <Trans>Invalid range selected. The min price must be lower than the max price.</Trans>
+                </ThemedText.Yellow>
+              </M.RowBetween>
+            </YellowCard>
+          ) : null}
+        </ColumnDisableable>
+      </M.SectionCard>
+    )
 
-      <RowBetween>
-        <CurrencyDropdown
-          value={formattedAmounts[Field.CURRENCY_A]}
-          onUserInput={onFieldAInput}
-          hideInput={true}
-          onMax={() => {
-            onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-          }}
-          onCurrencySelect={handleCurrencyASelect}
-          showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-          currency={currencies[Field.CURRENCY_A] ?? null}
-          id="add-liquidity-input-tokena"
-          showCommonBases
-        />
-        <div style={{ width: '12px' }} />
-
-        <CurrencyDropdown
-          value={formattedAmounts[Field.CURRENCY_B]}
-          hideInput={true}
-          onUserInput={onFieldBInput}
-          onCurrencySelect={handleCurrencyBSelect}
-          onMax={() => {
-            onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-          }}
-          showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-          currency={currencies[Field.CURRENCY_B] ?? null}
-          id="add-liquidity-input-tokenb"
-          showCommonBases
-        />
-      </RowBetween>
-      <TierSelector
-        disabled={!quoteCurrency || !baseCurrency}
-        pool={pool ?? undefined}
-        sqrtGammaSelected={sqrtGamma}
-        handleTierSelect={handleTierSelect}
-      />
-    </AutoColumn>
-  )
-
-  const makeTokenAmountSection = () => (
-    <DynamicSection disabled={tickLower === undefined || tickUpper === undefined || isInvalidPool || isInvalidRange}>
-      <AutoColumn gap="md">
-        <ThemedText.Label>
-          {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-        </ThemedText.Label>
+  const makeDepositAmountSection = () => (
+    <M.SectionCard greedyMargin>
+      <ColumnDisableable
+        stretch
+        gap="24px"
+        disabled={!sqrtGamma || tickLower === undefined || tickUpper === undefined || isInvalidPool || isInvalidRange}
+      >
+        <M.RowBetween>
+          <M.Text weight="semibold">
+            {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
+          </M.Text>
+          <SettingsTab placeholderSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE} noDeadline={true} />
+        </M.RowBetween>
 
         <CurrencyInputPanel
           value={formattedAmounts[Field.CURRENCY_A]}
@@ -795,172 +924,73 @@ export default function AddLiquidity({
           showCommonBases
           locked={depositBDisabled}
         />
-      </AutoColumn>
-    </DynamicSection>
-  )
 
-  const makeSubmitButtons = () => {
-    return addIsUnsupported ? (
-      <ButtonPrimary disabled={true} $borderRadius="12px" padding={'12px'}>
-        <ThemedText.Main mb="4px">
-          <Trans>Unsupported Asset</Trans>
-        </ThemedText.Main>
-      </ButtonPrimary>
-    ) : !account ? (
-      <ButtonLight onClick={toggleWalletModal} $borderRadius="12px" padding={'12px'}>
-        <Trans>Connect Wallet</Trans>
-      </ButtonLight>
-    ) : (
-      <AutoColumn gap={'md'}>
-        {!argentWalletContract &&
-          [Field.CURRENCY_A, Field.CURRENCY_B].map((field) => {
-            const key = field === Field.CURRENCY_A ? currencyIdA : currencyIdB
-            return (
-              <TokenApproveOrPermitButton
-                key={key ?? field}
-                buttonId={field}
-                amount={amountsToApprove[field]}
-                deadline={deadline}
-                hidden={!isValid || !key || approvalStates[field] === ApproveOrPermitState.APPROVED}
-                onSignatureDataChange={updatePermitSignature}
-                onStateChanged={updateApprovalStates}
-              />
-            )
-          })}
-        <ButtonError
-          onClick={() => {
-            expertMode ? onAdd() : setShowTxModalConfirm(true)
-          }}
-          disabled={
-            !isValid ||
-            (!argentWalletContract &&
-              approvalStates[Field.CURRENCY_A] !== ApproveOrPermitState.APPROVED &&
-              !depositADisabled) ||
-            (!argentWalletContract &&
-              approvalStates[Field.CURRENCY_B] !== ApproveOrPermitState.APPROVED &&
-              !depositBDisabled)
-          }
-          error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
-        >
-          <Text fontWeight={500}>{errorMessage ? errorMessage : <Trans>Preview</Trans>}</Text>
-        </ButtonError>
-      </AutoColumn>
-    )
-  }
-
-  const makeCapitalEfficiencyWarningCard = () => (
-    <StackedItem zIndex={1}>
-      <YellowCard
-        padding="15px"
-        $borderRadius="12px"
-        height="100%"
-        style={{
-          borderColor: theme.yellow3,
-          border: '1px solid',
-        }}
-      >
-        <AutoColumn gap="8px" style={{ height: '100%' }}>
-          <RowFixed>
-            <AlertTriangle stroke={theme.yellow3} size="16px" />
-            <ThemedText.Yellow ml="12px" fontSize="15px">
-              <Trans>Efficiency Comparison</Trans>
-            </ThemedText.Yellow>
-          </RowFixed>
-          <RowFixed>
-            <ThemedText.Yellow ml="12px" fontSize="13px" margin={0} fontWeight={400}>
-              <Trans>
-                Full range positions may earn less fees than concentrated positions. Learn more{' '}
-                <ExternalLink
-                  style={{ color: theme.yellow3, textDecoration: 'underline' }}
-                  href={
-                    'https://help.uniswap.org/en/articles/5434296-can-i-provide-liquidity-over-the-full-range-in-v3'
-                  }
-                >
-                  here
-                </ExternalLink>
-                .
-              </Trans>
-            </ThemedText.Yellow>
-          </RowFixed>
-          <Row>
-            <ButtonYellow
-              padding="8px"
-              marginRight="8px"
-              $borderRadius="8px"
-              width="auto"
+        {addIsUnsupported ? (
+          <M.ButtonRowPrimary disabled>
+            <Trans>Unsupported Asset</Trans>
+          </M.ButtonRowPrimary>
+        ) : !account ? (
+          <M.ButtonRowSecondary onClick={toggleWalletModal}>
+            <Trans>Connect Wallet</Trans>
+          </M.ButtonRowSecondary>
+        ) : (
+          <M.Column gap="16px">
+            {!argentWalletContract &&
+              [Field.CURRENCY_A, Field.CURRENCY_B].map((field) => {
+                const key = field === Field.CURRENCY_A ? currencyIdA : currencyIdB
+                return (
+                  <TokenApproveOrPermitButton
+                    key={key ?? field}
+                    buttonId={field}
+                    amount={amountsToApprove[field]}
+                    deadline={deadline}
+                    hidden={!isValid || !key || approvalStates[field] === ApproveOrPermitState.APPROVED}
+                    onSignatureDataChange={updatePermitSignature}
+                    onStateChanged={updateApprovalStates}
+                  />
+                )
+              })}
+            <M.ButtonRow
               onClick={() => {
-                setShowCapitalEfficiencyWarning(false)
-                getSetFullRange()
+                expertMode ? onAdd() : setShowTxModalConfirm(true)
               }}
+              color={
+                !isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B] ? 'error' : 'primary'
+              }
+              disabled={
+                !isValid ||
+                (!argentWalletContract &&
+                  !depositADisabled &&
+                  approvalStates[Field.CURRENCY_A] !== ApproveOrPermitState.APPROVED) ||
+                (!argentWalletContract &&
+                  !depositBDisabled &&
+                  approvalStates[Field.CURRENCY_B] !== ApproveOrPermitState.APPROVED)
+              }
             >
-              <ThemedText.Black fontSize={13} color="black">
-                <Trans>I understand</Trans>
-              </ThemedText.Black>
-            </ButtonYellow>
-          </Row>
-        </AutoColumn>
-      </YellowCard>
-    </StackedItem>
+              {errorMessage ? errorMessage : expertMode ? <Trans>Add</Trans> : <Trans>Preview</Trans>}
+            </M.ButtonRow>
+          </M.Column>
+        )}
+      </ColumnDisableable>
+    </M.SectionCard>
   )
 
-  const makeRangeFormSection = () => (
-    <DynamicSection gap="md" disabled={!sqrtGamma || isInvalidPool || (isCreatingPool && !startPriceTypedValue)}>
-      <StackedContainer>
-        <StackedItem style={{ opacity: showCapitalEfficiencyWarning ? '0.05' : 1 }}>
-          <AutoColumn gap="md">
-            {isCreatingPool && (
-              <RowBetween>
-                <ThemedText.Label>
-                  <Trans>Set Price Range</Trans>
-                </ThemedText.Label>
-              </RowBetween>
-            )}
-            <RangeSelector
-              priceLower={priceLower}
-              priceUpper={priceUpper}
-              getDecrementLower={getDecrementLower}
-              getIncrementLower={getIncrementLower}
-              getDecrementUpper={getDecrementUpper}
-              getIncrementUpper={getIncrementUpper}
-              onLeftRangeInput={onLeftRangeInput}
-              onRightRangeInput={onRightRangeInput}
-              currencyA={baseCurrency}
-              currencyB={quoteCurrency}
-              tierId={tierId}
-              ticksAtLimit={areTicksAtLimit}
-            />
-            {!isCreatingPool && <PresetsButtons setFullRange={() => setShowCapitalEfficiencyWarning(true)} />}
-          </AutoColumn>
-        </StackedItem>
-
-        {showCapitalEfficiencyWarning ? makeCapitalEfficiencyWarningCard() : null}
-      </StackedContainer>
-
-      {isOutOfRange ? (
-        <YellowCard padding="8px 12px" $borderRadius="12px">
-          <RowBetween>
-            <AlertTriangle stroke={theme.yellow3} size="16px" />
-            <ThemedText.Yellow ml="12px" fontSize="12px">
-              <Trans>
-                Your position will not earn fees or be used in trades until the market price moves into your range.
-              </Trans>
-            </ThemedText.Yellow>
-          </RowBetween>
-        </YellowCard>
-      ) : null}
-
-      {isInvalidRange ? (
-        <YellowCard padding="8px 12px" $borderRadius="12px">
-          <RowBetween>
-            <AlertTriangle stroke={theme.yellow3} size="16px" />
-            <ThemedText.Yellow ml="12px" fontSize="12px">
-              <Trans>Invalid range selected. The min price must be lower than the max price.</Trans>
-            </ThemedText.Yellow>
-          </RowBetween>
-        </YellowCard>
-      ) : null}
-    </DynamicSection>
-  )
+  const makeExistingPositionInfoSection = () =>
+    existingPosition != null && (
+      <M.SectionCard greedyMargin>
+        <M.Column stretch gap="24px">
+          <M.Text weight="semibold">
+            <Trans>Existing Position Info</Trans>
+          </M.Text>
+          <PositionPreview
+            position={existingPosition}
+            title={<Trans>Selected Range</Trans>}
+            inRange={!isOutOfRange}
+            ticksAtLimit={areTicksAtLimit}
+          />
+        </M.Column>
+      </M.SectionCard>
+    )
 
   const makeTransactionModal = () => (
     <TransactionConfirmationModal
@@ -984,11 +1014,9 @@ export default function AddLiquidity({
             />
           )}
           bottomContent={() => (
-            <ButtonPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
-              <Text fontWeight={500} fontSize={20}>
-                <Trans>Add</Trans>
-              </Text>
-            </ButtonPrimary>
+            <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
+              <Trans>Add</Trans>
+            </M.ButtonRowPrimary>
           )}
         />
       )}
@@ -996,143 +1024,50 @@ export default function AddLiquidity({
     />
   )
 
-  const makeCreatePoolStartPriceForm = () => (
-    <AutoColumn gap="md">
-      <RowBetween>
-        <ThemedText.Label>
-          <Trans>Set Starting Price</Trans>
-        </ThemedText.Label>
-      </RowBetween>
-      {noLiquidity && (
-        <BlueCard
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: '1rem 1rem',
-          }}
-        >
-          <ThemedText.Body fontSize={14} style={{ fontWeight: 500 }} textAlign="left" color={theme.primaryText1}>
-            <Trans>
-              This pool must be initialized before you can add liquidity. To initialize, select a starting price for the
-              pool. Then, enter your liquidity price range and deposit amount. Gas fees will be higher than usual due to
-              the initialization transaction.
-            </Trans>
-          </ThemedText.Body>
-        </BlueCard>
-      )}
-      <OutlineCard padding="12px">
-        <StyledInput className="start-price-input" value={startPriceTypedValue} onUserInput={onStartPriceInput} />
-      </OutlineCard>
-      <RowBetween style={{ backgroundColor: theme.bg1, padding: '12px', borderRadius: '12px' }}>
-        <ThemedText.Main>
-          <Trans>Current {baseCurrency?.symbol} Price:</Trans>
-        </ThemedText.Main>
-        <ThemedText.Main>
-          {price ? (
-            <ThemedText.Main>
-              <RowFixed>
-                <HoverInlineText
-                  maxCharacters={20}
-                  text={invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)}
-                />{' '}
-                <span style={{ marginLeft: '4px' }}>{quoteCurrency?.symbol}</span>
-              </RowFixed>
-            </ThemedText.Main>
-          ) : (
-            '-'
-          )}
-        </ThemedText.Main>
-      </RowBetween>
-    </AutoColumn>
-  )
+  const dispatch = useAppDispatch()
 
   return (
     <>
-      <>
-        <DowntimeWarning />
-        {makeTransactionModal()}
-        <StyledAppBody wide={!hasExistingPosition}>
-          {makeTabHeader()}
+      <DowntimeWarning />
+      {makeTransactionModal()}
 
-          <ResponsiveTwoColumns wide={!hasExistingPosition}>
-            <AutoColumn gap="lg">
-              {hasExistingPosition && existingPosition ? (
-                <PositionPreview
-                  position={existingPosition}
-                  title={<Trans>Selected Range</Trans>}
-                  inRange={!isOutOfRange}
-                  ticksAtLimit={areTicksAtLimit}
-                />
-              ) : (
-                makeSelectPairAndTierSection()
-              )}
-            </AutoColumn>
-            <div>{makeTokenAmountSection()}</div>
-            {!hasExistingPosition ? (
-              <>
-                <HideMedium>{makeSubmitButtons()}</HideMedium>
-                <RightContainer gap="lg">
-                  <DynamicSection gap="md" disabled={sqrtGamma == null || isInvalidPool}>
-                    {!noLiquidity ? (
-                      <>
-                        <RowBetween>
-                          <ThemedText.Label>
-                            <Trans>Set Price Range</Trans>
-                          </ThemedText.Label>
-                        </RowBetween>
+      <M.Container maxWidth={tokenId == null ? '29rem' : '27rem'}>
+        <M.Column stretch gap="32px">
+          <M.Link
+            color="text2"
+            to={`/pool${tokenId ? `/${tokenId.toString()}` : ''}`}
+            onClick={() => {
+              dispatch(resetMintV3State())
+            }}
+          >
+            <Trans>← Back</Trans>
+          </M.Link>
 
-                        {!noLiquidity && price && baseCurrency && quoteCurrency && (
-                          <AutoRow gap="4px" justify="center" style={{ marginTop: '0.5rem' }}>
-                            <Trans>
-                              <ThemedText.Main fontWeight={500} textAlign="center" fontSize={12} color="text1">
-                                Current Price:
-                              </ThemedText.Main>
-                              <ThemedText.Body fontWeight={500} textAlign="center" fontSize={12} color="text1">
-                                <HoverInlineText
-                                  maxCharacters={20}
-                                  text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
-                                />
-                              </ThemedText.Body>
-                              <ThemedText.Body color="text2" fontSize={12}>
-                                {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                              </ThemedText.Body>
-                            </Trans>
-                          </AutoRow>
-                        )}
-                        <LiquidityChartRangeInput
-                          currencyA={baseCurrency ?? undefined}
-                          currencyB={quoteCurrency ?? undefined}
-                          pool={pool || undefined}
-                          tierId={tierId}
-                          ticksAtLimit={areTicksAtLimit}
-                          price={
-                            price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined
-                          }
-                          priceLower={priceLower}
-                          priceUpper={priceUpper}
-                          onLeftRangeInput={onLeftRangeInput}
-                          onRightRangeInput={onRightRangeInput}
-                          interactive={!hasExistingPosition}
-                        />
-                      </>
-                    ) : (
-                      makeCreatePoolStartPriceForm()
-                    )}
-                  </DynamicSection>
+          <M.Text size="xl" weight="bold">
+            Add Liquidity
+          </M.Text>
 
-                  {makeRangeFormSection()}
+          {tokenId != null && !hasExistingPosition ? (
+            <LoadingRows>
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+            </LoadingRows>
+          ) : (
+            <>
+              {makeExistingPositionInfoSection()}
+              {makeSelectPoolTierSection()}
+              {makeSetStartingPriceForm()}
+              {makeSelectPriceRangeSection()}
+              {makeDepositAmountSection()}
+            </>
+          )}
+        </M.Column>
+      </M.Container>
 
-                  <MediumOnly>{makeSubmitButtons()}</MediumOnly>
-                </RightContainer>
-              </>
-            ) : (
-              makeSubmitButtons()
-            )}
-          </ResponsiveTwoColumns>
-        </StyledAppBody>
-        {addIsUnsupported && <UnsupportedCurrencyFooter show={addIsUnsupported} currencies={[currencyA, currencyB]} />}
-      </>
+      {addIsUnsupported && <UnsupportedCurrencyFooter show={addIsUnsupported} currencies={[currencyA, currencyB]} />}
       <SwitchLocaleLink />
     </>
   )

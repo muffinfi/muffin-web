@@ -124,7 +124,7 @@ const TokenAmountAndValue = ({
       <M.Text>{amount?.toSignificant(4)}</M.Text>
       <M.Text color="text2" size="sm">
         {/* TODO: is 4 sig fig good? */}
-        <Trans>~${fiatValue?.toSignificant(4, { groupSeparator: ',' }) ?? '-'}</Trans>
+        <Trans>${fiatValue?.toSignificant(4, { groupSeparator: ',' }) ?? '-'}</Trans>
       </M.Text>
       {showRatio ? (
         <div>
@@ -382,7 +382,7 @@ export function PositionPage({
 
   if (loading || poolState === PoolState.LOADING || !position) {
     return (
-      <LoadingRows style={{ marginTop: 80 }}>
+      <LoadingRows style={{ marginTop: 100 }}>
         <div />
         <div />
         <div />
@@ -565,6 +565,7 @@ export function PositionPage({
             <M.TextContents weight="semibold">
               <M.PriceExpr price={inverted ? tier?.token1Price : tier?.token0Price} />
             </M.TextContents>
+            <RangeBadge removed={removed} inRange={inRange} />
           </M.Column>
         </M.Column>
       </M.SectionCard>

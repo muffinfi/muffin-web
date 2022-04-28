@@ -1,11 +1,8 @@
 import { Trans } from '@lingui/macro'
-import { ButtonGray } from 'components/Button'
-import { OutlineCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
+import * as M from 'components/@M'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Minus, Plus } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { Input as NumericalInput } from '../NumericalInput'
 
 const pulse = (color: string) => keyframes`
@@ -22,24 +19,24 @@ const pulse = (color: string) => keyframes`
   }
 `
 
-const InputRow = styled.div<{ locked?: boolean }>`
-  display: grid;
-
-  grid-template-columns: ${({ locked }) => (locked ? '1fr' : '30px 1fr 30px')};
-`
-
-const SmallButton = styled(ButtonGray)`
-  border-radius: 8px;
-  padding: 4px;
-`
-
-const FocusedOutlineCard = styled(OutlineCard)<{ active?: boolean; pulsing?: boolean }>`
-  border-color: ${({ active, theme }) => active && theme.blue1};
+const FocusedOutlineCard = styled.div<{ active?: boolean; pulsing?: boolean }>`
   padding: 12px;
+  border-radius: 16px;
+  background: var(--layer2);
+
+  transition: border-color 150ms;
+  border: 1px solid transparent;
+  border-color: ${({ active, theme }) => (active ? theme.blue1 : 'transparent')};
   animation: ${({ pulsing, theme }) => pulsing && pulse(theme.blue1)} 0.8s linear;
-  height: 100%;
-  display: flex;
-  align-items: center;
+`
+
+const StepButton = styled(M.Button).attrs({ color: 'tertiary' })`
+  border-radius: 8px;
+  padding: 0;
+  height: 26px;
+  width: 26px;
+  border: 0;
+  flex-shrink: 0;
 `
 
 const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
@@ -47,7 +44,7 @@ const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
   text-align: center;
   width: 100%;
   font-weight: 500;
-  padding: 0 10px;
+  padding: 0;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     font-size: 16px;
@@ -56,16 +53,6 @@ const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     font-size: 12px;
   `};
-`
-
-const InputTitle = styled(ThemedText.Small)`
-  color: ${({ theme }) => theme.text2};
-  font-size: 12px;
-  font-weight: 500;
-`
-
-const ButtonLabel = styled(ThemedText.White)<{ disabled: boolean }>`
-  color: ${({ theme, disabled }) => (disabled ? theme.text2 : theme.text1)} !important;
 `
 
 interface StepCounterProps {
@@ -156,19 +143,23 @@ const StepCounter = ({
   }, [disablePulsing, localValue, useLocalValue, value])
 
   return (
-    <FocusedOutlineCard pulsing={pulsing} active={active} onFocus={handleOnFocus} onBlur={handleOnBlur} width={width}>
-      <AutoColumn gap="6px">
-        <InputTitle fontSize={12} textAlign="center">
+    <FocusedOutlineCard
+      pulsing={pulsing}
+      active={active}
+      onFocus={handleOnFocus}
+      onBlur={handleOnBlur}
+      style={width ? { width } : undefined}
+    >
+      <M.ColumnCenter stretch gap="8px">
+        <M.Text color="text2" size="xs">
           {title}
-        </InputTitle>
+        </M.Text>
 
-        <InputRow locked={locked}>
+        <M.Row wrap="nowrap" gap="6px">
           {!locked && (
-            <SmallButton onClick={handleDecrement} disabled={decrementDisabled}>
-              <ButtonLabel disabled={decrementDisabled} fontSize="12px">
-                <Minus size={18} />
-              </ButtonLabel>
-            </SmallButton>
+            <StepButton onClick={handleDecrement} disabled={decrementDisabled}>
+              <Minus size={16} />
+            </StepButton>
           )}
 
           <StyledInput
@@ -180,20 +171,18 @@ const StepCounter = ({
           />
 
           {!locked && (
-            <SmallButton onClick={handleIncrement} disabled={incrementDisabled}>
-              <ButtonLabel disabled={incrementDisabled} fontSize="12px">
-                <Plus size={18} />
-              </ButtonLabel>
-            </SmallButton>
+            <StepButton onClick={handleIncrement} disabled={incrementDisabled}>
+              <Plus size={16} />
+            </StepButton>
           )}
-        </InputRow>
+        </M.Row>
 
-        <InputTitle fontSize={12} textAlign="center">
+        <M.Text color="text2" size="xs">
           <Trans>
             {tokenB} per {tokenA}
           </Trans>
-        </InputTitle>
-      </AutoColumn>
+        </M.Text>
+      </M.ColumnCenter>
     </FocusedOutlineCard>
   )
 }

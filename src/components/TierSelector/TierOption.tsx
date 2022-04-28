@@ -1,27 +1,10 @@
 import { Trans } from '@lingui/macro'
 import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
 import { sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import * as M from 'components/@M'
 import { ButtonRadioChecked } from 'components/Button'
-import { AutoColumn } from 'components/Column'
-import React, { ReactNode, useCallback, useMemo } from 'react'
-import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { useCallback, useMemo } from 'react'
 import { TierPercentageBadge } from './TierPercentageBadge'
-
-const ResponsiveText = styled(ThemedText.Label)`
-  line-height: 16px;
-  font-size: 14px;
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    font-size: 12px;
-    line-height: 12px;
-  `};
-`
-
-const SQRT_GAMMA_DETAIL: Record<number, { description: ReactNode }> = {
-  // 99975: { description: <Trans>Best for stable pairs.</Trans> },
-  // 99850: { description: <Trans>Best for most pairs.</Trans> },
-}
 
 export function TierOption({
   tierId,
@@ -43,18 +26,12 @@ export function TierOption({
 
   return (
     <ButtonRadioChecked active={active} onClick={onClick} activeColor={activeColor}>
-      <AutoColumn gap="sm" justify="flex-start">
-        <AutoColumn justify="flex-start" gap="6px">
-          <ResponsiveText>
-            <Trans>{feePercent.toFixed(2)}%</Trans>
-          </ResponsiveText>
-          <ThemedText.Main fontWeight={400} fontSize="12px" textAlign="left">
-            {SQRT_GAMMA_DETAIL[sqrtGamma]?.description}
-          </ThemedText.Main>
-        </AutoColumn>
-
+      <M.Column gap="0.5em">
+        <M.Text weight="semibold">
+          <Trans>{feePercent.toFixed(2)}%</Trans>
+        </M.Text>
         {distributions && tierId != null && <TierPercentageBadge distributions={distributions} tierId={tierId} />}
-      </AutoColumn>
+      </M.Column>
     </ButtonRadioChecked>
   )
 }

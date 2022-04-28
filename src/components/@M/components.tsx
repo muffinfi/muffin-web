@@ -6,8 +6,7 @@ export const Container = styled.div<{ maxWidth: string }>`
   width: 100%;
   margin: auto;
   margin-top: 1rem;
-  /* margin-top: 72px; */
-  /* margin-bottom: 72px; */
+  margin-bottom: 72px;
 `
 
 export const SectionCard = styled.div<{ greedyMargin?: boolean }>`
@@ -17,6 +16,11 @@ export const SectionCard = styled.div<{ greedyMargin?: boolean }>`
   background-color: var(--layer1);
   /* border: 1px solid rgba(0, 0, 0, 0.06); */
   /* box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04); */
+
+  @media (max-width: 500px) {
+    padding: 1rem;
+    margin: ${({ greedyMargin }) => greedyMargin && '0 -0.333rem'};
+  }
 `
 
 /////////

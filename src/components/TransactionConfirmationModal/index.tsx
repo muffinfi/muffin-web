@@ -25,7 +25,7 @@ import AnimatedConfirmation from './AnimatedConfirmation'
 
 const Wrapper = styled.div`
   width: 100%;
-  padding: 24px;
+  padding: 20px;
 `
 const Section = styled(AutoColumn)<{ inline?: boolean }>`
   padding: ${({ inline }) => (inline ? '0' : '0')};
