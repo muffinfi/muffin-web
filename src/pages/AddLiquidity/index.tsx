@@ -510,9 +510,6 @@ export default function AddLiquidity({
   const handleCurrencyBSelect = useCallback(
     (currencyBNew: Currency) => {
       const [idB, idA] = handleCurrencySelect(currencyBNew, currencyIdA)
-      console.log(currencyBNew.symbol)
-      console.log(idB)
-      console.log(idA)
 
       if (idA === undefined) {
         history.push(`/add/${idB}`)
@@ -1044,7 +1041,7 @@ export default function AddLiquidity({
           </M.Link>
 
           <M.Text size="xl" weight="bold">
-            Add Liquidity
+            <Trans>Add Liquidity</Trans>
           </M.Text>
 
           {tokenId != null && !hasExistingPosition ? (

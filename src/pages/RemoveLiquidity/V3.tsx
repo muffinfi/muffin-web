@@ -7,18 +7,16 @@ import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import * as DS from 'components/@DS'
+import * as M from 'components/@M'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
-import { AutoColumn, ColumnCenter } from 'components/Column'
+import CurrencyLogo from 'components/CurrencyLogo'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Loader'
-import { AddRemoveTabs } from 'components/NavigationTabs'
 import QuestionHelper from 'components/QuestionHelper'
-import { AutoRow, RowBetween, RowFixed } from 'components/Row'
+import { RowBetween } from 'components/Row'
+import SettingsTab from 'components/Settings'
 import Slider from 'components/Slider'
-import Toggle from 'components/Toggle'
-import TokenDestinationToggleRow from 'components/TokenDestinationToggleRow'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useToggle from 'hooks/useToggle'
@@ -29,20 +27,14 @@ import { Redirect, RouteComponentProps } from 'react-router-dom'
 import { useBurnV3ActionHandlers, useBurnV3State } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
-import styled from 'styled-components/macro'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { TransactionType } from '../../state/transactions/actions'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { currencyId } from '../../utils/currencyId'
-import AppBody from '../AppBody'
 import { ResponsiveHeaderText } from './styled'
 
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
-
-const PoolTierNameWrapper = styled.div`
-  font-size: var(--text-xl);
-`
 
 const TokenAmountsCard = memo(function TokenAmountsCard({
   partialAmount0,
@@ -56,36 +48,47 @@ const TokenAmountsCard = memo(function TokenAmountsCard({
   feeAmount1: CurrencyAmount<Currency> | undefined
 }) {
   return (
-    <LightCard>
-      <AutoColumn gap="md">
-        <AutoColumn gap="md">
-          <DS.Text color="text2" weight="semibold" size="sm">
-            <Trans>Liquidity assets</Trans>
-          </DS.Text>
-          <RowBetween>
-            <DS.CurrencyName currency={partialAmount0?.currency} />
-            {partialAmount0 && <FormattedCurrencyAmount currencyAmount={partialAmount0} significantDigits={6} />}
-          </RowBetween>
-          <RowBetween>
-            <DS.CurrencyName currency={partialAmount1?.currency} />
-            {partialAmount1 && <FormattedCurrencyAmount currencyAmount={partialAmount1} significantDigits={6} />}
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn gap="md">
-          <DS.Text color="text2" weight="semibold" size="sm">
-            <Trans>Fees to collect</Trans>
-          </DS.Text>
-          <RowBetween>
-            <DS.CurrencyName currency={feeAmount0?.currency} />
-            {feeAmount0 && <FormattedCurrencyAmount currencyAmount={feeAmount0} significantDigits={6} />}
-          </RowBetween>
-          <RowBetween>
-            <DS.CurrencyName currency={feeAmount1?.currency} />
-            {feeAmount1 && <FormattedCurrencyAmount currencyAmount={feeAmount1} significantDigits={6} />}
-          </RowBetween>
-        </AutoColumn>
-      </AutoColumn>
-    </LightCard>
+    <M.Column stretch gap="24px" style={{ border: '1px solid var(--borderColor)', padding: 16, borderRadius: 16 }}>
+      <M.Column stretch gap="12px">
+        <M.Text color="text2" size="sm">
+          <Trans>Liquidity assets</Trans>
+        </M.Text>
+        <M.RowBetween>
+          <M.Row gap="0.5em">
+            <CurrencyLogo size="1.25em" currency={partialAmount0?.currency} />
+            <M.Text weight="medium">{partialAmount0?.currency.symbol}</M.Text>
+          </M.Row>
+          {partialAmount0 && <FormattedCurrencyAmount currencyAmount={partialAmount0} significantDigits={6} />}
+        </M.RowBetween>
+        <RowBetween>
+          <M.Row gap="0.5em">
+            <CurrencyLogo size="1.25em" currency={partialAmount1?.currency} />
+            <M.Text weight="medium">{partialAmount1?.currency.symbol}</M.Text>
+          </M.Row>
+          {partialAmount1 && <FormattedCurrencyAmount currencyAmount={partialAmount1} significantDigits={6} />}
+        </RowBetween>
+      </M.Column>
+
+      <M.Column stretch gap="12px">
+        <M.Text color="text2" size="sm">
+          <Trans>Fees to collect</Trans>
+        </M.Text>
+        <M.RowBetween>
+          <M.Row gap="0.5em">
+            <CurrencyLogo size="1.25em" currency={feeAmount0?.currency} />
+            <M.Text weight="medium">{feeAmount0?.currency.symbol}</M.Text>
+          </M.Row>
+          {feeAmount0 && <FormattedCurrencyAmount currencyAmount={feeAmount0} significantDigits={6} />}
+        </M.RowBetween>
+        <M.RowBetween>
+          <M.Row gap="0.5em">
+            <CurrencyLogo size="1.25em" currency={feeAmount1?.currency} />
+            <M.Text weight="medium">{feeAmount1?.currency.symbol}</M.Text>
+          </M.Row>
+          {feeAmount1 && <FormattedCurrencyAmount currencyAmount={feeAmount1} significantDigits={6} />}
+        </M.RowBetween>
+      </M.Column>
+    </M.Column>
   )
 })
 
@@ -299,52 +302,52 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   const makeSliderCard = () => (
     <LightCard>
-      <AutoColumn gap="md">
-        <DS.Text color="text2" weight="semibold" size="sm">
+      <M.Column stretch gap="8px">
+        <M.Text color="text2" weight="semibold" size="sm">
           <Trans>% of Liquidity</Trans>
-        </DS.Text>
-        <RowBetween>
+        </M.Text>
+        <M.RowBetween>
           <ResponsiveHeaderText>
             <Trans>{percentForSlider}%</Trans>
           </ResponsiveHeaderText>
-          <AutoRow gap="4px" justify="flex-end">
-            <DS.ButtonSecondary size="xs" onClick={() => onPercentSelect(25)}>
+          <M.Row wrap="wrap" gap="4px" style={{ justifyContent: 'flex-end' }}>
+            <M.ButtonSecondary size="xs" onClick={() => onPercentSelect(25)}>
               <Trans>25%</Trans>
-            </DS.ButtonSecondary>
-            <DS.ButtonSecondary size="xs" onClick={() => onPercentSelect(50)}>
+            </M.ButtonSecondary>
+            <M.ButtonSecondary size="xs" onClick={() => onPercentSelect(50)}>
               <Trans>50%</Trans>
-            </DS.ButtonSecondary>
-            <DS.ButtonSecondary size="xs" onClick={() => onPercentSelect(75)}>
+            </M.ButtonSecondary>
+            <M.ButtonSecondary size="xs" onClick={() => onPercentSelect(75)}>
               <Trans>75%</Trans>
-            </DS.ButtonSecondary>
-            <DS.ButtonSecondary size="xs" onClick={() => onPercentSelect(100)}>
+            </M.ButtonSecondary>
+            <M.ButtonSecondary size="xs" onClick={() => onPercentSelect(100)}>
               <Trans>Max</Trans>
-            </DS.ButtonSecondary>
-          </AutoRow>
-        </RowBetween>
+            </M.ButtonSecondary>
+          </M.Row>
+        </M.RowBetween>
         <Slider value={percentForSlider} onChange={onPercentSelectForSlider} />
-      </AutoColumn>
+      </M.Column>
     </LightCard>
   )
 
   const makeTransactionModalHeader = () => (
-    <AutoColumn gap="lg">
+    <M.Column stretch gap="32px">
       <TokenAmountsCard
         partialAmount0={partialAmount0}
         partialAmount1={partialAmount1}
         feeAmount0={feeAmount0}
         feeAmount1={feeAmount1}
       />
-      <RowBetween>
-        <DS.Text weight="semibold">
-          <Trans>Store tokens into:</Trans>
-        </DS.Text>
-        <DS.Text>{storeInInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}</DS.Text>
-      </RowBetween>
-      <DS.ButtonRowPrimary onClick={burn}>
+      <M.RowBetween>
+        <M.Text size="sm" weight="semibold">
+          <Trans>Output destination</Trans>
+        </M.Text>
+        <M.Text size="sm">{storeInInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}</M.Text>
+      </M.RowBetween>
+      <M.ButtonRowPrimary onClick={burn}>
         <Trans>Remove</Trans>
-      </DS.ButtonRowPrimary>
-    </AutoColumn>
+      </M.ButtonRowPrimary>
+    </M.Column>
   )
 
   const makeTransactionModal = () => (
@@ -372,67 +375,85 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   return (
     <>
       {makeTransactionModal()}
-      <AppBody padding="32px" maxWidth="450px">
-        <AddRemoveTabs
-          creating={false}
-          adding={false}
-          positionID={tokenId.toString()}
-          defaultSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE}
-        />
-        {position ? (
-          <AutoColumn gap="lg">
-            <RowBetween style={{ flexWrap: 'wrap', gap: '8px' }}>
-              <PoolTierNameWrapper>
-                <DS.PoolTierName currencyBase={currency0} currencyQuote={currency1} tier={position.poolTier} />
-              </PoolTierNameWrapper>
-              <RangeBadge removed={removed} inRange={!outOfRange} />
-            </RowBetween>
-            {makeSliderCard()}
 
-            <TokenAmountsCard
-              partialAmount0={partialAmount0}
-              partialAmount1={partialAmount1}
-              feeAmount0={feeAmount0}
-              feeAmount1={feeAmount1}
-            />
+      <M.Container maxWidth="24rem">
+        <M.Column stretch gap="32px">
+          <M.Link color="text2" to={`/pool/${tokenId.toString()}`}>
+            <Trans>← Back</Trans>
+          </M.Link>
 
-            <RowBetween>
-              <RowFixed>
-                <DS.Text weight="semibold">
-                  <Trans>Fees collection</Trans>
-                </DS.Text>
-                <QuestionHelper
-                  text={<Trans>Choose to collect all/partial of fee when removing partial liquidity.</Trans>}
+          <M.Text size="xl" weight="bold">
+            <Trans>Remove Liquidity</Trans>
+          </M.Text>
+
+          {position == null ? (
+            <M.ColumnCenter>
+              <Loader />
+            </M.ColumnCenter>
+          ) : (
+            <M.SectionCard greedyMargin>
+              <M.Column stretch gap="24px">
+                <M.Column stretch gap="0.75em">
+                  <M.RowBetween gap="1em">
+                    <M.TextContents size="lg" weight="bold">
+                      <M.PoolTierExpr currencyBase={currency1} currencyQuote={currency0} tier={position.poolTier} />
+                    </M.TextContents>
+                    <SettingsTab placeholderSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE} noDeadline />
+                  </M.RowBetween>
+                  <span>
+                    <RangeBadge removed={removed} inRange={!outOfRange} />
+                  </span>
+                </M.Column>
+
+                {makeSliderCard()}
+
+                <TokenAmountsCard
+                  partialAmount0={partialAmount0}
+                  partialAmount1={partialAmount1}
+                  feeAmount0={feeAmount0}
+                  feeAmount1={feeAmount1}
                 />
-              </RowFixed>
-              <Toggle
-                id="collect-all-fees"
-                isActive={collectAllFees}
-                toggle={toggleCollectAllFees}
-                checked={<Trans>All</Trans>}
-                unchecked={<Trans>Partial</Trans>}
-              />
-            </RowBetween>
 
-            <TokenDestinationToggleRow
-              toInternalAccount={storeInInternalAccount}
-              questionHelperContent={<Trans>Choose the destination of the removed tokens and fee.</Trans>}
-              onToggle={toggleStoreInInternalAccount}
-            />
+                <M.RowBetween>
+                  <M.Row gap="0.25em">
+                    <M.Text weight="semibold" size="sm">
+                      <Trans>Fees collection</Trans>
+                    </M.Text>
+                    <QuestionHelper
+                      text={<Trans>Choose to collect all/partial of fee when removing partial liquidity.</Trans>}
+                    />
+                  </M.Row>
+                  <M.TextContents size="xs" weight="semibold">
+                    <M.Toggle $variant="primary" onClick={toggleCollectAllFees}>
+                      <M.ToggleElement gap="0.5em" $active={collectAllFees}>
+                        <Trans>All</Trans>
+                      </M.ToggleElement>
+                      <M.ToggleElement gap="0.5em" $active={!collectAllFees}>
+                        <Trans>Partial</Trans>
+                      </M.ToggleElement>
+                    </M.Toggle>
+                  </M.TextContents>
+                </M.RowBetween>
 
-            <DS.ButtonRowPrimary
-              disabled={removed || percent === 0 || !partialAmount0}
-              onClick={() => setShowConfirm(true)}
-            >
-              {removed ? <Trans>Closed</Trans> : error ?? <Trans>Remove</Trans>}
-            </DS.ButtonRowPrimary>
-          </AutoColumn>
-        ) : (
-          <ColumnCenter>
-            <Loader />
-          </ColumnCenter>
-        )}
-      </AppBody>
+                <M.TextContents weight="semibold" size="sm">
+                  <M.OutputDestinationToggle
+                    toInternalAccount={storeInInternalAccount}
+                    questionHelperContent={<Trans>Choose the destination of the removed tokens and fees.</Trans>}
+                    onToggle={toggleStoreInInternalAccount}
+                  />
+                </M.TextContents>
+
+                <M.ButtonRowPrimary
+                  disabled={removed || percent === 0 || !partialAmount0}
+                  onClick={() => setShowConfirm(true)}
+                >
+                  {removed ? <Trans>Closed</Trans> : error ?? <Trans>Remove</Trans>}
+                </M.ButtonRowPrimary>
+              </M.Column>
+            </M.SectionCard>
+          )}
+        </M.Column>
+      </M.Container>
     </>
   )
 }

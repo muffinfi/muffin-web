@@ -19,13 +19,13 @@ export default function OutputDestinationToggle({
     <RowBetween>
       <Row gap="0.25em">
         <Text>
-          <Trans>Output Destination</Trans>
+          <Trans>Output destination</Trans>
         </Text>
         {questionHelperContent && <QuestionHelper text={questionHelperContent} />}
       </Row>
 
       <TextContents size="xs" weight="semibold">
-        <Toggle onClick={onToggle}>
+        <Toggle $variant="primary" onClick={onToggle}>
           <ToggleElement gap="0.5em" $active={toInternalAccount}>
             <FontAwesomeIcon icon={faBuildingColumns} />
             <Trans>Account</Trans>

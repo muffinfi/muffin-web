@@ -171,7 +171,7 @@ export function ConfirmationModalContent({
           </Text>
           <CloseIcon onClick={onDismiss} />
         </RowBetween>
-        <div style={{ marginTop: 24 }}>{topContent()}</div>
+        <div style={{ marginTop: 16 }}>{topContent()}</div>
       </Section>
       {bottomContent && <BottomSection gap="12px">{bottomContent()}</BottomSection>}
     </Wrapper>

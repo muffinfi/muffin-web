@@ -1,7 +1,7 @@
-import { Text } from 'rebass'
+import * as M from 'components/@M'
 import styled from 'styled-components/macro'
 
-export const ResponsiveHeaderText = styled(Text)`
+export const ResponsiveHeaderText = styled(M.Text)`
   font-size: 40px;
   font-weight: 500;
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
