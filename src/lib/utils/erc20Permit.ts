@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/keccak256'
 import { toUtf8Bytes } from '@ethersproject/strings'
-import { MaxUint256 } from '@muffinfi/muffin-v1-sdk'
+import { MaxUint256, PermitOptions } from '@muffinfi/muffin-v1-sdk'
 import { DAI, UNI, USDC_MAINNET } from '../../constants/tokens'
 
 export enum PermitType {
@@ -214,3 +214,22 @@ export const generateObjectToSign = (
     message,
   }
 }
+
+export const signatureDataToPermitOptions = (signatureData?: SignatureData | null): PermitOptions | undefined =>
+  !signatureData
+    ? undefined
+    : 'allowed' in signatureData
+    ? {
+        v: signatureData.v as PermitOptions['v'],
+        r: signatureData.r,
+        s: signatureData.s,
+        nonce: signatureData.nonce,
+        expiry: signatureData.deadline,
+      }
+    : {
+        v: signatureData.v as PermitOptions['v'],
+        r: signatureData.r,
+        s: signatureData.s,
+        amount: signatureData.amount,
+        deadline: signatureData.deadline,
+      }

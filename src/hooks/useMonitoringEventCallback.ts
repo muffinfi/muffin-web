@@ -15,6 +15,7 @@ const SUPPORTED_TRANSACTION_TYPES = [
   TransactionType.SWAP,
   //
   TransactionType.ADD_LIQUIDITY_MUFFIN,
+  TransactionType.ADD_LIMIT_RANGE_ORDER,
 ]
 
 const FIREBASE_API_KEY = process.env.REACT_APP_FIREBASE_KEY

@@ -6,7 +6,13 @@ import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
 import { NEVER_RELOAD, useSingleCallResult } from 'lib/hooks/multicall'
-import { generateObjectToSign, getPermitInfo, PermitInfo, SignatureData } from 'lib/utils/erc20Permit'
+import {
+  generateObjectToSign,
+  getPermitInfo,
+  PermitInfo,
+  SignatureData,
+  signatureDataToPermitOptions,
+} from 'lib/utils/erc20Permit'
 import { useEffect, useMemo, useState } from 'react'
 import { useEIP2612Contract } from './useContract'
 import useIsArgentWallet from './useIsArgentWallet'
@@ -108,7 +114,10 @@ export function useERC20Permit(
     }
     setCheckedState(CheckDomainState.CHECKING)
     let ignore = false
-    const data = SelfPermit.encodePermit(currencyAmount.currency, signatureData as PermitOptions)
+    const data = SelfPermit.encodePermit(
+      currencyAmount.currency,
+      signatureDataToPermitOptions(signatureData) as PermitOptions
+    )
     library
       .getSigner()
       .estimateGas({ to: MUFFIN_MANAGER_ADDRESSES[chainId], data })

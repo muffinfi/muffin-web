@@ -35,7 +35,7 @@ export function TierOption({
   sqrtGamma: number
   active: boolean
   activeColor: string
-  distributions: ReturnType<typeof useMuffinTierDistribution>['distributions']
+  distributions?: ReturnType<typeof useMuffinTierDistribution>['distributions']
   handleTierSelect: (sqrtGamma: number) => void
 }) {
   const feePercent = useMemo(() => sqrtGammaToFeePercent(sqrtGamma), [sqrtGamma])
@@ -58,29 +58,3 @@ export function TierOption({
     </ButtonRadioChecked>
   )
 }
-
-// export const FEE_AMOUNT_DETAIL: Record<
-//   FeeAmount,
-//   { label: string; description: ReactNode; supportedChains: SupportedChainId[] }
-// > = {
-//   [FeeAmount.LOWEST]: {
-//     label: '0.01',
-//     description: <Trans>Best for very stable pairs.</Trans>,
-//     supportedChains: [SupportedChainId.MAINNET],
-//   },
-//   [FeeAmount.LOW]: {
-//     label: '0.05',
-//     description: <Trans>Best for stable pairs.</Trans>,
-//     supportedChains: ALL_SUPPORTED_CHAIN_IDS,
-//   },
-//   [FeeAmount.MEDIUM]: {
-//     label: '0.3',
-//     description: <Trans>Best for most pairs.</Trans>,
-//     supportedChains: ALL_SUPPORTED_CHAIN_IDS,
-//   },
-//   [FeeAmount.HIGH]: {
-//     label: '1',
-//     description: <Trans>Best for exotic pairs.</Trans>,
-//     supportedChains: ALL_SUPPORTED_CHAIN_IDS,
-//   },
-// }

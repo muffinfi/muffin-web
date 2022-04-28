@@ -8,6 +8,7 @@ import { useCurrency, useToken } from '../../hooks/Tokens'
 import useENSName from '../../hooks/useENSName'
 // import { VoteOption } from '../../state/governance/types'
 import {
+  AddLimitRangeOrderInfo,
   AddLiquidityMuffinTransactionInfo,
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
@@ -365,6 +366,20 @@ function RemoveLiquidityMuffinSummary({
   )
 }
 
+function AddLimitRangeOrderSummary({
+  info: { inputCurrencyId, outputCurrencyId, expectedInputAmountRaw, expectedOutputAmountRaw },
+}: {
+  info: AddLimitRangeOrderInfo
+}) {
+  return (
+    <Trans>
+      Add limit range order for swapping{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedInputAmountRaw} currencyId={inputCurrencyId} sigFigs={6} /> to{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedOutputAmountRaw} currencyId={outputCurrencyId} sigFigs={6} />
+    </Trans>
+  )
+}
+
 /////////////////////////////////////////////////////////
 
 function DepositInternalAccountSummary({
@@ -408,6 +423,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.REMOVE_LIQUIDITY_MUFFIN:
       return <RemoveLiquidityMuffinSummary info={info} />
+
+    case TransactionType.ADD_LIMIT_RANGE_ORDER:
+      return <AddLimitRangeOrderSummary info={info} />
 
     ///////
 

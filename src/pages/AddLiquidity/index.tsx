@@ -11,7 +11,6 @@ import {
   MAX_TICK,
   MIN_TICK,
   nearestUsableTick,
-  PermitOptions,
   Pool,
   Position,
   PositionManager,
@@ -32,6 +31,7 @@ import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import useCurrency from 'lib/hooks/useCurrency'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
+import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -622,8 +622,8 @@ export default function AddLiquidity({
       useAccount,
       slippageTolerance,
       useNative,
-      token0Permit: (permitSignatures[isTokenAt0 ? Field.CURRENCY_A : Field.CURRENCY_B] as PermitOptions) ?? undefined,
-      token1Permit: (permitSignatures[isTokenAt0 ? Field.CURRENCY_B : Field.CURRENCY_A] as PermitOptions) ?? undefined,
+      token0Permit: signatureDataToPermitOptions(permitSignatures[isTokenAt0 ? Field.CURRENCY_A : Field.CURRENCY_B]),
+      token1Permit: signatureDataToPermitOptions(permitSignatures[isTokenAt0 ? Field.CURRENCY_B : Field.CURRENCY_A]),
     })
 
     let txn = { to: manager.address, data: calldata, value }

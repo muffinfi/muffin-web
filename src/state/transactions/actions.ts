@@ -40,6 +40,7 @@ export enum TransactionType {
   REMOVE_LIQUIDITY_MUFFIN = 16,
   DEPOSIT_INTERNAL_ACCOUNT = 17,
   WITHDRAW_INTERNAL_ACCOUNT = 18,
+  ADD_LIMIT_RANGE_ORDER = 19,
 }
 
 export interface BaseTransactionInfo {
@@ -183,6 +184,15 @@ export interface RemoveLiquidityMuffinTransactionInfo {
   tokenDestination: BalanceSource
 }
 
+export interface AddLimitRangeOrderInfo {
+  type: TransactionType.ADD_LIMIT_RANGE_ORDER
+  inputCurrencyId: string
+  outputCurrencyId: string
+  sqrtGamma: number
+  expectedInputAmountRaw: string
+  expectedOutputAmountRaw: string
+}
+
 ////////////////////////////////////////////////////////////
 
 export interface DepositInternalAccountTransactionInfo {
@@ -220,6 +230,7 @@ export type TransactionInfo =
   | RemoveLiquidityMuffinTransactionInfo
   | DepositInternalAccountTransactionInfo
   | WithdrawInternalAccountTransactionInfo
+  | AddLimitRangeOrderInfo
 
 export const addTransaction = createAction<{
   chainId: number

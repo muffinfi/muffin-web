@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { useHubContract, useManagerContract } from '@muffinfi/hooks/useContract'
+import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
+import { useHubContract } from '@muffinfi/hooks/useContract'
 import { useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
 import { useSettlement } from '@muffinfi/hooks/useSettlements'
 import {
@@ -7,7 +8,6 @@ import {
   MAX_TICK,
   MIN_TICK,
   nearestUsableTick,
-  PermitOptions,
   Position,
   PositionManager,
   priceToClosestTick,
@@ -19,7 +19,8 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import { Wrapper } from 'components/account/styleds'
 import AddressInputPanel from 'components/AddressInputPanel'
-import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
+import AnimatedDropdown from 'components/AnimatedDropdown'
+import { ButtonError, ButtonLight, ButtonPrimary, ButtonText } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
@@ -30,6 +31,7 @@ import { ArrowWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
+import { TierOption } from 'components/TierSelector/TierOption'
 import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
 import { BAD_RECIPIENT_ADDRESSES } from 'constants/addresses'
@@ -38,6 +40,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
+import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePrevious from 'hooks/usePrevious'
 import useTheme from 'hooks/useTheme'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -48,8 +51,9 @@ import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import useCurrency from 'lib/hooks/useCurrency'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
-import { SignatureData } from 'lib/utils/erc20Permit'
+import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
+import { Review } from 'pages/AddLiquidity/Review'
 import AppBody from 'pages/AppBody'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowDown } from 'react-feather'
@@ -82,6 +86,14 @@ const StepCountersRow = styled(RowBetween)`
   column-gap: 8px;
 `
 
+const Select = styled.div`
+  align-items: flex-start;
+  display: grid;
+  grid-auto-flow: column;
+  grid-gap: 8px;
+  padding: 8px;
+`
+
 export default function LimitRange({ history }: RouteComponentProps) {
   const { account, chainId, library } = useActiveWeb3React()
 
@@ -112,18 +124,32 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const hubContract = useHubContract()
   const [, pool] = useMuffinPool(inputCurrency, outputCurrency)
   const tickSpacingMultipliers = useLimitOrderTickSpacingMultipliers(hubContract, pool)
-  const [tierId, setTierId] = useState<number | undefined>()
-  const isValidTier = useMemo(
-    () => tierId != null && (tickSpacingMultipliers?.[tierId] ?? 0) > 0,
-    [tierId, tickSpacingMultipliers]
+  const [sqrtGamma, setSqrtGamma] = useState<number | undefined>()
+  const [isEditTierDropdownOpened, setEditTierDropdownOpened] = useState(false)
+
+  const { sqrtGamma: urlSqrtGamma } = useParsedQueryString()
+
+  const [tierId, selectedTier] = useMemo(() => {
+    const res = pool?.getTierBySqrtGamma(sqrtGamma) ?? []
+    if ((res[0] ?? -1) < 0) {
+      res[0] = undefined
+    }
+    return res
+  }, [pool, sqrtGamma])
+
+  const availableSqrtGammas = useMemo(
+    () =>
+      (tickSpacingMultipliers?.map((val, i) => (val > 0 ? pool?.tiers[i].sqrtGamma : undefined)).filter(Boolean) ??
+        []) as number[],
+    [tickSpacingMultipliers, pool?.tiers]
   )
-  const defaultTierIndex = useMemo(() => {
-    const tierIndex = tickSpacingMultipliers?.findIndex((val) => (val ?? 0) > 0) ?? -1
-    return tierIndex > -1 ? tierIndex : undefined
-  }, [tickSpacingMultipliers])
-  const selectedTier =
-    ((tierId != null && pool?.tiers[tierId]) ?? (defaultTierIndex != null && pool?.tiers[defaultTierIndex])) ||
-    undefined
+
+  const isValidTier = useMemo(
+    () => sqrtGamma != null && availableSqrtGammas.includes(sqrtGamma),
+    [sqrtGamma, availableSqrtGammas]
+  )
+  const defaultSqrtGamma = availableSqrtGammas.length > 0 ? availableSqrtGammas[0] : undefined
+  const showEditTierButton = availableSqrtGammas.length > 1
 
   const tokenA = inputCurrency?.wrapped
   const tokenB = outputCurrency?.wrapped
@@ -135,11 +161,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
         : [tokenB, tokenA, outputCurrency, inputCurrency, false]
       : [undefined, undefined, undefined, undefined, undefined]
 
+  const handleOpenEditTierDropdown = useCallback(
+    () => setEditTierDropdownOpened(!isEditTierDropdownOpened),
+    [isEditTierDropdownOpened]
+  )
+
   // set default tier id
   useEffect(() => {
     if (isValidTier) return
-    setTierId(defaultTierIndex)
-  }, [defaultTierIndex, isValidTier])
+    const parsedSqrtGamma = (typeof urlSqrtGamma === 'string' && parseInt(urlSqrtGamma)) || undefined
+    setSqrtGamma(
+      parsedSqrtGamma != null && availableSqrtGammas.includes(parsedSqrtGamma) ? parsedSqrtGamma : defaultSqrtGamma
+    )
+  }, [defaultSqrtGamma, availableSqrtGammas, isValidTier, urlSqrtGamma])
 
   /*======================================================================
    *                          RATE AND PRICE
@@ -218,7 +252,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     return limits
   }, [pool?.tickSpacing, fullTickSpacing, selectedTier?.computedTick, zeroForOne])
 
-  const { areEndPriceAtLimit, isInvalidPriceRange } = useMemo(() => {
+  const { areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
       startTick != null && endTick != null
         ? {
@@ -236,8 +270,12 @@ export default function LimitRange({ history }: RouteComponentProps) {
         : zeroForOne
         ? endTick < tickLimits.LOWER
         : endTick > tickLimits.UPPER
-    return { ticks, areEndPriceAtLimit, isInvalidPriceRange }
-  }, [endTick, startTick, tickLimits.LOWER, tickLimits.UPPER, zeroForOne])
+    const tickPrices = {
+      LOWER: token0 && token1 && ticks.LOWER != null ? tickToPrice(token0, token1, ticks.LOWER) : undefined,
+      UPPER: token0 && token1 && ticks.UPPER != null ? tickToPrice(token0, token1, ticks.UPPER) : undefined,
+    }
+    return { areEndPriceAtLimit, isInvalidPriceRange, tickPrices }
+  }, [endTick, startTick, tickLimits.LOWER, tickLimits.UPPER, token0, token1, zeroForOne])
 
   const handlePriceIncrement = useCallback(() => {
     if (!pool?.tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
@@ -250,7 +288,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
         ? endTick + pool.tickSpacing * (endPriceInverted ? -1 : 1)
         : tickLimits.END
     )
-    return newPrice.toFixed(quoteToken.decimals, undefined, zeroForOne ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
+    return (
+      newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
+    )
   }, [
     pool?.tickSpacing,
     tickLimits.END,
@@ -259,7 +299,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
     endTick,
     isInvalidPriceRange,
     endPriceInverted,
-    zeroForOne,
     endPriceTypedAmount,
   ])
 
@@ -274,7 +313,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
         ? endTick - pool.tickSpacing * (endPriceInverted ? -1 : 1)
         : tickLimits.END
     )
-    return newPrice.toFixed(quoteToken.decimals, undefined, zeroForOne ? Rounding.ROUND_UP : Rounding.ROUND_DOWN) ?? ''
+    return (
+      newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
+    )
   }, [
     pool?.tickSpacing,
     tickLimits.END,
@@ -283,7 +324,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
     endTick,
     isInvalidPriceRange,
     endPriceInverted,
-    zeroForOne,
     endPriceTypedAmount,
   ])
 
@@ -528,7 +568,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
     setDismissTokenWarning(true)
-    history.push('/limit-range/')
+    history.push('/limit-range')
   }, [history])
 
   /*=====================================================================
@@ -540,7 +580,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     parsedAmounts[Field.INPUT]?.greaterThan(0) && parsedAmounts[Field.OUTPUT]?.greaterThan(0)
   )
   const isInvalidPrice = !endPriceTypedAmount || !endPrice0
-  const manager = useManagerContract()
+  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
 
   const tryInternalAccount = useIsUsingInternalAccount()
   const internalBalance = useCurrencyBalance(account ?? undefined, tokenA, BalanceSource.INTERNAL_ACCOUNT)
@@ -556,7 +596,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
   const onAdd = useCallback(async () => {
     if (!chainId || !library || !account) return
-    if (!inputCurrency || !outputCurrency || !manager || !position || !transactionDeadline) return
+    if (!inputCurrency || !outputCurrency || !managerAddress || !position || !transactionDeadline) return
 
     const useNative = inputCurrency.isNative ? inputCurrency : outputCurrency.isNative ? outputCurrency : undefined
     const useAccount = tryInternalAccount && (internalBalance?.greaterThan(0) ?? false)
@@ -567,15 +607,16 @@ export default function LimitRange({ history }: RouteComponentProps) {
       useAccount,
       slippageTolerance: ZERO_PERCENT,
       useNative,
-      token0Permit: (signatureData as PermitOptions) ?? undefined,
+      token0Permit: signatureDataToPermitOptions(zeroForOne ? signatureData : undefined),
+      token1Permit: signatureDataToPermitOptions(zeroForOne ? undefined : signatureData),
     })
 
-    let txn = { to: manager.address, data: calldata, value }
+    let txn = { to: managerAddress as string, data: calldata, value }
 
     if (argentWalletContract) {
       const batch = [
         ...(amountToApprove && amountToApprove.currency.isToken
-          ? [approveAmountCalldata(amountToApprove, manager.address)]
+          ? [approveAmountCalldata(amountToApprove, managerAddress)]
           : []),
         { ...txn },
       ]
@@ -590,52 +631,49 @@ export default function LimitRange({ history }: RouteComponentProps) {
       setIsAttemptingTxn(false)
 
       addTransaction(response, {
-        type: TransactionType.ADD_LIQUIDITY_MUFFIN,
-        createPool: false,
-        baseCurrencyId: currencyId(inputCurrency),
-        quoteCurrencyId: currencyId(outputCurrency),
-        tierId: position.tierId,
+        type: TransactionType.ADD_LIMIT_RANGE_ORDER,
+        inputCurrencyId: currencyId(inputCurrency),
+        outputCurrencyId: currencyId(outputCurrency),
         sqrtGamma: position.poolTier.sqrtGamma,
-        expectedAmountBaseRaw: parsedAmounts[Field.INPUT]?.quotient?.toString() ?? '0',
-        expectedAmountQuoteRaw: '0',
+        expectedInputAmountRaw: parsedAmounts[Field.INPUT]?.quotient?.toString() ?? '0',
+        expectedOutputAmountRaw: parsedAmounts[Field.OUTPUT]?.quotient?.toString() ?? '0',
       })
       setTxHash(response.hash)
 
       ReactGA.event({
-        category: 'Liquidity',
+        category: 'Limit Range',
         action: 'Add',
         label: [inputCurrency?.symbol, outputCurrency?.symbol].join('/'),
       })
-
-      const receipt = await response.wait()
-      console.log({ receipt, response })
     } catch (error) {
       setIsAttemptingTxn(false)
       console.error('Failed to send transaction', error)
     }
   }, [
-    account,
-    addTransaction,
-    amountToApprove,
-    argentWalletContract,
     chainId,
-    inputCurrency,
-    internalBalance,
     library,
-    manager,
+    account,
+    inputCurrency,
     outputCurrency,
-    parsedAmounts,
+    managerAddress,
     position,
-    signatureData,
     transactionDeadline,
     tryInternalAccount,
+    internalBalance,
     recipient,
+    zeroForOne,
+    signatureData,
+    argentWalletContract,
+    amountToApprove,
+    addTransaction,
+    parsedAmounts,
   ])
 
   const handleDismissConfirmation = useCallback(() => {
     setShowTxModalConfirm(false)
     // if there was a tx hash, we want to clear the input
     if (txHash) {
+      setEndPriceTypedAmount('')
       onUserInput(Field.INPUT, '')
       history.push('/limit-range') // jump to position listing page after creating
     }
@@ -747,7 +785,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
           ) : (
             <ButtonError
               onClick={() => {
-                !isExpertMode ? onAdd() : setShowTxModalConfirm(true)
+                isExpertMode ? onAdd() : setShowTxModalConfirm(true)
               }}
               width="100%"
               id="swap-button"
@@ -797,34 +835,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
         <ConfirmationModalContent
           title={<Trans>Limit Range Order</Trans>}
           onDismiss={handleDismissConfirmation}
-          topContent={() => {
-            // if (!pool) return null
-            // const tickLimits = {
-            //   LOWER: nearestUsableTick(MIN_TICK, pool.tickSpacing),
-            //   UPPER: nearestUsableTick(MAX_TICK, pool.tickSpacing),
-            // }
-            // const ticks = {
-            //   LOWER: startTick != null && endTick != null && Math.min(startTick, endTick),
-            //   UPPER: startTick != null && endTick != null && Math.max(startTick, endTick),
-            // }
-            // return (
-            //   <Review
-            //     parsedAmounts={{
-            //       CURRENCY_A: parsedAmounts[Field.INPUT],
-            //       CURRENCY_B: parsedAmounts[Field.OUTPUT],
-            //     }}
-            //     position={position}
-            //     priceLower={priceLower}
-            //     priceUpper={priceUpper}
-            //     outOfRange
-            //     ticksAtLimit={{
-            //       LOWER: tickLimits.LOWER != null && ticks.LOWER != null && ticks.LOWER <= tickLimits.LOWER,
-            //       UPPER: tickLimits.UPPER != null && ticks.UPPER != null && ticks.UPPER >= tickLimits.UPPER,
-            //     }}
-            //   />
-            // )
-            return null
-          }}
+          topContent={() => (
+            <Review
+              parsedAmounts={{
+                CURRENCY_A: parsedAmounts[Field.INPUT],
+                CURRENCY_B: parsedAmounts[Field.OUTPUT],
+              }}
+              position={position}
+              priceLower={tickPrices.LOWER}
+              priceUpper={tickPrices.UPPER}
+              outOfRange
+              ticksAtLimit={areEndPriceAtLimit}
+            />
+          )}
           bottomContent={() => (
             <ButtonPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
               <Text fontWeight={500} fontSize={20}>
@@ -865,18 +888,41 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
           <AutoColumn gap="md">
             {makeInputFields()}
-            <RowBetween padding="0 8px">
-              <RowFixed>
-                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  <Trans>Position&apos;s fee tier</Trans>
-                </ThemedText.Black>
-              </RowFixed>
-              <RowFixed>
-                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  {selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}
-                </ThemedText.Black>
-              </RowFixed>
-            </RowBetween>
+            <div>
+              <RowBetween padding="0 8px">
+                <RowFixed>
+                  <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
+                    <Trans>Position&apos;s fee tier</Trans>
+                  </ThemedText.Black>
+                </RowFixed>
+                <RowFixed>
+                  <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
+                    {selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}
+                  </ThemedText.Black>
+                  {showEditTierButton && (
+                    <ButtonText marginLeft="4px" onClick={handleOpenEditTierDropdown}>
+                      <Text as="span" fontWeight={400} fontSize={14}>
+                        {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
+                      </Text>
+                    </ButtonText>
+                  )}
+                </RowFixed>
+              </RowBetween>
+              <AnimatedDropdown open={isEditTierDropdownOpened}>
+                <Select>
+                  {availableSqrtGammas.map((value, i) => (
+                    <TierOption
+                      key={value}
+                      tierId={i}
+                      active={value === sqrtGamma}
+                      activeColor={theme.primary1}
+                      sqrtGamma={value}
+                      handleTierSelect={setSqrtGamma}
+                    />
+                  ))}
+                </Select>
+              </AnimatedDropdown>
+            </div>
             <RowBetween padding="0 8px">
               <RowFixed>
                 <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
@@ -885,19 +931,21 @@ export default function LimitRange({ history }: RouteComponentProps) {
               </RowFixed>
               <RowFixed>
                 <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  {averagePrice0 && JSBI.greaterThan(averagePrice0.denominator, ZERO) ? (
+                  {averagePrice0 &&
+                  !JSBI.equal(averagePrice0.denominator, ZERO) &&
+                  !JSBI.equal(averagePrice0.numerator, ZERO) ? (
                     <Trans>
                       {(endPriceInverted ? averagePrice0.invert() : averagePrice0).toSignificant(6)}{' '}
                       {quoteCurrency?.symbol} per {baseCurrency?.symbol}
                     </Trans>
                   ) : (
-                    'N/A'
+                    <Trans>N/A</Trans>
                   )}
                 </ThemedText.Black>
               </RowFixed>
             </RowBetween>
 
-            {recipient !== null ? (
+            {recipient !== null && (
               <>
                 <AutoRow justify="space-between">
                   <ArrowWrapper clickable={false}>
@@ -909,7 +957,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
                 </AutoRow>
                 <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
               </>
-            ) : null}
+            )}
 
             {makeButton()}
           </AutoColumn>
