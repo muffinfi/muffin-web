@@ -910,10 +910,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
               </RowBetween>
               <AnimatedDropdown open={isEditTierDropdownOpened}>
                 <Select>
-                  {availableSqrtGammas.map((value, i) => (
+                  {availableSqrtGammas.map((value) => (
                     <TierOption
                       key={value}
-                      tierId={i}
                       active={value === sqrtGamma}
                       activeColor={theme.primary1}
                       sqrtGamma={value}

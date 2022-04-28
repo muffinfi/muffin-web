@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { useMuffinTierDistribution } from '@muffinfi/hooks/useTierDistribution'
+import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
 import { sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
 import { ButtonRadioChecked } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -31,11 +31,11 @@ export function TierOption({
   distributions,
   handleTierSelect,
 }: {
-  tierId: number
+  tierId?: number
   sqrtGamma: number
   active: boolean
   activeColor: string
-  distributions?: ReturnType<typeof useMuffinTierDistribution>['distributions']
+  distributions?: PercentagesByTierId
   handleTierSelect: (sqrtGamma: number) => void
 }) {
   const feePercent = useMemo(() => sqrtGammaToFeePercent(sqrtGamma), [sqrtGamma])
@@ -53,7 +53,7 @@ export function TierOption({
           </ThemedText.Main>
         </AutoColumn>
 
-        {distributions && <TierPercentageBadge distributions={distributions} tierId={tierId} />}
+        {distributions && tierId != null && <TierPercentageBadge distributions={distributions} tierId={tierId} />}
       </AutoColumn>
     </ButtonRadioChecked>
   )

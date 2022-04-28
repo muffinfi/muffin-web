@@ -76,37 +76,23 @@ export const api = createApi({
       }),
     }),
     feeTierDistribution: builder.query({
-      query: ({ token0, token1 }) => ({
+      query: ({ poolId }) => ({
         document: gql`
-          query feeTierDistribution($token0: String!, $token1: String!) {
+          query feeTierDistribution($poolId: String!) {
             _meta {
               block {
                 number
               }
             }
-            asToken0: tiers(
-              orderBy: totalValueLockedToken0
-              orderDirection: desc
-              where: { token0: $token0, token1: $token1 }
-            ) {
-              feeTier
-              totalValueLockedToken0
-              totalValueLockedToken1
-            }
-            asToken1: tiers(
-              orderBy: totalValueLockedToken0
-              orderDirection: desc
-              where: { token0: $token1, token1: $token0 }
-            ) {
-              feeTier
+            tiers(orderBy: tierId, orderDirection: asc, where: { poolId: $poolId }) {
+              tierId
               totalValueLockedToken0
               totalValueLockedToken1
             }
           }
         `,
         variables: {
-          token0,
-          token1,
+          poolId,
         },
       }),
     }),
