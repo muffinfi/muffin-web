@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Minus, Plus } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'

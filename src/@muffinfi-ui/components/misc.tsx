@@ -1,5 +1,14 @@
 import styled, { css } from 'styled-components/macro'
-import { Column, Row, Text } from './misc'
+import { handleClickExternalLink } from 'utils/handleClickExternalLink'
+import { Anchor, Column, Row, Text } from '../core'
+
+export const ExternalLink = styled(Anchor).attrs({
+  target: '_blank',
+  rel: 'noopener noreferrer',
+  onClick: handleClickExternalLink,
+})``
+
+/////////
 
 export const Container = styled.div<{ maxWidth: string }>`
   max-width: ${({ maxWidth }) => maxWidth};

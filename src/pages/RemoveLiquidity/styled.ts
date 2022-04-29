@@ -1,4 +1,4 @@
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import styled from 'styled-components/macro'
 
 export const ResponsiveHeaderText = styled(M.Text)`

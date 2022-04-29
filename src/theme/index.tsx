@@ -1,4 +1,4 @@
-import { GlobalStyle } from 'components/@M/global'
+import { GlobalStyle } from '@muffinfi-ui/style'
 import React, { useMemo } from 'react'
 import { Text, TextProps as TextPropsOriginal } from 'rebass'
 import styled, {
@@ -7,7 +7,6 @@ import styled, {
   DefaultTheme,
   ThemeProvider as StyledComponentsThemeProvider,
 } from 'styled-components/macro'
-
 import { useIsDarkMode } from '../state/user/hooks'
 import { Colors } from './styled'
 
@@ -60,8 +59,8 @@ function colors(darkMode: boolean): Colors {
     black,
 
     // text
-    text1: darkMode ? '#FFFFFF' : '#000000',
-    text2: darkMode ? '#C3C5CB' : '#606060',
+    text1: darkMode ? '#FFFFFF' : '#111111', // '#000000',
+    text2: darkMode ? '#C3C5CB' : '#717171', // '#606060',
     text3: darkMode ? '#8F96AC' : '#909090',
     text4: darkMode ? '#B2B9D2' : '#C0C0C0',
     text5: darkMode ? '#2C2F36' : '#EEEEEE', // not using
@@ -142,54 +141,6 @@ function theme(darkMode: boolean): DefaultTheme {
   }
 }
 
-/**
- * Inject the theme object into css variables
- */
-const ThemeCssVariables = createGlobalStyle<{ theme: DefaultTheme }>`
-  :root {
-    ${({ theme }) => css`
-      --text1: ${theme.text1};
-      --text2: ${theme.text2};
-      --text3: ${theme.text3};
-      --text4: ${theme.text4};
-      --text5: ${theme.text5};
-      --bg0: ${theme.bg0};
-      --bg1: ${theme.bg1};
-      --bg2: ${theme.bg2};
-      --bg3: ${theme.bg3};
-      --bg4: ${theme.bg4};
-      --bg5: ${theme.bg5};
-      --bg6: ${theme.bg6};
-      --modalBG: ${theme.modalBG};
-      --advancedBG: ${theme.advancedBG};
-      --primary1: ${theme.primary1};
-      --primary2: ${theme.primary2};
-      --primary3: ${theme.primary3};
-      --primary4: ${theme.primary4};
-      --primary5: ${theme.primary5};
-      --primaryText1: ${theme.primaryText1};
-      --secondary1: ${theme.secondary1};
-      --secondary2: ${theme.secondary2};
-      --secondary3: ${theme.secondary3};
-      --red1: ${theme.red1};
-      --red2: ${theme.red2};
-      --red3: ${theme.red3};
-      --green1: ${theme.green1};
-      --yellow1: ${theme.yellow1};
-      --yellow2: ${theme.yellow2};
-      --yellow3: ${theme.yellow3};
-      --blue1: ${theme.blue1};
-      --blue2: ${theme.blue2};
-      --error: ${theme.error};
-      --success: ${theme.success};
-      --warning: ${theme.warning};
-      --fw-bold: 600;
-      --fw-semibold: 500;
-      --fw-regular: 400;
-    `}
-  }
-`
-
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const darkMode = useIsDarkMode()
 
@@ -197,8 +148,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   return (
     <StyledComponentsThemeProvider theme={themeObject}>
-      <ThemeCssVariables theme={themeObject} />
-      <GlobalStyle />
+      <GlobalStyle darkMode={darkMode} />
       {children}
     </StyledComponentsThemeProvider>
   )

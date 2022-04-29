@@ -78,7 +78,7 @@ const MenuFlyout = styled.div<{ flyoutAlignment?: FlyoutAlignment }>`
   padding: 0.5rem;
 
   border-radius: 16px;
-  background-color: var(--bg0);
+  background-color: var(--layer1);
   /* prettier-ignore */
   box-shadow:
     0px 0px 1px rgba(0, 0, 0, 0.01),
@@ -117,7 +117,7 @@ const MenuItemInternalLink = styled(MenuItem).attrs({ as: Link })<{ to: any }>``
 
 const MenuSeperator = styled.div`
   margin: 0.5rem;
-  border-bottom: 1px solid var(--bg2);
+  border-bottom: 1px solid var(--borderColor);
 `
 
 const NavMenuItemList = styled.div`

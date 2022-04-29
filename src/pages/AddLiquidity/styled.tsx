@@ -1,4 +1,4 @@
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import { LoadingRows as BaseLoadingRows } from 'components/Loader/styled'
 import Input from 'components/NumericalInput'

@@ -1,4 +1,4 @@
-import { Row } from 'components/@M'
+import { Row } from '@muffinfi-ui'
 import styled from 'styled-components/macro'
 
 const HeaderButton = styled(Row)`

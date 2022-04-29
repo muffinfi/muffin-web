@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency } from '@uniswap/sdk-core'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'

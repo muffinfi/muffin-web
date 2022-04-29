@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import { RowBetween } from 'components/Row'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { CHAIN_IDS_TO_NAMES, SupportedChainId } from 'constants/chains'

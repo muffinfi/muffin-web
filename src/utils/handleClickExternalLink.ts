@@ -1,9 +1,7 @@
 import ReactGA from 'react-ga'
-import styled from 'styled-components/macro'
 import { anonymizeLink } from 'utils/anonymizeLink'
-import { Anchor } from './misc'
 
-function handleClickExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+export function handleClickExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
   const { target, href } = event.currentTarget
 
   const anonymizedHref = anonymizeLink(href)
@@ -21,11 +19,3 @@ function handleClickExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
     })
   }
 }
-
-const ExternalLink = styled(Anchor).attrs({
-  target: '_blank',
-  rel: 'noopener noreferrer',
-  onClick: handleClickExternalLink,
-})``
-
-export default ExternalLink

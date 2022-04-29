@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'

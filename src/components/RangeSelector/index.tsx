@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { Bound } from 'state/mint/v3/actions'
 

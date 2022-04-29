@@ -13,7 +13,7 @@ export const BodyWrapper = styled.main<BodyWrapperProps>`
 
   padding: ${({ padding }) => padding};
   border-radius: 24px;
-  background: var(--bg0);
+  background: var(--layer1);
   /* prettier-ignore */
   box-shadow:
     0px 0px 1px rgba(0, 0, 0, 0.01),

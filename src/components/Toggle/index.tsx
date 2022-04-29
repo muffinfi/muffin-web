@@ -22,7 +22,7 @@ const inactiveMixin = css`
 
 const ToggleElement = styled.span<{ isActive?: boolean; isOnSwitch?: boolean }>`
   font-size: 14px;
-  font-weight: var(--fw-semibold);
+  font-weight: 500;
   padding: 0.25rem 0.6rem;
   border-radius: 9px;
 

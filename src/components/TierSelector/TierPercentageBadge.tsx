@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
-
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import Badge from 'components/Badge'
 
 export function TierPercentageBadge({

@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { Trans } from '@lingui/macro'
 import { Connector } from '@web3-react/types'
-import * as M from 'components/@M'
+import * as M from '@muffinfi-ui'
 import { darken } from 'polished'
 import { useMemo } from 'react'
 import { Activity } from 'react-feather'

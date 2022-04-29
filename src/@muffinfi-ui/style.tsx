@@ -13,7 +13,7 @@ const lightThemeMixin = css`
   --borderColor1: ${darken(0.12, '#ececec')};
 
   /* text color */
-  --text1: #171717;
+  --text1: #111;
   --text2: #717171;
 
   /* button color */
@@ -30,7 +30,7 @@ const lightThemeMixin = css`
   --tertiary0: #ececec;
   --tertiary1: ${darken(0.04, '#ececec')};
   --tertiary2: ${darken(0.08, '#ececec')};
-  --tertiary-text: #171717;
+  --tertiary-text: #111;
 
   --disabled: #ececec;
   --disabled-text: #aaa;
@@ -40,6 +40,10 @@ const lightThemeMixin = css`
 
   --error-bg: #da2d2b;
   --error-text: #fff;
+
+  /* color */
+  --green: #007d35;
+  --success: #007d35;
 `
 
 const darkThemeMixin = css`
@@ -81,10 +85,17 @@ const darkThemeMixin = css`
 
   --error-bg: #ff4343;
   --error-text: #fff;
+
+  /* color */
+  --green: #27ae60;
+  --success: #27ae60;
 `
 
-export const GlobalStyle = createGlobalStyle`
-  /* reset */
+// FIXME: put reset css to index.html directly
+
+export const GlobalStyle = createGlobalStyle<{ darkMode: boolean }>`
+  /* ========== reset ========== */
+
   html {
     font-size: 16px;
     background-color: var(--bg);
@@ -137,8 +148,10 @@ export const GlobalStyle = createGlobalStyle`
     font-weight: inherit;
   }
 
+  /* ========== css variables ========== */
+
   :root {
-    ${({ theme }) => (theme.darkMode ? darkThemeMixin : lightThemeMixin)}
+    ${({ darkMode }) => (darkMode ? darkThemeMixin : lightThemeMixin)}
 
     /* font size */
     --text-xs: 0.75rem; /*    12px */
