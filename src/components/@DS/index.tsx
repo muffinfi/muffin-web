@@ -1,5 +1,0 @@
-export * from './Button'
-export * from './misc'
-export { default as PoolTierName } from './PoolTierName'
-export { default as CurrencyName } from './CurrencyName'
-export { default as TwoColumn } from './TwoColumn'
