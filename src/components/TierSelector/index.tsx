@@ -1,4 +1,4 @@
-import { useMuffinTierDistribution } from '@muffinfi/hooks/useTierDistribution'
+import { PercentagesByTierId, useMuffinTierDistribution } from '@muffinfi/hooks/useTierDistribution'
 import { Pool, SQRT_GAMMAS_FIRST_TIER } from '@muffinfi/muffin-v1-sdk'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTierColors from 'hooks/useTierColors'
@@ -14,15 +14,22 @@ const Select = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 `
 
+const DEFAULT_DISTRIBUTIONS = SQRT_GAMMAS_FIRST_TIER.reduce((memo, _, i) => {
+  memo[i] = undefined
+  return memo
+}, {} as PercentagesByTierId)
+
 export default function TierSelector({
   disabled = false,
   pool, // real pool, not mock pool
   sqrtGammaSelected,
   handleTierSelect,
+  showNotCreated,
 }: {
   disabled: boolean | undefined
   pool: Pool | undefined
   sqrtGammaSelected: number | undefined
+  showNotCreated?: boolean
   handleTierSelect: (sqrtGamma: number) => void
 }) {
   const { chainId } = useActiveWeb3React()
@@ -30,8 +37,8 @@ export default function TierSelector({
 
   // select options
   const sqrtGammas = useMemo(() => {
-    return pool?.tiers.map((tier) => tier.sqrtGamma) ?? SQRT_GAMMAS_FIRST_TIER
-  }, [pool])
+    return showNotCreated ? pool?.tiers.map((tier) => tier.sqrtGamma) ?? SQRT_GAMMAS_FIRST_TIER : []
+  }, [showNotCreated, pool])
 
   // get selected tier id by finding the first tier that has the desired sqrt gamma
   const tierIdSelected = useMemo(() => {
@@ -52,7 +59,7 @@ export default function TierSelector({
               active={i === tierIdSelected}
               activeColor={tierColors[i % tierColors.length]}
               sqrtGamma={sqrtGamma}
-              distributions={distributions}
+              distributions={distributions ?? (showNotCreated ? DEFAULT_DISTRIBUTIONS : undefined)}
               handleTierSelect={handleTierSelect}
               key={i}
             />

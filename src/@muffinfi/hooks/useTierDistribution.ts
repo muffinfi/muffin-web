@@ -32,7 +32,7 @@ export function useMuffinTierDistribution(pool: Pool | undefined) {
   const { tiers, _meta } = (data as FeeTierDistributionQuery) ?? {}
 
   return useMemo(() => {
-    if (!latestBlock || !_meta || !tiers) {
+    if (!latestBlock || !_meta || !tiers || !pool) {
       return {
         isLoading,
         isFetching,
@@ -86,5 +86,5 @@ export function useMuffinTierDistribution(pool: Pool | undefined) {
       largestTierId,
       distributions,
     }
-  }, [latestBlock, _meta, tiers, isLoading, isFetching, isUninitialized, isError])
+  }, [latestBlock, _meta, tiers, pool, isLoading, isFetching, isUninitialized, isError])
 }

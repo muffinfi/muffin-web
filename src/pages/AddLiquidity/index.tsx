@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPositionByTokenId } from '@muffinfi/hooks/useDerivedPosition'
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
@@ -23,7 +24,6 @@ import {
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
-import * as M from '@muffinfi-ui'
 import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
@@ -723,6 +723,7 @@ export default function AddLiquidity({
               disabled={!quoteCurrency || !baseCurrency}
               pool={pool ?? undefined}
               sqrtGammaSelected={sqrtGamma}
+              showNotCreated
               handleTierSelect={handleTierSelect}
             />
           </M.Column>
