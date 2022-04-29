@@ -1,52 +1,40 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import Card, { OutlineCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
-import Row, { RowBetween, RowFixed } from 'components/Row'
 import { MouseoverTooltipContent } from 'components/Tooltip'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { darken } from 'polished'
-import { useState } from 'react'
-import { ChevronDown, Info } from 'react-feather'
-import styled, { keyframes, useTheme } from 'styled-components/macro'
-import { HideSmall, ThemedText } from 'theme'
-import { AdvancedSwapDetails } from './AdvancedSwapDetails'
+import { memo, useState } from 'react'
+import { ChevronDown, Info as InfoIcon } from 'react-feather'
+import styled, { keyframes } from 'styled-components/macro'
+import { HideSmall } from 'theme'
+import AdvancedSwapDetails from './AdvancedSwapDetails'
 import GasEstimateBadge from './GasEstimateBadge'
 import { ResponsiveTooltipContainer } from './styleds'
 import SwapRoute from './SwapRoute'
 import TradePrice from './TradePrice'
 
-const Wrapper = styled(Row)`
-  width: 100%;
-  justify-content: center;
-`
-
-const StyledInfoIcon = styled(Info)`
-  height: 16px;
-  width: 16px;
-  margin-right: 4px;
-  color: ${({ theme }) => theme.text3};
-`
-
 const StyledCard = styled(OutlineCard)`
-  padding: 12px;
-  border: 1px solid ${({ theme }) => theme.bg2};
+  padding: 14px;
+  border: 1px solid var(--borderColor);
 `
 
-const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
+const StyledHeaderRow = styled(M.RowBetween)<{ disabled: boolean; open: boolean }>`
+  min-height: 44px;
   padding: 4px 8px;
   border-radius: 12px;
-  background-color: ${({ open, theme }) => (open ? theme.bg1 : 'transparent')};
-  align-items: center;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
-  min-height: 40px;
 
+  transition: border-color 150ms, background-color 150ms;
+  border: 1px solid ${({ open }) => (open ? 'var(--layer2)' : 'var(--borderColor)')};
+  background-color: ${({ open }) => (open ? 'var(--layer2)' : 'transparent')};
   :hover {
-    background-color: ${({ theme, disabled }) => (disabled ? theme.bg1 : darken(0.015, theme.bg1))};
+    border: 1px solid ${({ open }) => (open ? 'var(--layer2)' : 'var(--borderColor1)')};
+    background-color: ${({ open }) => (open ? 'var(--layer3)' : 'transparent')};
   }
 `
 
@@ -116,7 +104,7 @@ interface SwapDetailsInlineProps {
   allowedSlippage: Percent
 }
 
-export default function SwapDetailsDropdown({
+export default memo(function SwapDetailsDropdown({
   trade,
   syncing,
   loading,
@@ -124,15 +112,14 @@ export default function SwapDetailsDropdown({
   setShowInverted,
   allowedSlippage,
 }: SwapDetailsInlineProps) {
-  const theme = useTheme()
   const { chainId } = useActiveWeb3React()
   const [showDetails, setShowDetails] = useState(false)
 
   return (
-    <Wrapper>
-      <AutoColumn gap={'8px'} style={{ width: '100%', marginBottom: '-8px' }}>
+    <>
+      <M.Column stretch gap="16px" style={{ marginBottom: -16 }}>
         <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={!trade} open={showDetails}>
-          <RowFixed style={{ position: 'relative' }}>
+          <M.Row gap="4px" style={{ position: 'relative' }}>
             {loading || syncing ? (
               <StyledPolling>
                 <StyledPollingDot>
@@ -153,7 +140,9 @@ export default function SwapDetailsDropdown({
                   placement="bottom"
                   disableHover={showDetails}
                 >
-                  <StyledInfoIcon color={trade ? theme.text3 : theme.bg3} />
+                  <M.TextContents size="sm" color="text2">
+                    <InfoIcon size="1em" />
+                  </M.TextContents>
                 </MouseoverTooltipContent>
               </HideSmall>
             )}
@@ -166,12 +155,12 @@ export default function SwapDetailsDropdown({
                 />
               </LoadingOpacityContainer>
             ) : loading || syncing ? (
-              <ThemedText.Main fontSize={14}>
+              <M.Text size="sm">
                 <Trans>Fetching best price...</Trans>
-              </ThemedText.Main>
+              </M.Text>
             ) : null}
-          </RowFixed>
-          <RowFixed>
+          </M.Row>
+          <M.Row>
             {!trade?.gasUseEstimateUSD ||
             showDetails ||
             !chainId ||
@@ -183,20 +172,23 @@ export default function SwapDetailsDropdown({
                 disableHover={showDetails}
               />
             )}
-            <RotatingArrow stroke={trade ? theme.text3 : theme.bg3} open={Boolean(trade && showDetails)} />
-          </RowFixed>
+            <M.TextContents color="text2">
+              <RotatingArrow open={Boolean(trade && showDetails)} size="20px" />
+            </M.TextContents>
+          </M.Row>
         </StyledHeaderRow>
+
         <AnimatedDropdown open={showDetails}>
-          <AutoColumn gap={'8px'} style={{ padding: '0', paddingBottom: '8px' }}>
+          <M.Column stretch gap="16px" style={{ paddingBottom: 16 }}>
             {trade ? (
               <StyledCard>
                 <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} syncing={syncing} />
               </StyledCard>
             ) : null}
             {trade ? <SwapRoute trade={trade} syncing={syncing} /> : null}
-          </AutoColumn>
+          </M.Column>
         </AnimatedDropdown>
-      </AutoColumn>
-    </Wrapper>
+      </M.Column>
+    </>
   )
-}
+})

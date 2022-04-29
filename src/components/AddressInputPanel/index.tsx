@@ -1,56 +1,46 @@
-import { Trans } from '@lingui/macro'
 // eslint-disable-next-line no-restricted-imports
-import { t } from '@lingui/macro'
+import { t, Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { ReactNode, useCallback, useContext } from 'react'
-import styled, { ThemeContext } from 'styled-components/macro'
-
+import { ReactNode, useCallback } from 'react'
+import styled from 'styled-components/macro'
 import useENS from '../../hooks/useENS'
-import { ExternalLink, ThemedText } from '../../theme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
-import { AutoColumn } from '../Column'
-import { RowBetween } from '../Row'
 
 const InputPanel = styled.div`
-  ${({ theme }) => theme.flexColumnNoWrap}
   position: relative;
-  border-radius: 1.25rem;
-  background-color: ${({ theme }) => theme.bg1};
   z-index: 1;
   width: 100%;
 `
 
 const ContainerRow = styled.div<{ error: boolean }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 1.25rem;
-  border: 1px solid ${({ error, theme }) => (error ? theme.red1 : theme.bg2)};
-  transition: border-color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')},
-    color 500ms ${({ error }) => (error ? 'step-end' : 'step-start')};
-  background-color: ${({ theme }) => theme.bg1};
-`
-
-const InputContainer = styled.div`
-  flex: 1;
   padding: 1rem;
+
+  border-radius: 16px;
+  border: 1px solid ${({ error }) => (error ? 'var(--error-bg)' : 'var(--layer2)')};
+  background-color: var(--layer2);
+
+  /* prettier-ignore */
+  transition:
+    border-color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')},
+    color 500ms ${({ error }) => (error ? 'step-end' : 'step-start')};
 `
 
 const Input = styled.input<{ error?: boolean }>`
-  font-size: 1.25rem;
+  font-size: 16px;
   outline: none;
   border: none;
   flex: 1 1 auto;
   width: 0;
-  background-color: ${({ theme }) => theme.bg1};
+  background-color: var(--layer2);
   transition: color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')};
-  color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
+  color: ${({ error }) => (error ? 'var(--error-bg)' : 'var(--text1)')};
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
   width: 100%;
   ::placeholder {
-    color: ${({ theme }) => theme.text4};
+    color: var(--placeholder-text);
   }
   padding: 0px;
   -webkit-appearance: textfield;
@@ -65,7 +55,7 @@ const Input = styled.input<{ error?: boolean }>`
   }
 
   ::placeholder {
-    color: ${({ theme }) => theme.text4};
+    color: var(--placeholder-text);
   }
 `
 
@@ -87,7 +77,6 @@ export default function AddressInputPanel({
   onChange: (value: string) => void
 }) {
   const { chainId } = useActiveWeb3React()
-  const theme = useContext(ThemeContext)
 
   const { address, loading, name } = useENS(value)
 
@@ -105,36 +94,35 @@ export default function AddressInputPanel({
   return (
     <InputPanel id={id}>
       <ContainerRow error={error}>
-        <InputContainer>
-          <AutoColumn gap="md">
-            <RowBetween>
-              <ThemedText.Black color={theme.text2} fontWeight={500} fontSize={14}>
-                {label ?? <Trans>Recipient</Trans>}
-              </ThemedText.Black>
-              {address && chainId && (
-                <ExternalLink
-                  href={getExplorerLink(chainId, name ?? address, ExplorerDataType.ADDRESS)}
-                  style={{ fontSize: '14px' }}
-                >
-                  <Trans>(View on Explorer)</Trans>
-                </ExternalLink>
-              )}
-            </RowBetween>
-            <Input
-              className={className}
-              type="text"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck="false"
-              placeholder={placeholder ?? t`Wallet Address or ENS name`}
-              error={error}
-              pattern="^(0x[a-fA-F0-9]{40})$"
-              onChange={handleInput}
-              value={value}
-            />
-          </AutoColumn>
-        </InputContainer>
+        <M.Column stretch gap="12px">
+          <M.RowBetween>
+            <M.Text color="text2" size="sm">
+              {label ?? <Trans>Recipient</Trans>}
+            </M.Text>
+            {address && chainId && (
+              <M.ExternalLink
+                href={getExplorerLink(chainId, name ?? address, ExplorerDataType.ADDRESS)}
+                size="xs"
+                color="primary0"
+              >
+                <Trans>View on Explorer</Trans>
+              </M.ExternalLink>
+            )}
+          </M.RowBetween>
+          <Input
+            className={className}
+            type="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            placeholder={placeholder ?? t`Wallet Address or ENS name`}
+            error={error}
+            pattern="^(0x[a-fA-F0-9]{40})$"
+            onChange={handleInput}
+            value={value}
+          />
+        </M.Column>
       </ContainerRow>
     </InputPanel>
   )

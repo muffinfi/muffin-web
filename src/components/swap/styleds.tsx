@@ -1,4 +1,3 @@
-import { loadingOpacityMixin } from 'components/Loader/styled'
 import { TooltipContainer } from 'components/Tooltip'
 import { transparentize } from 'polished'
 import { ReactNode } from 'react'
@@ -6,37 +5,28 @@ import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { css } from 'styled-components/macro'
 
-import { ThemedText } from '../../theme'
-import { AutoColumn } from '../Column'
-import TradePrice from './TradePrice'
-
-export const Wrapper = styled.div`
-  position: relative;
-  padding: 8px;
-`
-
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   padding: 4px;
   border-radius: 12px;
   height: 32px;
   width: 32px;
+
   position: relative;
-  margin-top: -14px;
-  margin-bottom: -14px;
-  left: calc(50% - 16px);
-  /* transform: rotate(90deg); */
-  background-color: ${({ theme }) => theme.bg1};
-  border: 4px solid ${({ theme }) => theme.bg0};
   z-index: 2;
+  margin-top: -10px;
+  margin-bottom: -10px;
+  align-self: center;
+
+  background-color: var(--layer2);
+  border: 4px solid var(--layer1);
   ${({ clickable }) =>
-    clickable
-      ? css`
-          :hover {
-            cursor: pointer;
-            opacity: 0.8;
-          }
-        `
-      : null}
+    clickable &&
+    css`
+      :hover {
+        cursor: pointer;
+        opacity: 0.8;
+      }
+    `}
 `
 
 export const SectionBreak = styled.div`
@@ -54,13 +44,6 @@ export const ErrorText = styled(Text)<{ severity?: 0 | 1 | 2 | 3 | 4 }>`
       : severity === 1
       ? theme.text1
       : theme.text2};
-`
-
-export const TruncatedText = styled(Text)`
-  text-overflow: ellipsis;
-  max-width: 220px;
-  overflow: hidden;
-  text-align: right;
 `
 
 // styles
@@ -125,17 +108,11 @@ export function SwapCallbackError({ error }: { error: ReactNode }) {
   )
 }
 
-export const SwapShowAcceptChanges = styled(AutoColumn)`
-  background-color: ${({ theme }) => transparentize(0.95, theme.primary3)};
-  color: ${({ theme }) => theme.primaryText1};
+export const SwapShowAcceptChanges = styled.div`
+  background-color: var(--secondary0);
+  color: var(--secondary-text);
   padding: 0.5rem;
   border-radius: 12px;
-  margin-top: 8px;
-`
-
-export const TransactionDetailsLabel = styled(ThemedText.Black)`
-  border-bottom: 1px solid ${({ theme }) => theme.bg2};
-  padding-bottom: 0.5rem;
 `
 
 export const ResponsiveTooltipContainer = styled(TooltipContainer)<{ origin?: string; width?: string }>`
@@ -148,8 +125,4 @@ export const ResponsiveTooltipContainer = styled(TooltipContainer)<{ origin?: st
     transform: scale(0.8);
     transform-origin: ${origin ?? 'top left'};
   `}
-`
-
-export const StyledTradePrice = styled(TradePrice)<{ $loading: boolean }>`
-  ${loadingOpacityMixin}
 `

@@ -15,6 +15,7 @@ const lightThemeMixin = css`
   /* text color */
   --text1: #111;
   --text2: #717171;
+  --placeholder-text: #c0c0c0;
 
   /* button color */
   --primary0: #f95f04;
@@ -59,7 +60,8 @@ const darkThemeMixin = css`
 
   /* text color */
   --text1: #fff;
-  --text2: #999;
+  --text2: #aaa;
+  --placeholder-text: #999;
 
   /* button color */
   --primary0: #ce5212;

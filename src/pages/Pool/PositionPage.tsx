@@ -42,10 +42,10 @@ const TokenProportionBadge = styled(Badge)`
   margin-left: 12px;
 
   border-radius: 4px;
-  padding: 0;
+  padding: 2px solid var(--badge-bg);
+  margin: -2px;
   min-width: 2.6em;
   background: var(--badge-bg);
-  outline: 2px solid var(--badge-bg);
 `
 
 function LinkedCurrency({ chainId, currency }: { chainId?: number; currency?: Currency }) {

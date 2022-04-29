@@ -1,20 +1,20 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { useTradeAdvancedDetails } from '@muffinfi/hooks/swap/useTradeAdvancedDetails'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { useContext } from 'react'
-import styled, { ThemeContext } from 'styled-components/macro'
-import { Separator, ThemedText } from '../../theme'
-import { AutoColumn } from '../Column'
-import { RowBetween, RowFixed } from '../Row'
+import { memo } from 'react'
+import styled from 'styled-components/macro'
+import { RowFixed } from '../Row'
 import FormattedPriceImpact from './FormattedPriceImpact'
 
-const StyledCard = styled(Card)`
-  padding: 0;
+const Separator = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: var(--borderColor);
 `
 
 interface AdvancedSwapDetailsProps {
@@ -42,8 +42,11 @@ function TextWithLoadingPlaceholder({
   )
 }
 
-export function AdvancedSwapDetails({ trade, allowedSlippage, syncing = false }: AdvancedSwapDetailsProps) {
-  const theme = useContext(ThemeContext)
+export default memo(function AdvancedSwapDetails({
+  trade,
+  allowedSlippage,
+  syncing = false,
+}: AdvancedSwapDetailsProps) {
   const { chainId } = useActiveWeb3React()
 
   const { priceImpact, feePercent } = useTradeAdvancedDetails(trade)
@@ -59,67 +62,78 @@ export function AdvancedSwapDetails({ trade, allowedSlippage, syncing = false }:
   // }, [trade])
 
   return !trade ? null : (
-    <StyledCard>
-      <AutoColumn gap="8px">
-        <RowBetween>
-          <RowFixed>
-            <ThemedText.SubHeader color={theme.text1}>
+    <M.TextContents color="text1" size="sm">
+      <M.Column stretch gap="10px">
+        <M.RowBetween>
+          <M.Row>
+            <M.Text>
               <Trans>Expected Output</Trans>
-            </ThemedText.SubHeader>
-          </RowFixed>
+            </M.Text>
+          </M.Row>
           <TextWithLoadingPlaceholder syncing={syncing} width={65}>
-            <ThemedText.Black textAlign="right" fontSize={14}>
+            <M.Text align="right">
               {expectedOutputAmount
                 ? `${expectedOutputAmount.toSignificant(6)}  ${expectedOutputAmount.currency.symbol}`
                 : '-'}
-            </ThemedText.Black>
+            </M.Text>
           </TextWithLoadingPlaceholder>
-        </RowBetween>
-        <RowBetween>
+        </M.RowBetween>
+
+        <M.RowBetween>
           <RowFixed>
-            <ThemedText.SubHeader color={theme.text1}>
+            <M.Text>
               <Trans>Price Impact</Trans>
-            </ThemedText.SubHeader>
+            </M.Text>
           </RowFixed>
           <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-            <ThemedText.Black textAlign="right" fontSize={14}>
+            <M.Text align="right">
               <FormattedPriceImpact priceImpact={priceImpactExcludingLPFee} />
-            </ThemedText.Black>
+            </M.Text>
           </TextWithLoadingPlaceholder>
-        </RowBetween>
+        </M.RowBetween>
+
         <Separator />
-        <RowBetween>
-          <RowFixed style={{ marginRight: '20px' }}>
-            <ThemedText.SubHeader color={theme.text3}>
+
+        <M.TextContents color="text2">
+          <M.RowBetween gap="1.25em">
+            <M.Text>
               {trade.tradeType === TradeType.EXACT_INPUT ? (
                 <Trans>Minimum received</Trans>
               ) : (
                 <Trans>Maximum sent</Trans>
               )}{' '}
               <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
-            </ThemedText.SubHeader>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-            <ThemedText.Black textAlign="right" fontSize={14} color={theme.text3}>
-              {trade.tradeType === TradeType.EXACT_INPUT
-                ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
-                : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`}
-            </ThemedText.Black>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-          <RowBetween>
-            <ThemedText.SubHeader color={theme.text3}>
-              <Trans>Network Fee</Trans>
-            </ThemedText.SubHeader>
-            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-              <ThemedText.Black textAlign="right" fontSize={14} color={theme.text3}>
-                ~${trade.gasUseEstimateUSD.toFixed(2)}
-              </ThemedText.Black>
+            </M.Text>
+            <TextWithLoadingPlaceholder syncing={syncing} width={70}>
+              <M.Text align="right">
+                {trade.tradeType === TradeType.EXACT_INPUT
+                  ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
+                  : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`}
+              </M.Text>
             </TextWithLoadingPlaceholder>
-          </RowBetween>
-        )}
-      </AutoColumn>
-    </StyledCard>
+          </M.RowBetween>
+
+          <M.RowBetween>
+            <M.Text>
+              <Trans>Network Fee</Trans>
+            </M.Text>
+            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
+              <M.Text align="right">~$123</M.Text>
+            </TextWithLoadingPlaceholder>
+          </M.RowBetween>
+
+          {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
+            <M.RowBetween>
+              <M.Text>
+                <Trans>Network Fee</Trans>
+              </M.Text>
+              <TextWithLoadingPlaceholder syncing={syncing} width={50}>
+                <M.Text align="right">~${trade.gasUseEstimateUSD.toFixed(2)}</M.Text>
+              </TextWithLoadingPlaceholder>
+            </M.RowBetween>
+          )}
+        </M.TextContents>
+      </M.Column>
+    </M.TextContents>
   )
-}
+})

@@ -68,6 +68,8 @@ const CurrencySelect = styled(M.Button)<{ $visible: boolean; $selected: boolean;
   font-weight: var(--medium);
   border-radius: 16px;
   ${({ $selected }) => ($selected ? M.buttonMixins.color.tertiary : M.buttonMixins.color.primary)}
+
+  ${({ $selected }) => ($selected ? 'transition: none;' : null)}
 `
 
 const StyledDropDown = styled(DropDown)`
@@ -205,24 +207,32 @@ export default function CurrencyInputPanel({
 
             {!hideInput && !hideBalance && currency && (
               <M.RowBetween style={{ height: 17 }}>
-                <M.Row gap="0.5rem">
-                  {account ? (
-                    <>
-                      <M.Text size="sm" color="text2">
-                        {!hideBalance && currency && selectedCurrencyBalance ? (
-                          renderBalance ? (
-                            renderBalance(selectedCurrencyBalance)
-                          ) : (
+                {account ? (
+                  <>
+                    {!hideBalance && currency && selectedCurrencyBalance ? (
+                      renderBalance ? (
+                        <M.Row gap="0.5rem">
+                          <M.Text size="sm" color="text2">
+                            {renderBalance(selectedCurrencyBalance)}
+                          </M.Text>
+                          <M.ButtonSecondary size="badge" onClick={onMax}>
+                            Max
+                          </M.ButtonSecondary>
+                        </M.Row>
+                      ) : (
+                        <M.Row gap="0.5rem">
+                          <M.Text size="sm" color="text2">
                             <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                          )
-                        ) : null}
-                      </M.Text>
-                      <M.ButtonSecondary size="badge" onClick={onMax}>
-                        Max
-                      </M.ButtonSecondary>
-                    </>
-                  ) : null}
-                </M.Row>
+                          </M.Text>
+                          <M.ButtonSecondary size="badge" onClick={onMax}>
+                            Max
+                          </M.ButtonSecondary>
+                        </M.Row>
+                      )
+                    ) : null}
+                  </>
+                ) : null}
+
                 <LoadingOpacityContainer $loading={loading}>
                   <M.TextContents size="sm">
                     <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />

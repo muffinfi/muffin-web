@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { ReactNode, useCallback, useMemo } from 'react'
+import { memo, ReactNode, useCallback, useMemo } from 'react'
 import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
@@ -11,7 +11,7 @@ import TransactionConfirmationModal, {
 import SwapModalFooter from './SwapModalFooter'
 import SwapModalHeader from './SwapModalHeader'
 
-export default function ConfirmSwapModal({
+export default memo(function ConfirmSwapModal({
   trade,
   originalTrade,
   onAcceptChanges,
@@ -101,4 +101,4 @@ export default function ConfirmSwapModal({
       currencyToAdd={trade?.outputAmount.currency}
     />
   )
-}
+})

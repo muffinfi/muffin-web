@@ -1,12 +1,25 @@
+import { NavLink as RouterNavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components/macro'
 import { handleClickExternalLink } from 'utils/handleClickExternalLink'
-import { Anchor, Column, Row, Text } from '../core'
+import { Anchor, Column, Link, Row, Text } from '../core'
 
 export const ExternalLink = styled(Anchor).attrs({
   target: '_blank',
   rel: 'noopener noreferrer',
   onClick: handleClickExternalLink,
 })``
+
+/////////
+
+export const NavLink = styled(Link).attrs({
+  as: RouterNavLink,
+  activeClassName: 'ACTIVE',
+})<{ activeColor?: string; activeWeight?: string }>`
+  &.ACTIVE {
+    font-weight: ${({ activeWeight }) => activeWeight && `var(--${activeWeight})`};
+    color: ${({ activeColor }) => activeColor && `var(--${activeColor})`};
+  }
+`
 
 /////////
 

@@ -1,10 +1,8 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { ReactNode } from 'react'
-import { Text } from 'rebass'
-import { ButtonError } from '../Button'
-import { AutoRow } from '../Row'
 import { SwapCallbackError } from './styleds'
 
 export default function SwapModalFooter({
@@ -18,21 +16,14 @@ export default function SwapModalFooter({
   disabledConfirm: boolean
 }) {
   return (
-    <>
-      <AutoRow>
-        <ButtonError
-          onClick={onConfirm}
-          disabled={disabledConfirm}
-          style={{ margin: '10px 0 0 0' }}
-          id="confirm-swap-or-send"
-        >
-          <Text fontSize={20} fontWeight={500}>
-            <Trans>Confirm Swap</Trans>
-          </Text>
-        </ButtonError>
+    <M.Column stretch gap="8px" style={{ margin: '24px 0 0 0' }}>
+      <M.ButtonRowPrimary onClick={onConfirm} disabled={disabledConfirm} id="confirm-swap-or-send">
+        <M.Text size="lg">
+          <Trans>Confirm Swap</Trans>
+        </M.Text>
+      </M.ButtonRowPrimary>
 
-        {swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
-      </AutoRow>
-    </>
+      {swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+    </M.Column>
   )
 }

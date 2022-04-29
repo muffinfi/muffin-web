@@ -1,24 +1,24 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { Percent } from '@uniswap/sdk-core'
-import { TabNavLink } from 'components/RouterTab'
-import { ReactNode } from 'react'
+import SettingsTab from 'components/Settings'
+import { memo, ReactNode } from 'react'
 import { swapStateToQueryParameters } from 'state/swap/hooks'
 import { SwapState } from 'state/swap/reducer'
 import styled from 'styled-components/macro'
-import { RowBetween, RowFixed } from '../Row'
-import SettingsTab from '../Settings'
-
-const StyledSwapHeader = styled.div`
-  padding: 1rem 1.25rem 0.5rem 1.25rem;
-  width: 100%;
-  color: ${({ theme }) => theme.text2};
-`
 
 const appendQuery = (base: string, search?: string) => {
   return search ? `${base}?${search}` : base
 }
 
-export default function SwapHeader({
+const StyledNavLink = styled(M.NavLink).attrs({
+  color: 'text2',
+  weight: 'regular',
+  activeColor: 'text1',
+  activeWeight: 'semibold',
+})``
+
+export default memo(function SwapHeader({
   swapState,
   allowedSlippage,
   extraContents,
@@ -28,20 +28,19 @@ export default function SwapHeader({
   extraContents?: () => ReactNode
 }) {
   return (
-    <StyledSwapHeader>
-      <RowBetween>
-        <RowFixed>
-          <TabNavLink to={appendQuery('/swap', swapStateToQueryParameters(swapState))} title={<Trans>Swap</Trans>} />
-          <TabNavLink
-            to={appendQuery('/limit-range', swapStateToQueryParameters(swapState))}
-            title={<Trans>Limit Range</Trans>}
-          />
-        </RowFixed>
-        <RowFixed>
-          {extraContents?.()}
-          <SettingsTab placeholderSlippage={allowedSlippage} />
-        </RowFixed>
-      </RowBetween>
-    </StyledSwapHeader>
+    <M.RowBetween>
+      <M.Row gap="2em">
+        <StyledNavLink to={appendQuery('/swap', swapStateToQueryParameters(swapState))}>
+          <Trans>Swap</Trans>
+        </StyledNavLink>
+        <StyledNavLink to={appendQuery('/limit-range', swapStateToQueryParameters(swapState))}>
+          <Trans>Limit Range</Trans>
+        </StyledNavLink>
+      </M.Row>
+      <M.Row>
+        {extraContents?.()}
+        <SettingsTab placeholderSlippage={allowedSlippage} />
+      </M.Row>
+    </M.RowBetween>
   )
-}
+})
