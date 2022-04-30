@@ -20,14 +20,12 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import RateToggle from 'components/RateToggle'
-import { RowBetween } from 'components/Row'
-import { ArrowWrapper } from 'components/swap/styleds'
+import { ArrowWrapper, FieldsWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
+import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { TierOption } from 'components/TierSelector/TierOption'
 import TokenWarningModal from 'components/TokenWarningModal'
@@ -38,21 +36,20 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
-import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePrevious from 'hooks/usePrevious'
-import useTheme from 'hooks/useTheme'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
+import useCurrency from 'lib/hooks/useCurrency'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { Review } from 'pages/AddLiquidity/Review'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -77,12 +74,21 @@ const AlertWrapper = styled.div`
   width: 100%;
 `
 
-const StepCountersRow = styled(RowBetween)`
-  column-gap: 8px;
+const StepCountersRow = styled(M.RowBetween)`
+  & > :first-child {
+    width: 100%;
+  }
+  /* & > :last-child {
+    width: 100%;
+  } */
 `
 
-const PriceInputWrapper = styled.div`
-  flex: 1;
+const Select = styled.div`
+  align-items: flex-start;
+  display: grid;
+  grid-auto-flow: column;
+  gap: 8px;
+  padding: 0 1px; // 1px is for button hover shadow
 `
 
 const StyledSectionCard = styled(M.SectionCard)`
@@ -96,13 +102,20 @@ const StyledSectionCard = styled(M.SectionCard)`
   `}
 `
 
-const Select = styled.div`
-  align-items: flex-start;
-  display: grid;
-  grid-auto-flow: column;
-  grid-gap: 8px;
-  padding: 8px 0;
+const CardColumn = styled(M.Column).attrs({ stretch: true })`
+  border: 1px solid var(--borderColor);
+  border-radius: 16px;
+  padding: 14px;
 `
+
+// const Separator = styled.div`
+//   width: 100%;
+//   height: 1px;
+//   background-color: var(--borderColor);
+// `
+
+const MemoizedCurrencyInputPanel = memo(CurrencyInputPanel)
+const MemoizedStepCounter = memo(StepCounter)
 
 export default function LimitRange({ history }: RouteComponentProps) {
   const { account, chainId, library } = useActiveWeb3React()
@@ -694,151 +707,152 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *                         REACT COMPONENT
    *====================================================================*/
 
-  const theme = useTheme()
   const toggleWalletModal = useWalletModalToggle()
 
+  const [upperFieldLabel, lowerFieldLabel] = useMemo(
+    () => [
+      independentField === Field.OUTPUT ? <Trans>Sell (at most)</Trans> : <Trans>Sell</Trans>,
+      independentField === Field.INPUT ? <Trans>Buy (at least)</Trans> : <Trans>Buy</Trans>,
+    ],
+    [independentField]
+  )
+  const leftStepCounterLabel = useMemo(() => <Trans>End price</Trans>, [])
+  const rightStepCounterLabel = useMemo(() => <Trans>Start Price</Trans>, [])
+  const noopStepCounterButton = useCallback(() => '', [])
+  const noopOnUserInput = useCallback(() => null, [])
+
   const makeInputFields = () => (
-    <AutoColumn gap="md">
-      <CurrencyInputPanel
-        label={independentField === Field.OUTPUT ? <Trans>Sell (at most)</Trans> : <Trans>Sell</Trans>}
-        value={formattedAmounts[Field.INPUT]}
-        showMaxButton={showMaxButton}
-        currency={inputCurrency ?? null}
-        onUserInput={handleTypeInput}
-        onMax={handleMaxInput}
-        fiatValue={fiatValues[Field.INPUT]}
-        onCurrencySelect={handleInputSelect}
-        otherCurrency={outputCurrency}
-        showCommonBases
-        id="limit-range-currency-input"
-      />
+    <M.Column stretch gap="12px">
+      <FieldsWrapper>
+        <MemoizedCurrencyInputPanel
+          label={upperFieldLabel}
+          value={formattedAmounts[Field.INPUT]}
+          showMaxButton={showMaxButton}
+          currency={inputCurrency ?? null}
+          onUserInput={handleTypeInput}
+          onMax={handleMaxInput}
+          fiatValue={fiatValues[Field.INPUT]}
+          onCurrencySelect={handleInputSelect}
+          otherCurrency={outputCurrency}
+          showCommonBases
+          id="limit-range-currency-input"
+        />
 
-      <StepCountersRow>
-        <PriceInputWrapper>
-          <StepCounter
-            value={endPriceTypedAmount}
-            onUserInput={setEndPriceTypedAmount}
-            decrement={handlePriceDecrement}
-            increment={handlePriceIncrement}
-            decrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'UPPER' : 'LOWER']}
-            incrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'LOWER' : 'UPPER']}
-            title={<Trans>End Price</Trans>}
-            tokenA={baseCurrency?.symbol}
-            tokenB={quoteCurrency?.symbol}
-            handleChangeImmediately
-            disablePulsing
+        <ArrowWrapper clickable style={{ color: inputCurrency && outputCurrency ? 'var(--text1)' : 'var(--text2)' }}>
+          <ArrowDown
+            size="16"
+            onClick={() => {
+              onSwitchTokens()
+            }}
           />
-        </PriceInputWrapper>
-        <div style={{ zIndex: 1 }}>
-          <ArrowWrapper clickable>
-            <ArrowDown
-              size="16"
-              onClick={() => {
-                onSwitchTokens()
-              }}
-              color={inputCurrency && outputCurrency ? theme.text1 : theme.text3}
-            />
-          </ArrowWrapper>
-        </div>
-        <PriceInputWrapper>
-          <StepCounter
-            value={(endPriceInverted ? startPrice0?.invert() : startPrice0)?.toSignificant(6) ?? ''}
-            onUserInput={() => null}
-            decrement={() => ''}
-            increment={() => ''}
-            decrementDisabled
-            incrementDisabled
-            locked
-            title={<Trans>Start Price</Trans>}
-            tokenA={baseCurrency?.symbol}
-            tokenB={quoteCurrency?.symbol}
-            disablePulsing
-          />
-        </PriceInputWrapper>
+        </ArrowWrapper>
+
+        <MemoizedCurrencyInputPanel
+          value={formattedAmounts[Field.OUTPUT]}
+          onUserInput={handleTypeOutput}
+          label={lowerFieldLabel}
+          showMaxButton={false}
+          hideBalance={false}
+          fiatValue={fiatValues[Field.OUTPUT]}
+          currency={outputCurrency ?? null}
+          onCurrencySelect={handleOutputSelect}
+          otherCurrency={inputCurrency}
+          disableNonToken
+          showCommonBases
+          id="limit-range-currency-output"
+        />
+      </FieldsWrapper>
+
+      <StepCountersRow gap="12px">
+        <MemoizedStepCounter
+          value={endPriceTypedAmount}
+          onUserInput={setEndPriceTypedAmount}
+          decrement={handlePriceDecrement}
+          increment={handlePriceIncrement}
+          decrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'UPPER' : 'LOWER']}
+          incrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'LOWER' : 'UPPER']}
+          title={leftStepCounterLabel}
+          tokenA={baseCurrency?.symbol}
+          tokenB={quoteCurrency?.symbol}
+          toggleRate={handleRateToggle}
+          handleChangeImmediately
+          disablePulsing
+        />
+
+        <MemoizedStepCounter
+          value={(endPriceInverted ? startPrice0?.invert() : startPrice0)?.toSignificant(6) ?? ''}
+          onUserInput={noopOnUserInput}
+          decrement={noopStepCounterButton}
+          increment={noopStepCounterButton}
+          decrementDisabled
+          incrementDisabled
+          locked
+          title={rightStepCounterLabel}
+          tokenA={baseCurrency?.symbol}
+          tokenB={quoteCurrency?.symbol}
+          toggleRate={handleRateToggle}
+          disablePulsing
+        />
       </StepCountersRow>
-
-      <CurrencyInputPanel
-        value={formattedAmounts[Field.OUTPUT]}
-        onUserInput={handleTypeOutput}
-        label={independentField === Field.INPUT ? <Trans>Buy (at least)</Trans> : <Trans>Buy</Trans>}
-        showMaxButton={false}
-        hideBalance={false}
-        fiatValue={fiatValues[Field.OUTPUT]}
-        currency={outputCurrency ?? null}
-        onCurrencySelect={handleOutputSelect}
-        otherCurrency={inputCurrency}
-        disableNonToken
-        showCommonBases
-        id="limit-range-currency-output"
-      />
-    </AutoColumn>
+    </M.Column>
   )
 
   const makeButton = () => (
-    <div>
-      <M.Column gap="12px">
-        <TokenApproveOrPermitButton
-          buttonId={Field.INPUT}
-          amount={amountToApprove}
-          deadline={transactionDeadline}
-          hidden={!pool || Boolean(argentWalletContract) || !account || !parsedAmounts[Field.INPUT]}
-          onSignatureDataChange={setSignatureData}
-          onStateChanged={setApprovalState}
-          onSubmitApproval={onSubmitApproval}
-        />
-        {!inputCurrency || !outputCurrency ? (
-          <M.ButtonRowPrimary disabled>
-            <Trans>Select a token</Trans>
-          </M.ButtonRowPrimary>
-        ) : !pool || defaultSqrtGamma == null ? (
-          <M.ButtonRowPrimary disabled>
-            <Trans>Pair Not Supported</Trans>
-          </M.ButtonRowPrimary>
-        ) : !account ? (
-          <M.ButtonRowSecondary onClick={toggleWalletModal}>
-            <Trans>Connect Wallet</Trans>
-          </M.ButtonRowSecondary>
-        ) : (
-          <M.ButtonRow
-            onClick={() => {
-              isExpertMode ? onAdd() : setShowTxModalConfirm(true)
-            }}
-            id="swap-button"
-            disabled={
-              isInvalidPriceRange ||
-              isInvalidPrice ||
-              insufficientFunding ||
-              isInvalidTypedAmount ||
-              noRecipient ||
-              invalidRecipient ||
-              approvalState !== ApproveOrPermitState.APPROVED
-            }
-            color={
-              isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient ? 'error' : 'primary'
-            }
-          >
-            <M.Text size="lg">
-              {isInvalidPriceRange ? (
-                <Trans>Invalid price range</Trans>
-              ) : isInvalidPrice ? (
-                <Trans>Invalid price</Trans>
-              ) : insufficientFunding ? (
-                <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
-              ) : isInvalidTypedAmount ? (
-                <Trans>Enter an amount</Trans>
-              ) : noRecipient ? (
-                <Trans>Enter a recipient</Trans>
-              ) : invalidRecipient ? (
-                <Trans>Invalid recipient</Trans>
-              ) : (
-                <Trans>Swap</Trans>
-              )}
-            </M.Text>
-          </M.ButtonRow>
-        )}
-      </M.Column>
+    <M.Column stretch gap="12px">
+      <TokenApproveOrPermitButton
+        buttonId={Field.INPUT}
+        amount={amountToApprove}
+        deadline={transactionDeadline}
+        hidden={!pool || Boolean(argentWalletContract) || !account || !parsedAmounts[Field.INPUT]}
+        onSignatureDataChange={setSignatureData}
+        onStateChanged={setApprovalState}
+        onSubmitApproval={onSubmitApproval}
+      />
+      {!pool ? (
+        <M.ButtonRowPrimary disabled>
+          <Trans>Unsupported Asset</Trans>
+        </M.ButtonRowPrimary>
+      ) : !account ? (
+        <M.ButtonRowSecondary onClick={toggleWalletModal}>
+          <Trans>Connect Wallet</Trans>
+        </M.ButtonRowSecondary>
+      ) : (
+        <M.ButtonRow
+          onClick={() => {
+            isExpertMode ? onAdd() : setShowTxModalConfirm(true)
+          }}
+          color={isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient ? 'error' : 'primary'}
+          disabled={
+            isInvalidPriceRange ||
+            isInvalidPrice ||
+            insufficientFunding ||
+            isInvalidTypedAmount ||
+            noRecipient ||
+            invalidRecipient ||
+            approvalState !== ApproveOrPermitState.APPROVED
+          }
+        >
+          <M.Text size="lg">
+            {isInvalidPriceRange ? (
+              <Trans>Invalid price range</Trans>
+            ) : isInvalidPrice ? (
+              <Trans>Invalid price</Trans>
+            ) : insufficientFunding ? (
+              <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
+            ) : isInvalidTypedAmount ? (
+              <Trans>Enter an amount</Trans>
+            ) : noRecipient ? (
+              <Trans>Enter a recipient</Trans>
+            ) : invalidRecipient ? (
+              <Trans>Invalid recipient</Trans>
+            ) : (
+              <Trans>Place Order</Trans>
+            )}
+          </M.Text>
+        </M.ButtonRow>
+      )}
       {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}
-    </div>
+    </M.Column>
   )
 
   const makeTransactionModal = () => (
@@ -866,7 +880,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
           )}
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
-              <Trans>Swap</Trans>
+              <M.Text size="lg">
+                <Trans>Create Position</Trans>
+              </M.Text>
             </M.ButtonRowPrimary>
           )}
         />
@@ -877,12 +893,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
     />
   )
 
-  const makeRateToggle = () =>
-    baseCurrency &&
-    quoteCurrency && (
-      <RateToggle currencyA={baseCurrency} currencyB={quoteCurrency} handleRateToggle={handleRateToggle} />
-    )
-
   return (
     <>
       <TokenWarningModal
@@ -891,70 +901,88 @@ export default function LimitRange({ history }: RouteComponentProps) {
         onConfirm={handleConfirmTokenWarning}
         onDismiss={handleDismissTokenWarning}
       />
-
       {makeTransactionModal()}
 
       <M.Container maxWidth="29rem">
         <M.Column stretch gap="32px">
           <StyledSectionCard>
             <M.Column stretch gap="16px">
-              <SwapHeader
-                swapState={swapState}
-                allowedSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE}
-                extraContents={makeRateToggle}
-              />
+              <SwapHeader swapState={swapState} allowedSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE} />
 
               {makeInputFields()}
 
-              <M.Column stretch gap="8px">
-                <M.Column stretch gap="4px">
-                  <M.RowBetween>
-                    <M.Text size="sm" weight="medium" color="text2">
-                      <Trans>Position&apos;s fee tier</Trans>
-                    </M.Text>
-                    <M.Row gap="4px">
-                      <M.Text size="sm" weight="medium" color="text2">
-                        {selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : <Trans>N/A</Trans>}
+              <M.TextContents size="sm">
+                <CardColumn gap="10px">
+                  <div>
+                    <M.RowBetween gap="1em">
+                      <M.Text>
+                        <Trans>Position&apos;s fee tier</Trans>
                       </M.Text>
-                      {showEditTierButton && (
-                        <M.Anchor size="sm" weight="medium" color="primary0" onClick={handleOpenEditTierDropdown}>
-                          {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
-                        </M.Anchor>
-                      )}
-                    </M.Row>
+                      <M.Row gap="0.5em">
+                        <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
+                        {showEditTierButton && (
+                          <M.Anchor
+                            role="button"
+                            color="primary0"
+                            hoverColor="primary1"
+                            onClick={handleOpenEditTierDropdown}
+                          >
+                            {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
+                          </M.Anchor>
+                        )}
+                      </M.Row>
+                    </M.RowBetween>
+
+                    <AnimatedDropdown open={isEditTierDropdownOpened}>
+                      <M.Column stretch gap="8px" style={{ padding: '12px 0 12px' }}>
+                        <M.Text size="xs" color="text2">
+                          Fee tiers supporting Limit Range Orders
+                        </M.Text>
+                        <Select>
+                          {availableSqrtGammas.map((value) => (
+                            <TierOption
+                              key={value}
+                              active={value === sqrtGamma}
+                              activeColor="var(--primary1)"
+                              sqrtGamma={value}
+                              handleTierSelect={setSqrtGamma}
+                            />
+                          ))}
+                        </Select>
+                      </M.Column>
+                    </AnimatedDropdown>
+                  </div>
+
+                  {/* <Separator /> */}
+
+                  <M.RowBetween gap="1em">
+                    <M.Text>
+                      <Trans>Tier&apos;s current price</Trans>
+                    </M.Text>
+                    {selectedTier ? (
+                      <M.PriceExpr
+                        price={endPriceInverted ? selectedTier.token0Price.invert() : selectedTier.token0Price}
+                        justifyEnd
+                      />
+                    ) : (
+                      <span>-</span>
+                    )}
                   </M.RowBetween>
-                  <AnimatedDropdown open={isEditTierDropdownOpened}>
-                    <Select>
-                      {availableSqrtGammas.map((value) => (
-                        <TierOption
-                          key={value}
-                          active={value === sqrtGamma}
-                          activeColor={theme.primary1}
-                          sqrtGamma={value}
-                          handleTierSelect={setSqrtGamma}
-                        />
-                      ))}
-                    </Select>
-                  </AnimatedDropdown>
-                </M.Column>
-                <M.RowBetween>
-                  <M.Text size="sm" weight="medium" color="text2">
-                    <Trans>Average selling price</Trans>
-                  </M.Text>
-                  <M.Text size="sm" weight="medium" color="text2">
+
+                  <M.RowBetween gap="1em">
+                    <M.Text>
+                      <Trans>Average selling price</Trans>
+                    </M.Text>
                     {averagePrice0 &&
                     !JSBI.equal(averagePrice0.denominator, ZERO) &&
                     !JSBI.equal(averagePrice0.numerator, ZERO) ? (
-                      <Trans>
-                        {(endPriceInverted ? averagePrice0.invert() : averagePrice0).toSignificant(6)}{' '}
-                        {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                      </Trans>
+                      <M.PriceExpr price={endPriceInverted ? averagePrice0.invert() : averagePrice0} justifyEnd />
                     ) : (
-                      <Trans>N/A</Trans>
+                      <span>-</span>
                     )}
-                  </M.Text>
-                </M.RowBetween>
-              </M.Column>
+                  </M.RowBetween>
+                </CardColumn>
+              </M.TextContents>
 
               {recipient !== null && (
                 <M.Column stretch gap="8px">
@@ -976,10 +1004,13 @@ export default function LimitRange({ history }: RouteComponentProps) {
           </StyledSectionCard>
         </M.Column>
       </M.Container>
+
       <AlertWrapper>
         <NetworkAlert />
       </AlertWrapper>
+
       <SwitchLocaleLink />
+      {!pool && <UnsupportedCurrencyFooter show currencies={[inputCurrency, outputCurrency]} />}
     </>
   )
 }

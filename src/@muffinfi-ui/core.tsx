@@ -80,6 +80,8 @@ interface RowProps {
   wrap?: string
   columnGap?: string
   rowGap?: string
+
+  justifyEnd?: boolean
 }
 
 export const Row = styled.div<RowProps>`
@@ -90,6 +92,8 @@ export const Row = styled.div<RowProps>`
   gap: ${({ gap }) => gap};
   column-gap: ${({ columnGap }) => columnGap};
   row-gap: ${({ rowGap }) => rowGap};
+
+  ${({ justifyEnd }) => justifyEnd && 'justify-content: flex-end;'}
 `
 
 export const RowBetween = styled(Row)`

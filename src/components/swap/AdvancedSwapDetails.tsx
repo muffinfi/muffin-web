@@ -8,7 +8,6 @@ import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { memo } from 'react'
 import styled from 'styled-components/macro'
-import { RowFixed } from '../Row'
 import FormattedPriceImpact from './FormattedPriceImpact'
 
 const Separator = styled.div`
@@ -65,11 +64,9 @@ export default memo(function AdvancedSwapDetails({
     <M.TextContents color="text1" size="sm">
       <M.Column stretch gap="10px">
         <M.RowBetween>
-          <M.Row>
-            <M.Text>
-              <Trans>Expected Output</Trans>
-            </M.Text>
-          </M.Row>
+          <M.Text>
+            <Trans>Expected Output</Trans>
+          </M.Text>
           <TextWithLoadingPlaceholder syncing={syncing} width={65}>
             <M.Text align="right">
               {expectedOutputAmount
@@ -80,11 +77,9 @@ export default memo(function AdvancedSwapDetails({
         </M.RowBetween>
 
         <M.RowBetween>
-          <RowFixed>
-            <M.Text>
-              <Trans>Price Impact</Trans>
-            </M.Text>
-          </RowFixed>
+          <M.Text>
+            <Trans>Price Impact</Trans>
+          </M.Text>
           <TextWithLoadingPlaceholder syncing={syncing} width={50}>
             <M.Text align="right">
               <FormattedPriceImpact priceImpact={priceImpactExcludingLPFee} />

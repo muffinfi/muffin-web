@@ -4,13 +4,22 @@ import { Currency, Price, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
+import { memo } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { Row, Text } from '../core'
 
-export const PriceUnit = ({
+type TextParams = Parameters<typeof Text>[0]
+
+type RowParams = Parameters<typeof Row>[0]
+
+const RowBaseline = styled(Row)`
+  align-items: baseline;
+`
+
+export const PriceUnit = memo(function PriceUnit({
   currencyBase,
   currencyQuote,
   price,
@@ -19,7 +28,7 @@ export const PriceUnit = ({
   | { currencyBase: Currency | undefined; currencyQuote: Currency | undefined }
   | { price: Price<Currency, Currency> | undefined }
 ) &
-  Parameters<typeof Text>[0]) => {
+  TextParams) {
   const base = price ? unwrappedToken(price.baseCurrency) : currencyBase
   const quote = price ? unwrappedToken(price.quoteCurrency) : currencyQuote
 
@@ -32,43 +41,47 @@ export const PriceUnit = ({
       )}
     </Text>
   )
-}
+})
 
-export const PriceExpr = ({ price }: { price: Price<Currency, Currency> | undefined }) => {
+export const PriceExpr = memo(function PriceExpr({
+  price,
+  ...rest
+}: { price: Price<Currency, Currency> | undefined } & RowParams) {
   const currencyBase = price ? unwrappedToken(price.baseCurrency) : undefined
   const currencyQuote = price ? unwrappedToken(price.quoteCurrency) : undefined
 
   return (
-    <Row wrap="wrap" columnGap="0.666em" rowGap="0.25em" style={{ alignItems: 'baseline' }}>
+    <RowBaseline wrap="wrap" columnGap="0.666em" rowGap="0.25em" {...rest}>
       <Text>{price?.toSignificant(6)}</Text>
       <PriceUnit style={{ fontSize: '0.875em' }} currencyBase={currencyBase} currencyQuote={currencyQuote} />
-    </Row>
+    </RowBaseline>
   )
-}
+})
 
-export const PriceRangeExpr = ({
+export const PriceRangeExpr = memo(function PriceRangeExpr({
   priceLower,
   priceUpper,
   tickAtLimit,
+  ...rest
 }: {
   priceLower: Price<Token, Token> | undefined
   priceUpper: Price<Token, Token> | undefined
   tickAtLimit: { [key in Bound]?: boolean | undefined }
-}) => {
+} & RowParams) {
   const currencyBase = priceLower ? unwrappedToken(priceLower.baseCurrency) : undefined
   const currencyQuote = priceLower ? unwrappedToken(priceLower.quoteCurrency) : undefined
 
   return (
-    <Row wrap="wrap" columnGap="0.666em" rowGap="0.25em" style={{ alignItems: 'baseline' }}>
+    <RowBaseline wrap="wrap" columnGap="0.666em" rowGap="0.25em" {...rest}>
       <Row wrap="wrap" columnGap="0.5em" rowGap="0.25em">
         <Text>{formatTickPrice(priceLower, tickAtLimit, Bound.LOWER)}</Text>
         <Text size="base">⟷</Text>
         <Text>{formatTickPrice(priceUpper, tickAtLimit, Bound.UPPER)}</Text>
       </Row>
       <PriceUnit style={{ fontSize: '0.875em' }} currencyBase={currencyBase} currencyQuote={currencyQuote} />
-    </Row>
+    </RowBaseline>
   )
-}
+})
 
 ////////////////////////////
 
@@ -78,7 +91,7 @@ const FeeBadge = styled(Badge)`
   font-weight: inherit;
 `
 
-export const PoolTierExpr = ({
+export const PoolTierExpr = memo(function PoolTierExpr({
   currencyBase, //  i.e. currency0
   currencyQuote, // i.e. currency1
   tier,
@@ -90,7 +103,7 @@ export const PoolTierExpr = ({
   tier: Tier | undefined
   noLogo?: boolean
   noFee?: boolean
-}) => {
+}) {
   return (
     <Row gap="0.75em">
       {!noLogo && <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin />}
@@ -104,4 +117,4 @@ export const PoolTierExpr = ({
       )}
     </Row>
   )
-}
+})
