@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import * as M from '@muffinfi-ui'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { ReactNode, useCallback, useState } from 'react'
@@ -144,120 +144,122 @@ export default function CurrencyInputPanel({
   }, [setModalOpen])
 
   return (
-    <>
-      <InputPanel id={id} hideInput={hideInput} {...rest}>
-        {locked && (
-          <FixedContainer>
-            <Lock />
-            <M.Text size="xs" align="center" paragraphLineHeight>
-              <Trans>The current market price is outside your specified price range. Single-asset deposit only.</Trans>
-            </M.Text>
-          </FixedContainer>
-        )}
-        <Container hideInput={hideInput}>
-          <M.Column stretch gap="12px">
-            <M.RowBetween wrap="nowrap" gap="0.75em">
-              <CurrencySelect
-                $visible={currency !== undefined}
-                $selected={!!currency}
-                $hideInput={hideInput}
-                className="open-currency-select-button"
-                onClick={() => {
-                  if (onCurrencySelect) {
-                    setModalOpen(true)
-                  }
-                }}
-              >
-                <M.Row gap="0.75rem">
-                  {pair ? (
-                    <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
-                  ) : currency ? (
-                    <CurrencyLogo currency={currency} size={'24px'} />
-                  ) : null}
-                  {pair ? (
-                    <span className="pair-name-container">
-                      {pair?.token0.symbol}:{pair?.token1.symbol}
-                    </span>
-                  ) : (
-                    <span className="token-symbol-container">
-                      {(currency && currency.symbol && currency.symbol.length > 20
-                        ? currency.symbol.slice(0, 4) +
-                          '...' +
-                          currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                        : currency?.symbol) || (
-                        <span style={{ marginLeft: '0.25rem' }}>
-                          <Trans>Select a token</Trans>
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </M.Row>
-                {onCurrencySelect && <StyledDropDown />}
-              </CurrencySelect>
-
-              {!hideInput && (
-                <StyledNumericalInput
-                  className="token-amount-input"
-                  value={value}
-                  onUserInput={onUserInput}
-                  $loading={loading}
-                />
-              )}
-            </M.RowBetween>
-
-            {!hideInput && !hideBalance && currency && (
-              <M.RowBetween style={{ height: 17 }}>
-                {account ? (
-                  <>
-                    {!hideBalance && currency && selectedCurrencyBalance ? (
-                      renderBalance ? (
-                        <M.Row gap="0.5rem">
-                          <M.Text size="sm" color="text2">
-                            {renderBalance(selectedCurrencyBalance)}
-                          </M.Text>
-                          <M.ButtonSecondary size="badge" onClick={onMax}>
-                            Max
-                          </M.ButtonSecondary>
-                        </M.Row>
-                      ) : (
-                        <M.Row gap="0.5rem">
-                          <M.Text size="sm" color="text2">
-                            <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                          </M.Text>
-                          <M.ButtonSecondary size="badge" onClick={onMax}>
-                            Max
-                          </M.ButtonSecondary>
-                        </M.Row>
-                      )
-                    ) : null}
-                  </>
+    <InputPanel id={id} hideInput={hideInput} {...rest}>
+      {locked && (
+        <FixedContainer>
+          <Lock />
+          <M.Text size="xs" align="center" paragraphLineHeight>
+            <Trans>The current market price is outside your specified price range. Single-asset deposit only.</Trans>
+          </M.Text>
+        </FixedContainer>
+      )}
+      <Container hideInput={hideInput}>
+        <M.Column stretch gap="12px">
+          <M.RowBetween wrap="nowrap" gap="0.75em">
+            <CurrencySelect
+              $visible={currency !== undefined}
+              $selected={!!currency}
+              $hideInput={hideInput}
+              className="open-currency-select-button"
+              onClick={() => {
+                if (onCurrencySelect) {
+                  setModalOpen(true)
+                }
+              }}
+            >
+              <M.Row gap="0.75rem">
+                {pair ? (
+                  <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
+                ) : currency ? (
+                  <CurrencyLogo currency={currency} size={'24px'} />
                 ) : null}
+                {pair ? (
+                  <span className="pair-name-container">
+                    {pair?.token0.symbol}:{pair?.token1.symbol}
+                  </span>
+                ) : (
+                  <span className="token-symbol-container">
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : currency?.symbol) || (
+                      <span style={{ marginLeft: '0.25rem' }}>
+                        <Trans>Select a token</Trans>
+                      </span>
+                    )}
+                  </span>
+                )}
+              </M.Row>
+              {onCurrencySelect && <StyledDropDown />}
+            </CurrencySelect>
 
-                <LoadingOpacityContainer $loading={loading}>
-                  <M.TextContents size="sm">
-                    <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-                  </M.TextContents>
-                </LoadingOpacityContainer>
-              </M.RowBetween>
+            {!hideInput && (
+              <StyledNumericalInput
+                className="token-amount-input"
+                value={value}
+                onUserInput={onUserInput}
+                $loading={loading}
+              />
             )}
-          </M.Column>
-        </Container>
+          </M.RowBetween>
 
-        {onCurrencySelect && (
-          <CurrencySearchModal
-            isOpen={modalOpen}
-            onDismiss={handleDismissSearch}
-            onCurrencySelect={onCurrencySelect}
-            selectedCurrency={currency}
-            otherSelectedCurrency={otherCurrency}
-            isCurrencySelected={isCurrencySelected}
-            showCommonBases={showCommonBases}
-            showCurrencyAmount={showCurrencyAmount}
-            disableNonToken={disableNonToken}
-            balanceSource={balanceSource}
-          />
-        )}
-      </InputPanel>
-    </>
+          {!hideInput && !hideBalance && currency && (
+            <M.RowBetween style={{ height: 17 }}>
+              {account ? (
+                <>
+                  {!hideBalance && currency && selectedCurrencyBalance ? (
+                    renderBalance ? (
+                      <M.Row gap="0.5rem">
+                        <M.Text size="sm" color="text2">
+                          {renderBalance(selectedCurrencyBalance)}
+                        </M.Text>
+                        {onMax && (
+                          <M.ButtonSecondary size="badge" onClick={onMax}>
+                            Max
+                          </M.ButtonSecondary>
+                        )}
+                      </M.Row>
+                    ) : (
+                      <M.Row gap="0.5rem">
+                        <M.Text size="sm" color="text2">
+                          <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                        </M.Text>
+                        {onMax && (
+                          <M.ButtonSecondary size="badge" onClick={onMax}>
+                            Max
+                          </M.ButtonSecondary>
+                        )}
+                      </M.Row>
+                    )
+                  ) : null}
+                </>
+              ) : null}
+
+              <LoadingOpacityContainer $loading={loading}>
+                <M.TextContents size="sm">
+                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                </M.TextContents>
+              </LoadingOpacityContainer>
+            </M.RowBetween>
+          )}
+        </M.Column>
+      </Container>
+
+      {onCurrencySelect && (
+        <CurrencySearchModal
+          isOpen={modalOpen}
+          onDismiss={handleDismissSearch}
+          onCurrencySelect={onCurrencySelect}
+          selectedCurrency={currency}
+          otherSelectedCurrency={otherCurrency}
+          isCurrencySelected={isCurrencySelected}
+          showCommonBases={showCommonBases}
+          showCurrencyAmount={showCurrencyAmount}
+          disableNonToken={disableNonToken}
+          balanceSource={balanceSource}
+        />
+      )}
+    </InputPanel>
   )
 }

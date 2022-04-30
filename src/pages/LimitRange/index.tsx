@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { useHubContract } from '@muffinfi/hooks/useContract'
 import { useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
@@ -17,19 +18,16 @@ import {
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
-import { Wrapper } from 'components/account/styleds'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import { ButtonError, ButtonLight, ButtonPrimary, ButtonText } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import RateToggle from 'components/RateToggle'
-import { AutoRow, RowBetween, RowFixed } from 'components/Row'
+import { RowBetween } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
-import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { TierOption } from 'components/TierSelector/TierOption'
 import TokenWarningModal from 'components/TokenWarningModal'
@@ -54,12 +52,10 @@ import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToAppro
 import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { Review } from 'pages/AddLiquidity/Review'
-import AppBody from 'pages/AppBody'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
-import { Text } from 'rebass'
 import { useWalletModalToggle } from 'state/application/hooks'
 import { Field } from 'state/swap/actions'
 import { tryParseAmount, useDefaultsFromURLSearch, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
@@ -67,7 +63,6 @@ import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useExpertModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
-import { LinkStyledButton, ThemedText } from 'theme'
 import { isAddress } from 'utils'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -86,12 +81,27 @@ const StepCountersRow = styled(RowBetween)`
   column-gap: 8px;
 `
 
+const PriceInputWrapper = styled.div`
+  flex: 1;
+`
+
+const StyledSectionCard = styled(M.SectionCard)`
+  padding: 20px;
+  border-radius: 20px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    border-radius: 16px;
+    padding: 1rem 0.75rem;
+    margin: 0 -0.333rem;
+  `}
+`
+
 const Select = styled.div`
   align-items: flex-start;
   display: grid;
   grid-auto-flow: column;
   grid-gap: 8px;
-  padding: 8px;
+  padding: 8px 0;
 `
 
 export default function LimitRange({ history }: RouteComponentProps) {
@@ -702,22 +712,24 @@ export default function LimitRange({ history }: RouteComponentProps) {
         showCommonBases
         id="limit-range-currency-input"
       />
+
       <StepCountersRow>
-        <StepCounter
-          value={endPriceTypedAmount}
-          onUserInput={setEndPriceTypedAmount}
-          decrement={handlePriceDecrement}
-          increment={handlePriceIncrement}
-          decrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'UPPER' : 'LOWER']}
-          incrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'LOWER' : 'UPPER']}
-          // label={leftPrice ? `${currencyB?.symbol}` : '-'}
-          title={<Trans>End Price</Trans>}
-          tokenA={baseCurrency?.symbol}
-          tokenB={quoteCurrency?.symbol}
-          handleChangeImmediately
-          disablePulsing
-        />
-        <div>
+        <PriceInputWrapper>
+          <StepCounter
+            value={endPriceTypedAmount}
+            onUserInput={setEndPriceTypedAmount}
+            decrement={handlePriceDecrement}
+            increment={handlePriceIncrement}
+            decrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'UPPER' : 'LOWER']}
+            incrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'LOWER' : 'UPPER']}
+            title={<Trans>End Price</Trans>}
+            tokenA={baseCurrency?.symbol}
+            tokenB={quoteCurrency?.symbol}
+            handleChangeImmediately
+            disablePulsing
+          />
+        </PriceInputWrapper>
+        <div style={{ zIndex: 1 }}>
           <ArrowWrapper clickable>
             <ArrowDown
               size="16"
@@ -728,20 +740,23 @@ export default function LimitRange({ history }: RouteComponentProps) {
             />
           </ArrowWrapper>
         </div>
-        <StepCounter
-          value={(endPriceInverted ? startPrice0?.invert() : startPrice0)?.toSignificant(6) ?? ''}
-          onUserInput={() => null}
-          decrement={() => ''}
-          increment={() => ''}
-          decrementDisabled
-          incrementDisabled
-          locked
-          title={<Trans>Start Price</Trans>}
-          tokenA={baseCurrency?.symbol}
-          tokenB={quoteCurrency?.symbol}
-          disablePulsing
-        />
+        <PriceInputWrapper>
+          <StepCounter
+            value={(endPriceInverted ? startPrice0?.invert() : startPrice0)?.toSignificant(6) ?? ''}
+            onUserInput={() => null}
+            decrement={() => ''}
+            increment={() => ''}
+            decrementDisabled
+            incrementDisabled
+            locked
+            title={<Trans>Start Price</Trans>}
+            tokenA={baseCurrency?.symbol}
+            tokenB={quoteCurrency?.symbol}
+            disablePulsing
+          />
+        </PriceInputWrapper>
       </StepCountersRow>
+
       <CurrencyInputPanel
         value={formattedAmounts[Field.OUTPUT]}
         onUserInput={handleTypeOutput}
@@ -761,66 +776,67 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
   const makeButton = () => (
     <div>
-      <AutoRow style={{ flexWrap: 'nowrap', width: '100%' }}>
-        <AutoColumn style={{ width: '100%' }} gap="12px">
-          <TokenApproveOrPermitButton
-            buttonId={Field.INPUT}
-            amount={amountToApprove}
-            deadline={transactionDeadline}
-            hidden={!pool || Boolean(argentWalletContract) || !account || !parsedAmounts[Field.INPUT]}
-            onSignatureDataChange={setSignatureData}
-            onStateChanged={setApprovalState}
-            onSubmitApproval={onSubmitApproval}
-          />
-          {!pool ? (
-            <ButtonPrimary disabled={true}>
-              <ThemedText.Main mb="4px">
-                <Trans>Unsupported Asset</Trans>
-              </ThemedText.Main>
-            </ButtonPrimary>
-          ) : !account ? (
-            <ButtonLight onClick={toggleWalletModal}>
-              <Trans>Connect Wallet</Trans>
-            </ButtonLight>
-          ) : (
-            <ButtonError
-              onClick={() => {
-                isExpertMode ? onAdd() : setShowTxModalConfirm(true)
-              }}
-              width="100%"
-              id="swap-button"
-              disabled={
-                isInvalidPriceRange ||
-                isInvalidPrice ||
-                insufficientFunding ||
-                isInvalidTypedAmount ||
-                noRecipient ||
-                invalidRecipient ||
-                approvalState !== ApproveOrPermitState.APPROVED
-              }
-              error={isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient}
-            >
-              <Text fontSize={20} fontWeight={500}>
-                {isInvalidPriceRange ? (
-                  <Trans>Invalid price range</Trans>
-                ) : isInvalidPrice ? (
-                  <Trans>Invalid price</Trans>
-                ) : insufficientFunding ? (
-                  <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
-                ) : isInvalidTypedAmount ? (
-                  <Trans>Enter an amount</Trans>
-                ) : noRecipient ? (
-                  <Trans>Enter a recipient</Trans>
-                ) : invalidRecipient ? (
-                  <Trans>Invalid recipient</Trans>
-                ) : (
-                  <Trans>Swap</Trans>
-                )}
-              </Text>
-            </ButtonError>
-          )}
-        </AutoColumn>
-      </AutoRow>
+      <M.Column gap="12px">
+        <TokenApproveOrPermitButton
+          buttonId={Field.INPUT}
+          amount={amountToApprove}
+          deadline={transactionDeadline}
+          hidden={!pool || Boolean(argentWalletContract) || !account || !parsedAmounts[Field.INPUT]}
+          onSignatureDataChange={setSignatureData}
+          onStateChanged={setApprovalState}
+          onSubmitApproval={onSubmitApproval}
+        />
+        {!inputCurrency || !outputCurrency ? (
+          <M.ButtonRowPrimary disabled>
+            <Trans>Select a token</Trans>
+          </M.ButtonRowPrimary>
+        ) : !pool || defaultSqrtGamma == null ? (
+          <M.ButtonRowPrimary disabled>
+            <Trans>Pair Not Supported</Trans>
+          </M.ButtonRowPrimary>
+        ) : !account ? (
+          <M.ButtonRowSecondary onClick={toggleWalletModal}>
+            <Trans>Connect Wallet</Trans>
+          </M.ButtonRowSecondary>
+        ) : (
+          <M.ButtonRow
+            onClick={() => {
+              isExpertMode ? onAdd() : setShowTxModalConfirm(true)
+            }}
+            id="swap-button"
+            disabled={
+              isInvalidPriceRange ||
+              isInvalidPrice ||
+              insufficientFunding ||
+              isInvalidTypedAmount ||
+              noRecipient ||
+              invalidRecipient ||
+              approvalState !== ApproveOrPermitState.APPROVED
+            }
+            color={
+              isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient ? 'error' : 'primary'
+            }
+          >
+            <M.Text size="lg">
+              {isInvalidPriceRange ? (
+                <Trans>Invalid price range</Trans>
+              ) : isInvalidPrice ? (
+                <Trans>Invalid price</Trans>
+              ) : insufficientFunding ? (
+                <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
+              ) : isInvalidTypedAmount ? (
+                <Trans>Enter an amount</Trans>
+              ) : noRecipient ? (
+                <Trans>Enter a recipient</Trans>
+              ) : invalidRecipient ? (
+                <Trans>Invalid recipient</Trans>
+              ) : (
+                <Trans>Swap</Trans>
+              )}
+            </M.Text>
+          </M.ButtonRow>
+        )}
+      </M.Column>
       {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}
     </div>
   )
@@ -849,11 +865,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
             />
           )}
           bottomContent={() => (
-            <ButtonPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
-              <Text fontWeight={500} fontSize={20}>
-                <Trans>Add</Trans>
-              </Text>
-            </ButtonPrimary>
+            <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
+              <Trans>Swap</Trans>
+            </M.ButtonRowPrimary>
           )}
         />
       )}
@@ -866,7 +880,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const makeRateToggle = () =>
     baseCurrency &&
     quoteCurrency && (
-      <RateToggle currencyA={quoteCurrency} currencyB={baseCurrency} handleRateToggle={handleRateToggle} />
+      <RateToggle currencyA={baseCurrency} currencyB={quoteCurrency} handleRateToggle={handleRateToggle} />
     )
 
   return (
@@ -877,96 +891,95 @@ export default function LimitRange({ history }: RouteComponentProps) {
         onConfirm={handleConfirmTokenWarning}
         onDismiss={handleDismissTokenWarning}
       />
-      <AppBody>
-        <SwapHeader
-          swapState={swapState}
-          allowedSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE}
-          extraContents={makeRateToggle}
-        />
-        <Wrapper id="limit-range-page">
-          {makeTransactionModal()}
 
-          <AutoColumn gap="md">
-            {makeInputFields()}
-            <div>
-              <RowBetween padding="0 8px">
-                <RowFixed>
-                  <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                    <Trans>Position&apos;s fee tier</Trans>
-                  </ThemedText.Black>
-                </RowFixed>
-                <RowFixed>
-                  <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                    {selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}
-                  </ThemedText.Black>
-                  {showEditTierButton && (
-                    <ButtonText marginLeft="4px" onClick={handleOpenEditTierDropdown}>
-                      <Text as="span" fontWeight={400} fontSize={14}>
-                        {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
-                      </Text>
-                    </ButtonText>
-                  )}
-                </RowFixed>
-              </RowBetween>
-              <AnimatedDropdown open={isEditTierDropdownOpened}>
-                <Select>
-                  {availableSqrtGammas.map((value) => (
-                    <TierOption
-                      key={value}
-                      active={value === sqrtGamma}
-                      activeColor={theme.primary1}
-                      sqrtGamma={value}
-                      handleTierSelect={setSqrtGamma}
-                    />
-                  ))}
-                </Select>
-              </AnimatedDropdown>
-            </div>
-            <RowBetween padding="0 8px">
-              <RowFixed>
-                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  <Trans>Average selling price</Trans>
-                </ThemedText.Black>
-              </RowFixed>
-              <RowFixed>
-                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  {averagePrice0 &&
-                  !JSBI.equal(averagePrice0.denominator, ZERO) &&
-                  !JSBI.equal(averagePrice0.numerator, ZERO) ? (
-                    <Trans>
-                      {(endPriceInverted ? averagePrice0.invert() : averagePrice0).toSignificant(6)}{' '}
-                      {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                    </Trans>
-                  ) : (
-                    <Trans>N/A</Trans>
-                  )}
-                </ThemedText.Black>
-              </RowFixed>
-            </RowBetween>
+      {makeTransactionModal()}
 
-            {recipient !== null && (
-              <>
-                <AutoRow justify="space-between">
-                  <ArrowWrapper clickable={false}>
-                    <ArrowDown size="16" color={theme.text2} />
-                  </ArrowWrapper>
-                  <LinkStyledButton id="remove-recipient-button" onClick={() => onChangeRecipient(null)}>
+      <M.Container maxWidth="29rem">
+        <M.Column stretch gap="32px">
+          <StyledSectionCard>
+            <M.Column stretch gap="16px">
+              <SwapHeader
+                swapState={swapState}
+                allowedSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE}
+                extraContents={makeRateToggle}
+              />
+
+              {makeInputFields()}
+
+              <M.Column stretch gap="8px">
+                <M.Column stretch gap="4px">
+                  <M.RowBetween>
+                    <M.Text size="sm" weight="medium" color="text2">
+                      <Trans>Position&apos;s fee tier</Trans>
+                    </M.Text>
+                    <M.Row gap="4px">
+                      <M.Text size="sm" weight="medium" color="text2">
+                        {selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : <Trans>N/A</Trans>}
+                      </M.Text>
+                      {showEditTierButton && (
+                        <M.Anchor size="sm" weight="medium" color="primary0" onClick={handleOpenEditTierDropdown}>
+                          {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
+                        </M.Anchor>
+                      )}
+                    </M.Row>
+                  </M.RowBetween>
+                  <AnimatedDropdown open={isEditTierDropdownOpened}>
+                    <Select>
+                      {availableSqrtGammas.map((value) => (
+                        <TierOption
+                          key={value}
+                          active={value === sqrtGamma}
+                          activeColor={theme.primary1}
+                          sqrtGamma={value}
+                          handleTierSelect={setSqrtGamma}
+                        />
+                      ))}
+                    </Select>
+                  </AnimatedDropdown>
+                </M.Column>
+                <M.RowBetween>
+                  <M.Text size="sm" weight="medium" color="text2">
+                    <Trans>Average selling price</Trans>
+                  </M.Text>
+                  <M.Text size="sm" weight="medium" color="text2">
+                    {averagePrice0 &&
+                    !JSBI.equal(averagePrice0.denominator, ZERO) &&
+                    !JSBI.equal(averagePrice0.numerator, ZERO) ? (
+                      <Trans>
+                        {(endPriceInverted ? averagePrice0.invert() : averagePrice0).toSignificant(6)}{' '}
+                        {quoteCurrency?.symbol} per {baseCurrency?.symbol}
+                      </Trans>
+                    ) : (
+                      <Trans>N/A</Trans>
+                    )}
+                  </M.Text>
+                </M.RowBetween>
+              </M.Column>
+
+              {recipient !== null && (
+                <M.Column stretch gap="8px">
+                  <M.Anchor
+                    size="sm"
+                    color="primary0"
+                    id="remove-recipient-button"
+                    onClick={() => onChangeRecipient(null)}
+                    style={{ alignSelf: 'flex-end' }}
+                  >
                     <Trans>- Remove recipient</Trans>
-                  </LinkStyledButton>
-                </AutoRow>
-                <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
-              </>
-            )}
+                  </M.Anchor>
+                  <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
+                </M.Column>
+              )}
 
-            {makeButton()}
-          </AutoColumn>
-        </Wrapper>
-      </AppBody>
+              {makeButton()}
+            </M.Column>
+          </StyledSectionCard>
+        </M.Column>
+      </M.Container>
       <AlertWrapper>
         <NetworkAlert />
       </AlertWrapper>
       <SwitchLocaleLink />
-      {!pool && <UnsupportedCurrencyFooter show currencies={[inputCurrency, outputCurrency]} />}
     </>
   )
 }
