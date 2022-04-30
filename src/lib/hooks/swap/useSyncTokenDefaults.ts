@@ -2,10 +2,10 @@ import { Currency } from '@uniswap/sdk-core'
 import { nativeOnChain } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useUpdateAtom } from 'jotai/utils'
-import { useToken } from 'lib/hooks/useCurrency'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { Field, Swap, swapAtom } from 'lib/state/swap'
 import { useCallback, useLayoutEffect, useState } from 'react'
+import { useLibOnlyToken } from '../useLibOnlyCurrency'
 import useOnSupportedNetwork from '../useOnSupportedNetwork'
 
 export type DefaultAddress = string | { [chainId: number]: string | 'NATIVE' } | 'NATIVE'
@@ -27,7 +27,7 @@ function useDefaultToken(
   } else if (typeof defaultAddress === 'object' && chainId) {
     address = defaultAddress[chainId]
   }
-  const token = useToken(address)
+  const token = useLibOnlyToken(address)
 
   const onSupportedNetwork = useOnSupportedNetwork()
 

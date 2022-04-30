@@ -1,6 +1,6 @@
-import { Currency } from '@uniswap/sdk-core'
-import { useToken } from 'lib/hooks/useCurrency'
+import type { Currency } from '@uniswap/sdk-core'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
+import { useLibOnlyToken } from 'lib/hooks/useLibOnlyCurrency'
 import { MissingToken } from 'lib/icons'
 import styled from 'lib/theme'
 import { useCallback, useMemo, useState } from 'react'
@@ -15,7 +15,7 @@ type TokenImgProps = BaseProps & Omit<React.ImgHTMLAttributes<HTMLImageElement>,
 
 function TokenImg({ token, ...rest }: TokenImgProps) {
   // Use the wrapped token info so that it includes the logoURI.
-  const tokenInfo = useToken(token.isToken ? token.wrapped.address : undefined) ?? token
+  const tokenInfo = useLibOnlyToken(token.isToken ? token.wrapped.address : undefined) ?? token
 
   // TODO(zzmp): TokenImg takes a frame to switch.
   const srcs = useCurrencyLogoURIs(tokenInfo)

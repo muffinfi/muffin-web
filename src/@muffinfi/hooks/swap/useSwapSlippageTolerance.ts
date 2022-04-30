@@ -5,7 +5,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useGasPrice from 'hooks/useGasPrice'
 import useUSDCPrice, { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
-import useCurrency from 'lib/hooks/useCurrency'
+import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useMemo } from 'react'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 
@@ -30,7 +30,7 @@ export default function useSwapSlippageTolerance(trade: Trade<Currency, Currency
   const outputDollarValue = useUSDCValue(trade?.outputAmount)
   const ethGasPrice = useGasPrice()
 
-  const ether = useCurrency('ETH')
+  const ether = useNativeCurrency()
   const etherPrice = useUSDCPrice(ether ?? undefined)
 
   const defaultSlippageTolerance = useMemo(() => {

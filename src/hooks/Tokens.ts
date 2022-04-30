@@ -1,9 +1,7 @@
 import { Currency, Token } from '@uniswap/sdk-core'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { L2_CHAIN_IDS, SupportedChainId, SupportedL2ChainId } from 'constants/chains'
-import { ExtendedEther, WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
 import { useAllLists, useCombinedActiveList, useInactiveListUrls } from '../state/lists/hooks'
@@ -154,49 +152,49 @@ export function useIsUserAddedToken(currency: Currency | undefined | null): bool
   return !!userAddedTokens.find((token) => currency.equals(token))
 }
 
-// undefined if invalid or does not exist
-// null if loading or null was passed
-// otherwise returns the token
-export function useToken(tokenAddress?: string | null): Token | null | undefined {
-  const tokens = useAllTokens()
-  return useTokenFromMapOrNetwork(tokens, tokenAddress)
-}
+// // undefined if invalid or does not exist
+// // null if loading or null was passed
+// // otherwise returns the token
+// export function useToken(tokenAddress?: string | null): Token | null | undefined {
+//   const tokens = useAllTokens()
+//   return useTokenFromMapOrNetwork(tokens, tokenAddress)
+// }
 
-/**
- * Manually cache currency into a global object.
- * Anti-pattern, but this is to stop re-fetching token data in any circumstances (e.g. block number changes).
- * We are expecting token data will never change.
- */
-const CURRENCIES: Record<number, Record<string, Currency> | undefined> = {}
+// /**
+//  * Manually cache currency into a global object.
+//  * Anti-pattern, but this is to stop re-fetching token data in any circumstances (e.g. block number changes).
+//  * We are expecting token data will never change.
+//  */
+// const CURRENCIES: Record<number, Record<string, Currency> | undefined> = {}
 
-export function useCurrency(_currencyId: string | null | undefined): Currency | null | undefined {
-  const { chainId } = useActiveWeb3React()
+// export function useCurrency(_currencyId: string | null | undefined): Currency | null | undefined {
+//   const { chainId } = useActiveWeb3React()
 
-  // try to get currency from cache
-  const cachedCurrency = chainId != null && _currencyId != null ? CURRENCIES[chainId]?.[_currencyId] : undefined
-  const currencyId = cachedCurrency == null ? _currencyId : undefined
+//   // try to get currency from cache
+//   const cachedCurrency = chainId != null && _currencyId != null ? CURRENCIES[chainId]?.[_currencyId] : undefined
+//   const currencyId = cachedCurrency == null ? _currencyId : undefined
 
-  // fetch token data if it is not native eth
-  const isETH = currencyId?.toUpperCase() === 'ETH'
-  const token = useToken(isETH ? undefined : currencyId)
-  const extendedEther = useMemo(() => ExtendedEther.onChain(chainId ?? SupportedChainId.MAINNET), [chainId]) // display mainnet when not connected
+//   // fetch token data if it is not native eth
+//   const isETH = currencyId?.toUpperCase() === 'ETH'
+//   const token = useToken(isETH ? undefined : currencyId)
+//   const extendedEther = useMemo(() => ExtendedEther.onChain(chainId ?? SupportedChainId.MAINNET), [chainId]) // display mainnet when not connected
 
-  // return currency if it is cached
-  if (cachedCurrency != null) return cachedCurrency
+//   // return currency if it is cached
+//   if (cachedCurrency != null) return cachedCurrency
 
-  // return null/undefined if currencyId is null/undefined
-  if (currencyId === null || currencyId === undefined) return currencyId
+//   // return null/undefined if currencyId is null/undefined
+//   if (currencyId === null || currencyId === undefined) return currencyId
 
-  // return weth if currencyId is a weth address
-  const weth = chainId ? WRAPPED_NATIVE_CURRENCY[chainId] : undefined
-  if (weth?.address?.toUpperCase() === currencyId?.toUpperCase()) return weth
+//   // return weth if currencyId is a weth address
+//   const weth = chainId ? WRAPPED_NATIVE_CURRENCY[chainId] : undefined
+//   if (weth?.address?.toUpperCase() === currencyId?.toUpperCase()) return weth
 
-  // cache currency by chainId and currencyId
-  const currency = isETH ? extendedEther : token
-  if (chainId != null && currencyId != null && currency != null) {
-    const caches = CURRENCIES[chainId] ?? (CURRENCIES[chainId] = {})
-    caches[currencyId] = currency
-  }
+//   // cache currency by chainId and currencyId
+//   const currency = isETH ? extendedEther : token
+//   if (chainId != null && currencyId != null && currency != null) {
+//     const caches = CURRENCIES[chainId] ?? (CURRENCIES[chainId] = {})
+//     caches[currencyId] = currency
+//   }
 
-  return currency
-}
+//   return currency
+// }

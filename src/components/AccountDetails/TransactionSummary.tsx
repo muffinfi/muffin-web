@@ -4,7 +4,7 @@ import { Fraction, TradeType } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import { Fragment } from 'react'
 import { nativeOnChain } from '../../constants/tokens'
-import { useCurrency, useToken } from '../../hooks/Tokens'
+import useCurrency, { useToken } from '../../hooks/useCurrency'
 import useENSName from '../../hooks/useENSName'
 // import { VoteOption } from '../../state/governance/types'
 import {
