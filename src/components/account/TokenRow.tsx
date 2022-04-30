@@ -1,57 +1,52 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import Badge, { BadgeVariant } from 'components/Badge'
-import { ButtonEmpty } from 'components/Button'
-import Column from 'components/Column'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
-import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCurrency from 'hooks/useCurrency'
+import { memo } from 'react'
 import { AlertCircle, Minus, Plus } from 'react-feather'
-import { Link } from 'react-router-dom'
-import { Text } from 'rebass'
 import { useTokenBalance } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
-const MenuItem = styled(RowBetween)`
-  padding: 4px 8px;
-  height: 56px;
+const MenuItem = styled.div`
+  padding: 12px 5px;
+  margin: 0 -5px;
+  width: calc(100% + 10px);
+
   display: grid;
-  grid-template-columns: auto minmax(auto, 1fr) auto minmax(0, 72px);
-  grid-gap: 16px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--borderColor);
 `
 
-const StyledBalanceText = styled(Text)`
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 5rem;
-  text-overflow: ellipsis;
+const StyledBalanceText = styled(M.Text).attrs({
+  nowrap: true,
+  ellipsis: true,
+})`
+  max-width: 8rem;
 `
 
-const SmallButton = styled(ButtonEmpty)`
-  width: 32px;
-  height: 32px;
-  padding: 0;
-
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    width: 24px;
-    height: 24px;
-  `};
-`
-
-const ButtonLabel = styled(ThemedText.White)`
+const ButtonLabel = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.bg2};
+
+  color: var(--primary-text);
+  background-color: var(--borderColor1);
   &:hover {
-    background-color: ${({ theme }) => theme.bg3};
+    background-color: var(--text2);
+  }
+
+  svg {
+    stroke-width: 3px;
   }
 `
 
@@ -61,7 +56,7 @@ const BadgeWrapper = styled.div`
   justify-content: flex-end;
 `
 
-export default function TokenRow({
+export default memo(function TokenRow({
   tokenId,
   trusted,
   showZeroBalance,
@@ -92,56 +87,57 @@ export default function TokenRow({
   // only show add or remove buttons if not on selected list
   return (
     <MenuItem className={`token-item-${tokenId}`}>
-      <CurrencyLogo currency={token} size={'24px'} />
-      <Column>
-        <AutoRow gap="4px">
-          <Text title={token.name} fontWeight={500}>
-            {token.symbol}
-          </Text>
-          {!trusted && (
-            <BadgeWrapper>
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    This token doesn&apos;t appear on the active token lists. Make sure this is a token you trust before
-                    using it.
-                  </Trans>
-                }
-              >
-                <Badge variant={BadgeVariant.DEFAULT}>
-                  <AlertCircle width={14} height={14} />
-                  &nbsp;
-                  <Text fontWeight={500} fontSize={14}>
-                    <Trans>Untrusted</Trans>
-                  </Text>
-                </Badge>
-              </MouseoverTooltip>
-            </BadgeWrapper>
-          )}
-        </AutoRow>
-        <ThemedText.DarkGray ml="0px" fontSize={'12px'} fontWeight={300}>
+      <CurrencyLogo currency={token} size={'28px'} />
+
+      <M.Column stretch gap="4px">
+        <M.Text title={token.name} weight="medium" nowrap ellipsis>
+          {token.symbol}
+        </M.Text>
+        {!trusted && (
+          <BadgeWrapper>
+            <MouseoverTooltip
+              text={
+                <Trans>
+                  This token doesn&apos;t appear on the active token lists. Make sure this is a token you trust before
+                  using it.
+                </Trans>
+              }
+            >
+              <Badge variant={BadgeVariant.DEFAULT}>
+                <AlertCircle width={14} height={14} />
+                &nbsp;
+                <M.Text weight="medium" size="sm">
+                  <Trans>Untrusted</Trans>
+                </M.Text>
+              </Badge>
+            </MouseoverTooltip>
+          </BadgeWrapper>
+        )}
+        <M.Text size="xs" color="text2">
           {token.name}
-        </ThemedText.DarkGray>
-      </Column>
-      <RowFixed style={{ justifySelf: 'flex-end' }}>
+        </M.Text>
+      </M.Column>
+
+      <M.Row style={{ justifySelf: 'flex-end' }}>
         {balance ? (
           <StyledBalanceText title={balance.toExact()}>{balance.toSignificant(4)}</StyledBalanceText>
         ) : account ? (
           <Loader />
         ) : null}
-      </RowFixed>
-      <RowFixed style={{ justifySelf: 'flex-end', columnGap: '4px' }}>
-        <SmallButton as={Link} to={`/account/deposit?currency=${token.address}`} data-token={tokenId}>
+      </M.Row>
+
+      <M.Row gap="0.667em">
+        <M.Link to={`/account/deposit?currency=${token.address}`} data-token={tokenId}>
           <ButtonLabel>
-            <Plus size={18} />
+            <Plus size={16} />
           </ButtonLabel>
-        </SmallButton>
-        <SmallButton as={Link} to={`/account/withdraw?currency=${token.address}`} data-token={tokenId}>
+        </M.Link>
+        <M.Link to={`/account/withdraw?currency=${token.address}`} data-token={tokenId}>
           <ButtonLabel>
-            <Minus size={18} />
+            <Minus size={16} />
           </ButtonLabel>
-        </SmallButton>
-      </RowFixed>
+        </M.Link>
+      </M.Row>
     </MenuItem>
   )
-}
+})

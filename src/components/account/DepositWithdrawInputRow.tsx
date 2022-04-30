@@ -1,26 +1,30 @@
+import { faBuildingColumns, faWallet } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { ButtonText } from 'components/Button'
-import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
-import { RowBetween } from 'components/Row'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useUSDCValue } from 'hooks/useUSDCPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { formatCurrencyAmount, formatCurrencyAmountWithSymbol } from 'utils/formatCurrencyAmount'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
-const BalanceWrapper = styled(AutoColumn)`
-  ${({ theme }) => theme.flexColumnNoWrap}
+const BalanceWrapper = styled(M.Column).attrs({ stretch: true })`
   position: relative;
-  border-radius: 20px;
+  border-radius: 16px;
   transition: height 1s ease;
-  border: 1px solid ${({ theme }) => theme.bg1};
-  padding: 1rem;
+  will-change: height;
+  border: 1px solid var(--borderColor);
+  padding: 14px;
+`
+
+const Seperator = styled.div`
+  height: 1px;
+  background: var(--borderColor);
 `
 
 interface DepositWithdrawInputRowProps {
@@ -103,7 +107,7 @@ export default function DepositWithdrawInputRow({
   }, [index, onUserInput, value, maxBalance])
 
   return (
-    <AutoColumn gap="sm">
+    <M.Column stretch gap="8px">
       <CurrencyInputPanel
         label={isDeposit ? <Trans>Deposit Token</Trans> : <Trans>Withdraw Token</Trans>}
         value={value}
@@ -119,27 +123,43 @@ export default function DepositWithdrawInputRow({
         balanceSource={inputBalanceSource}
         isCurrencySelected={isCurrencySelected}
       />
-      {currencyAmount && (
-        <BalanceWrapper gap="sm">
-          <RowBetween>
-            <ThemedText.Main>
-              <Trans>Current Wallet Balance</Trans>
-            </ThemedText.Main>
-            <ThemedText.Main>{formatCurrencyAmountWithSymbol(walletBalance, 6)}</ThemedText.Main>
-          </RowBetween>
-          <RowBetween>
-            <ThemedText.Main>
-              <Trans>Current Account Balance</Trans>
-            </ThemedText.Main>
-            <ThemedText.Main>{formatCurrencyAmountWithSymbol(accountBalance, 6)}</ThemedText.Main>
-          </RowBetween>
-        </BalanceWrapper>
+      {true && (
+        <M.TextContents size="sm">
+          <BalanceWrapper gap="8px">
+            <M.Row>
+              <M.Text weight="semibold">Current Balances</M.Text>
+            </M.Row>
+            <M.RowBetween gap="1em">
+              <M.Row gap="0.5em">
+                <M.Text size="xs">
+                  <FontAwesomeIcon icon={faWallet} />
+                </M.Text>
+                <Trans>Wallet</Trans>
+              </M.Row>
+              <M.Text>{formatCurrencyAmountWithSymbol(walletBalance, 6)}</M.Text>
+            </M.RowBetween>
+            <M.RowBetween gap="1em">
+              <M.Row gap="0.5em">
+                <M.Text size="xs">
+                  <FontAwesomeIcon icon={faBuildingColumns} />
+                </M.Text>
+                <Trans>Account</Trans>
+              </M.Row>
+              <M.Text>{formatCurrencyAmountWithSymbol(accountBalance, 6)}</M.Text>
+            </M.RowBetween>
+          </BalanceWrapper>
+        </M.TextContents>
       )}
       {showRemoveButton && (
-        <AutoColumn justify="flex-end" style={{ paddingRight: '4px' }}>
-          <ButtonText onClick={handleRemove}>Remove</ButtonText>
-        </AutoColumn>
+        <>
+          <div style={{ paddingRight: '4px', alignSelf: 'flex-end' }}>
+            <M.Anchor size="sm" color="primary0" hoverColor="primary1" role="button" onClick={handleRemove}>
+              Remove
+            </M.Anchor>
+          </div>
+          <Seperator />
+        </>
       )}
-    </AutoColumn>
+    </M.Column>
   )
 }

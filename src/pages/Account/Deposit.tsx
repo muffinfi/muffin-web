@@ -1,17 +1,14 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { AccountManager, StandardPermitArguments } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
-import { ButtonLight, ButtonPrimary, ButtonText } from 'components/Button'
-import { GreyCard, LightCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
+import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
-import { DepositWithdrawTabs } from 'components/NavigationTabs'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
@@ -25,21 +22,20 @@ import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButto
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
-import AppBody from 'pages/AppBody'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
-import { Text } from 'rebass'
+import { animated, useSpring } from 'react-spring'
 import { useWalletModalToggle } from 'state/application/hooks'
 import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode } from 'state/user/hooks'
-import { ThemedText } from 'theme'
+import useResizeObserver from 'use-resize-observer'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { AlertWrapper, Wrapper } from './styled'
+import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 
 export default function Deposit({ history }: RouteComponentProps) {
@@ -159,24 +155,24 @@ export default function Deposit({ history }: RouteComponentProps) {
   }, [txnHash, resetState, history])
 
   const makeTransactionModalTopContent = () => (
-    <AutoColumn gap={'md'} style={{ marginTop: '20px' }}>
-      <LightCard padding="12px 16px">
-        <AutoColumn gap="md">
+    <M.Column stretch gap="24px">
+      <LightCard padding="16px">
+        <M.Column stretch gap="16px">
           {inputAmounts.filter(Boolean).map((amount, index) => (
-            <RowBetween key={getRowKey(amount?.currency, index)}>
-              <RowFixed>
+            <M.RowBetween key={getRowKey(amount?.currency, index)}>
+              <M.Row>
                 <CurrencyLogo currency={amount?.currency} size={'20px'} style={{ marginRight: '0.5rem' }} />
-                <ThemedText.Main>{amount ? formatCurrencyAmount(amount, 4) : '-'}</ThemedText.Main>
-              </RowFixed>
-              <ThemedText.Main>{amount?.currency.symbol}</ThemedText.Main>
-            </RowBetween>
+                <M.Text>{amount?.currency.symbol}</M.Text>
+              </M.Row>
+              <M.Text>{amount ? formatCurrencyAmount(amount, 4) : '-'}</M.Text>
+            </M.RowBetween>
           ))}
-        </AutoColumn>
+        </M.Column>
       </LightCard>
-      <ButtonPrimary onClick={deposit}>
+      <M.ButtonRowPrimary onClick={deposit}>
         <Trans>Deposit</Trans>
-      </ButtonPrimary>
-    </AutoColumn>
+      </M.ButtonRowPrimary>
+    </M.Column>
   )
 
   const makeTransactionModal = () => (
@@ -240,23 +236,36 @@ export default function Deposit({ history }: RouteComponentProps) {
     [inputAmounts]
   )
 
+  // skip height animation for initial rendering
+  const [heightTransitionReady, setHeightTransitionReady] = useState(false)
+  useLayoutEffect(() => {
+    const timeoutId = setTimeout(() => setHeightTransitionReady(true), 1000)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  const { ref, height } = useResizeObserver()
+  const springProps = useSpring({ height: height ?? 0, immediate: !heightTransitionReady })
+
   const makeInputFields = () => (
-    <AutoColumn gap="lg" style={{ position: 'relative' }}>
-      {inputAmounts.map((amount, index) => (
-        <DepositWithdrawInputRow
-          key={getRowKey(amount?.currency, index)}
-          inputBalanceSource={BalanceSource.WALLET}
-          currencyAmount={amount}
-          onUserInput={onUserInput}
-          onCurrencySelect={onCurrencySelect}
-          onRemoveRow={onRemoveRow}
-          showRemoveButton={inputAmounts.length > 1}
-          id={`deposit-currency-input-${getRowKey(amount?.currency, index)}`}
-          index={index}
-          isCurrencySelected={isCurrencySelected}
-        />
-      ))}
-    </AutoColumn>
+    <animated.div style={{ ...springProps, overflow: 'hidden', width: '100%', willChange: 'height' }}>
+      <div ref={ref}>
+        <M.Column stretch gap="24px" style={{ position: 'relative' }}>
+          {inputAmounts.map((amount, index) => (
+            <DepositWithdrawInputRow
+              key={getRowKey(amount?.currency, index)}
+              inputBalanceSource={BalanceSource.WALLET}
+              currencyAmount={amount}
+              onUserInput={onUserInput}
+              onCurrencySelect={onCurrencySelect}
+              onRemoveRow={onRemoveRow}
+              showRemoveButton={inputAmounts.length > 1}
+              id={`deposit-currency-input-${getRowKey(amount?.currency, index)}`}
+              index={index}
+              isCurrencySelected={isCurrencySelected}
+            />
+          ))}
+        </M.Column>
+      </div>
+    </animated.div>
   )
 
   /*=====================================================================
@@ -268,11 +277,11 @@ export default function Deposit({ history }: RouteComponentProps) {
   }, [])
 
   const makeAddRowButton = () => (
-    <AutoColumn justify="flex-end" style={{ marginTop: '1rem', paddingRight: '4px' }}>
-      <ButtonText onClick={onAddRow}>
+    <div style={{ alignSelf: 'flex-end' }}>
+      <M.Anchor role="button" color="primary0" hoverColor="primary1" size="sm" weight="semibold" onClick={onAddRow}>
         + <Trans>Add token</Trans>
-      </ButtonText>
-    </AutoColumn>
+      </M.Anchor>
+    </div>
   )
 
   /*=====================================================================
@@ -318,30 +327,25 @@ export default function Deposit({ history }: RouteComponentProps) {
   const makeButton = () => (
     <div>
       {!account ? (
-        <ButtonLight onClick={toggleWalletModal}>
+        <M.ButtonRowSecondary onClick={toggleWalletModal}>
           <Trans>Connect Wallet</Trans>
-        </ButtonLight>
+        </M.ButtonRowSecondary>
       ) : zeroCurrencyAmount ? (
-        <GreyCard style={{ textAlign: 'center' }}>
-          <ThemedText.Main mb="4px">
-            <Trans>Enter an amount for {zeroCurrencyAmount.currency.symbol}</Trans>
-          </ThemedText.Main>
-        </GreyCard>
+        <M.ButtonRow color="tertiary" disabled>
+          <Trans>Enter an amount for {zeroCurrencyAmount.currency.symbol}</Trans>
+        </M.ButtonRow>
       ) : overflowCurrencyAmount ? (
-        <GreyCard style={{ textAlign: 'center' }}>
-          <ThemedText.Main mb="4px">
-            <Trans>Insufficient {overflowCurrencyAmount.currency.symbol} balance in wallet</Trans>
-          </ThemedText.Main>
-        </GreyCard>
+        <M.ButtonRow color="tertiary" disabled>
+          <Trans>Insufficient {overflowCurrencyAmount.currency.symbol} balance in wallet</Trans>
+        </M.ButtonRow>
       ) : (
-        <ButtonPrimary
+        <M.ButtonRowPrimary
           onClick={handleDeposit}
           id="deposit-button"
           disabled={isAttemptingTxn || !inputAmounts[0] || pendingApprovalCurrencyAmounts.length > 0}
-          // error={isValid && priceImpactSeverity > 2 && !swapCallbackError}
         >
-          <AutoRow gap="4px" justify="center">
-            <Text fontSize={20} fontWeight={500}>
+          <M.Row gap="4px">
+            <M.Text>
               {isAttemptingTxn ? (
                 <Trans>Waiting For Confirmation</Trans>
               ) : !inputAmounts[0] ? (
@@ -349,12 +353,11 @@ export default function Deposit({ history }: RouteComponentProps) {
               ) : (
                 <Trans>Deposit</Trans>
               )}
-            </Text>
+            </M.Text>
             {isAttemptingTxn && <Loader />}
-          </AutoRow>
-        </ButtonPrimary>
+          </M.Row>
+        </M.ButtonRowPrimary>
       )}
-      {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}
     </div>
   )
 
@@ -394,21 +397,29 @@ export default function Deposit({ history }: RouteComponentProps) {
 
   return (
     <>
-      <AutoColumn>
-        {makeTransactionModal()}
-        {makeTokenWarningModal()}
-        <AppBody>
-          <DepositWithdrawTabs title={<Trans>Deposit</Trans>} />
-          <Wrapper>
-            <AutoColumn gap="md">
+      {makeTransactionModal()}
+      {makeTokenWarningModal()}
+      <M.Container maxWidth="27rem">
+        <M.Column stretch gap="32px">
+          <M.Link color="text2" to="/account">
+            <Trans>← Back to Account</Trans>
+          </M.Link>
+
+          <M.Text size="xl" weight="bold">
+            <Trans>Deposit into account</Trans>
+          </M.Text>
+
+          <M.SectionCard greedyMargin>
+            <M.Column stretch gap="24px">
               {makeInputFields()}
               {makeAddRowButton()}
               {makeApprovalButtons()}
               {makeButton()}
-            </AutoColumn>
-          </Wrapper>
-        </AppBody>
-      </AutoColumn>
+            </M.Column>
+          </M.SectionCard>
+        </M.Column>
+      </M.Container>
+
       <AlertWrapper>
         <NetworkAlert />
       </AlertWrapper>
