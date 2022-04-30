@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Minus, Plus } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'
 import { Input as NumericalInput } from '../NumericalInput'
@@ -26,7 +26,7 @@ const FocusedOutlineCard = styled.div<{ active?: boolean; pulsing?: boolean }>`
 
   transition: border-color 150ms;
   border: 1px solid transparent;
-  border-color: ${({ active, theme }) => (active ? theme.blue1 : 'transparent')};
+  border-color: ${({ active }) => (active ? 'var(--borderColor1)' : 'transparent')};
   animation: ${({ pulsing, theme }) => pulsing && pulse(theme.blue1)} 0.8s linear;
 `
 
@@ -96,10 +96,10 @@ const StepCounter = ({
   // animation if parent value updates local value
   const [pulsing, setPulsing] = useState<boolean>(false)
 
-  const handleOnFocus = () => {
+  const handleOnFocus = useCallback(() => {
     setUseLocalValue(true)
     setActive(true)
-  }
+  }, [])
 
   const handleOnBlur = useCallback(() => {
     setUseLocalValue(false)
@@ -109,11 +109,13 @@ const StepCounter = ({
 
   // for button clicks
   const handleDecrement = useCallback(() => {
+    timestampLastButtonClick.current = Date.now()
     setUseLocalValue(false)
     onUserInput(decrement())
   }, [decrement, onUserInput])
 
   const handleIncrement = useCallback(() => {
+    timestampLastButtonClick.current = Date.now()
     setUseLocalValue(false)
     onUserInput(increment())
   }, [increment, onUserInput])
@@ -126,29 +128,40 @@ const StepCounter = ({
     [handleChangeImmediately, onUserInput]
   )
 
+  const timeoutId = useRef<ReturnType<typeof setTimeout>>()
+  const timestampLastButtonClick = useRef<number>(0)
+
   useEffect(() => {
     if (localValue !== value && !useLocalValue) {
       if (disablePulsing) {
         setLocalValue(value)
       } else {
-        setTimeout(() => {
-          setLocalValue(value) // reset local value to match parent
+        // setTimeout(() => {
+        setLocalValue(value) // reset local value to match parent
+
+        if (Date.now() - timestampLastButtonClick.current > 200) {
           setPulsing(true) // trigger animation
-          setTimeout(function () {
+
+          if (timeoutId.current) clearTimeout(timeoutId.current)
+          timeoutId.current = setTimeout(() => {
             setPulsing(false)
           }, 1800)
-        }, 0)
+        }
+        // }, 0)
       }
     }
   }, [disablePulsing, localValue, useLocalValue, value])
+
+  // generate random string for input id
+  const inputFieldId = useMemo(() => `${Date.now()}-${Math.random()}`, [])
 
   return (
     <FocusedOutlineCard
       pulsing={pulsing}
       active={active}
-      onFocus={handleOnFocus}
-      onBlur={handleOnBlur}
       style={width ? { width } : undefined}
+      as="label"
+      htmlFor={inputFieldId}
     >
       <M.ColumnCenter stretch gap="8px">
         <M.Text color="text2" size="xs">
@@ -163,11 +176,14 @@ const StepCounter = ({
           )}
 
           <StyledInput
+            id={inputFieldId}
             className="rate-input-0"
             value={localValue}
             fontSize="20px"
             disabled={locked}
             onUserInput={handleInput}
+            onFocus={handleOnFocus}
+            onBlur={handleOnBlur}
           />
 
           {!locked && (
@@ -178,9 +194,13 @@ const StepCounter = ({
         </M.Row>
 
         <M.Text color="text2" size="xs">
-          <Trans>
-            {tokenB} per {tokenA}
-          </Trans>
+          {tokenA || tokenB ? (
+            <Trans>
+              {tokenB ?? '-'} per {tokenA ?? '-'}
+            </Trans>
+          ) : (
+            <span>&nbsp;</span>
+          )}
         </M.Text>
       </M.ColumnCenter>
     </FocusedOutlineCard>
