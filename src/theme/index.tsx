@@ -1,12 +1,7 @@
-import { GlobalStyle } from '@muffinfi-ui/style'
-import React, { useMemo } from 'react'
+import { GlobalStyle, NoTransition } from '@muffinfi-ui/style'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Text, TextProps as TextPropsOriginal } from 'rebass'
-import styled, {
-  createGlobalStyle,
-  css,
-  DefaultTheme,
-  ThemeProvider as StyledComponentsThemeProvider,
-} from 'styled-components/macro'
+import styled, { css, DefaultTheme, ThemeProvider as StyledComponentsThemeProvider } from 'styled-components/macro'
 import { useIsDarkMode } from '../state/user/hooks'
 import { Colors } from './styled'
 
@@ -59,39 +54,39 @@ function colors(darkMode: boolean): Colors {
     black,
 
     // text
-    text1: darkMode ? '#FFFFFF' : '#111111', // '#000000',
-    text2: darkMode ? '#C3C5CB' : '#717171', // '#606060',
-    text3: darkMode ? '#8F96AC' : '#909090',
-    text4: darkMode ? '#B2B9D2' : '#C0C0C0',
-    text5: darkMode ? '#2C2F36' : '#EEEEEE', // not using
+    text1: darkMode ? '#FFFFFF' : '#111111',
+    text2: darkMode ? '#888888' : '#717171',
+    text3: darkMode ? '#444444' : '#909090',
+    text4: darkMode ? '#333333' : '#C0C0C0',
+    text5: darkMode ? '#2C2C2C' : '#EEEEEE', // not using
 
     // backgrounds / greys
-    bg0: darkMode ? '#191919' : '#FFF', //    '#FFF',
-    bg1: darkMode ? '#212121' : '#F8F8F8', // '#F7F8FA',
-    bg2: darkMode ? '#2C2C2C' : '#EEEEEE', // '#EDEEF2',
-    bg3: darkMode ? '#404040' : '#CCCCCC', // '#CED0D9',
-    bg4: darkMode ? '#565656' : '#AAAAAA', // '#888D9B',
-    bg5: darkMode ? '#6C6C6C' : '#989898', // '#888D9B',
-    bg6: darkMode ? '#1A1A1A' : '#818181', // '#6C7284',
+    bg0: darkMode ? '#181818' : '#FFF',
+    bg1: darkMode ? '#242424' : '#F8F8F8',
+    bg2: darkMode ? '#333333' : '#EEEEEE',
+    bg3: darkMode ? '#404040' : '#CCCCCC',
+    bg4: darkMode ? '#565656' : '#AAAAAA',
+    bg5: darkMode ? '#6C6C6C' : '#989898',
+    bg6: darkMode ? '#1A1A1A' : '#818181', // not using
 
     //specialty colors
     modalBG: darkMode ? 'rgba(0,0,0,.425)' : 'rgba(0,0,0,0.3)',
     advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.6)',
 
     //primary colors
-    primary1: darkMode ? '#2172E5' : '#F95F04', // '#E8006F',
-    primary2: darkMode ? '#3680E7' : '#F95F0470', // '#FF8CC3', // not using
-    primary3: darkMode ? '#4D8FEA' : '#F95F0470', // '#FF99C9',
-    primary4: darkMode ? '#376bad70' : '#F95F0440', // '#F6DDE8',
-    primary5: darkMode ? '#153d6f70' : '#F95F0440', // '#FDEAF1',
+    primary1: darkMode ? '#d23a25' : '#F95F04',
+    primary2: darkMode ? '#b83320' : '#F95F0470', // not using
+    primary3: darkMode ? '#b83320' : '#F95F0470',
+    primary4: darkMode ? '#b8332070' : '#F95F0440',
+    primary5: darkMode ? '#b8332070' : '#F95F0440',
 
     // color text
-    primaryText1: darkMode ? '#5090ea' : '#d05006', // '#D50066',
+    primaryText1: darkMode ? '#d23a25' : '#d05006',
 
     // secondary colors
-    secondary1: darkMode ? '#2172E5' : '#F95F04', // '#E8006F',
-    secondary2: darkMode ? '#17000b26' : '#f6e5dd', // '#F6DDE8',
-    secondary3: darkMode ? '#17000b26' : '#f6e5dd', //'#FDEAF1',
+    secondary1: darkMode ? '#d23a25' : '#F95F04',
+    secondary2: darkMode ? '#3f2119' : '#f6e5dd',
+    secondary3: darkMode ? '#3f2119' : '#f6e5dd',
 
     // other
     red1: darkMode ? '#FF4343' : '#DA2D2B',
@@ -141,14 +136,42 @@ function theme(darkMode: boolean): DefaultTheme {
   }
 }
 
-export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+/**
+ * Disable all css transitions before allowing darkMode to be changed.
+ * This is to avoid awkward transition animation when changing dark/light mode.
+ */
+const useDarkModeNoTransition = () => {
   const darkMode = useIsDarkMode()
+  const [darkModeDelayed, setDarkModeDelayed] = useState(darkMode)
+  const [noTransition, setNoTransition] = useState(false)
+  const timeoutId = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    const timeout = (fn: () => void) => {
+      if (timeoutId.current) clearTimeout(timeoutId.current)
+      timeoutId.current = setTimeout(fn, 0)
+    }
+    if (noTransition === false && darkMode !== darkModeDelayed) {
+      timeout(() => setNoTransition(true))
+    } else if (noTransition === true && darkMode !== darkModeDelayed) {
+      timeout(() => setDarkModeDelayed(darkMode))
+    } else if (noTransition === true && darkMode === darkModeDelayed) {
+      timeout(() => setNoTransition(false))
+    }
+  }, [noTransition, darkMode, darkModeDelayed])
+
+  return [darkModeDelayed, noTransition]
+}
+
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [darkMode, noTransition] = useDarkModeNoTransition()
 
   const themeObject = useMemo(() => theme(darkMode), [darkMode])
 
   return (
     <StyledComponentsThemeProvider theme={themeObject}>
       <GlobalStyle darkMode={darkMode} />
+      <NoTransition enabled={noTransition} />
       {children}
     </StyledComponentsThemeProvider>
   )
@@ -211,14 +234,3 @@ export const ThemedText = {
     return <TextWrapper fontWeight={500} color={error ? 'red1' : 'text2'} {...props} />
   },
 }
-
-export const ThemedGlobalStyle = createGlobalStyle`
-/* html {
-  color: ${({ theme }) => theme.text1};
-  background-color: ${({ theme }) => theme.bg1} !important;
-}
-
-a {
- color: ${({ theme }) => theme.blue1};
-} */
-`

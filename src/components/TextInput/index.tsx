@@ -7,9 +7,9 @@ const Input = styled.input<{ error?: boolean; fontSize?: string }>`
   border: none;
   flex: 1 1 auto;
   width: 0;
-  background-color: ${({ theme }) => theme.bg1};
+  background-color: var(--layer2);
   transition: color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')};
-  color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
+  color: ${({ error }) => (error ? 'var(--error)' : 'var(--text1)')};
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
@@ -27,7 +27,7 @@ const Input = styled.input<{ error?: boolean; fontSize?: string }>`
   }
 
   ::placeholder {
-    color: ${({ theme }) => theme.text4};
+    color: var(--placeholder-text);
   }
 `
 
@@ -38,9 +38,9 @@ const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: string }>`
   flex: 1 1 auto;
   width: 0;
   resize: none;
-  background-color: ${({ theme }) => theme.bg1};
+  background-color: var(--layer2);
   transition: color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')};
-  color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
+  color: ${({ error }) => (error ? 'var(--error)' : 'var(--text1)')};
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
@@ -59,7 +59,7 @@ const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: string }>`
   }
 
   ::placeholder {
-    color: ${({ theme }) => theme.text4};
+    color: var(--placeholder-text);
   }
 `
 

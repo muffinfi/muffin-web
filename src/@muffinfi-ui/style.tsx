@@ -1,4 +1,5 @@
-import { darken } from 'polished'
+import { darken, lighten } from 'polished'
+import { memo, useEffect, useRef, useState } from 'react'
 import { css, createGlobalStyle } from 'styled-components/macro'
 
 const lightThemeMixin = css`
@@ -45,52 +46,54 @@ const lightThemeMixin = css`
   /* color */
   --green: #007d35;
   --success: #007d35;
+  --error: #da2d2b;
 `
 
 const darkThemeMixin = css`
   /* color */
-  --bg: #1d1d1d;
-  --layer1: #2c2c2c;
-  --layer2: #222222;
-  --layer3: #404040;
+  --bg: #181818;
+  --layer1: #242424;
+  --layer2: #1a1a1a;
+  --layer3: #333;
 
   /* border */
-  --borderColor: #404040;
-  --borderColor1: ${darken(0.12, '#404040')};
+  --borderColor: #333;
+  --borderColor1: ${lighten(0.12, '#333')};
 
   /* text color */
   --text1: #fff;
-  --text2: #aaa;
-  --placeholder-text: #999;
+  --text2: #888;
+  --placeholder-text: #444;
 
   /* button color */
-  --primary0: #ce5212;
-  --primary1: ${darken(0.04, '#CE5212')};
-  --primary2: ${darken(0.08, '#CE5212')};
+  --primary0: #d23a25;
+  --primary1: ${darken(0.06, '#D23A25')};
+  --primary2: ${darken(0.12, '#D23A25')};
   --primary-text: #fff;
 
-  --secondary0: #fde7da;
-  --secondary1: ${darken(0.04, '#fde7da')};
-  --secondary2: ${darken(0.08, '#fde7da')};
-  --secondary-text: #f95f04;
+  --secondary0: #3f2119;
+  --secondary1: #4e2318;
+  --secondary2: #5c2517;
+  --secondary-text: #f9381f;
 
-  --tertiary0: ##404040;
-  --tertiary1: ${darken(0.04, '#404040')};
-  --tertiary2: ${darken(0.08, '#404040')};
+  --tertiary0: #333;
+  --tertiary1: ${lighten(0.04, '#333')};
+  --tertiary2: ${lighten(0.08, '#333')};
   --tertiary-text: #fff;
 
-  --disabled: #404040;
+  --disabled: #333;
   --disabled-text: #666;
 
-  --badge-bg: #404040;
-  --badge-text: #999;
+  --badge-bg: #333;
+  --badge-text: #888;
 
-  --error-bg: #ff4343;
+  --error-bg: #ff3333;
   --error-text: #fff;
 
   /* color */
   --green: #27ae60;
   --success: #27ae60;
+  --error: #ff3333;
 `
 
 // FIXME: put reset css to index.html directly
@@ -170,4 +173,8 @@ export const GlobalStyle = createGlobalStyle<{ darkMode: boolean }>`
     --medium: 500;
     --regular: 400;
   }
+`
+
+export const NoTransition = createGlobalStyle<{ enabled: boolean }>`
+  ${({ enabled }) => enabled && '* {transition: none !important;}'}
 `

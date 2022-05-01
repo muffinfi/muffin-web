@@ -22,7 +22,7 @@ import ListsUpdater from './state/lists/updater'
 import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
-import ThemeProvider, { ThemedGlobalStyle } from './theme'
+import ThemeProvider from './theme'
 // import RadialGradientByChainUpdater from './theme/RadialGradientByChainUpdater'
 import getLibrary from './utils/getLibrary'
 
@@ -57,7 +57,6 @@ ReactDOM.render(
               <Blocklist>
                 <Updaters />
                 <ThemeProvider>
-                  <ThemedGlobalStyle />
                   <App />
                 </ThemeProvider>
               </Blocklist>

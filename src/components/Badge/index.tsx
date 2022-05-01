@@ -30,7 +30,7 @@ function pickBackgroundColor(variant: BadgeVariant | undefined, theme: DefaultTh
     case BadgeVariant.WARNING_OUTLINE:
       return 'transparent'
     default:
-      return theme.bg2
+      return 'var(--tertiary0)'
   }
 }
 
@@ -54,7 +54,7 @@ function pickFontColor(variant: BadgeVariant | undefined, theme: DefaultTheme): 
     case BadgeVariant.WARNING_OUTLINE:
       return theme.warning
     default:
-      return readableColor(theme.bg2)
+      return 'var(--text1)'
   }
 }
 

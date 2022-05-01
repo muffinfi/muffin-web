@@ -66,7 +66,7 @@ const FlyoutItem = styled(M.Column).attrs({ stretch: true, gap: '0.75rem' })<{ a
 `
 
 const GreenDot = styled.div`
-  background-color: var(--green1);
+  background-color: var(--green);
   border-radius: 50%;
   height: 9px;
   width: 9px;
