@@ -28,7 +28,6 @@ const NoTokens = styled.div`
 const InputCheckbox = styled.input.attrs({ type: 'checkbox' })`
   width: 12px;
   height: 12px;
-  accent-color: var(--text2);
 `
 
 export default function Account(props: RouteComponentProps) {
