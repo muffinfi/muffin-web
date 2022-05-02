@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
@@ -10,7 +11,6 @@ import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
-import * as M from '@muffinfi-ui'
 import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -42,7 +42,7 @@ const TokenProportionBadge = styled(Badge)`
   margin-left: 12px;
 
   border-radius: 4px;
-  padding: 2px solid var(--badge-bg);
+  padding: 2px 4px;
   margin: -2px;
   min-width: 2.6em;
   background: var(--badge-bg);
@@ -126,15 +126,13 @@ const TokenAmountAndValue = ({
         {/* TODO: is 4 sig fig good? */}
         <Trans>${fiatValue?.toSignificant(4, { groupSeparator: ',' }) ?? '-'}</Trans>
       </M.Text>
-      {showRatio ? (
-        <div>
-          {ratio != null ? (
-            <TokenProportionBadge>
-              <Trans>{ratio}%</Trans>
-            </TokenProportionBadge>
-          ) : null}
-        </div>
-      ) : null}
+      {!showRatio ? null : ratio != null ? (
+        <TokenProportionBadge>
+          <Trans>{ratio}%</Trans>
+        </TokenProportionBadge>
+      ) : (
+        <span />
+      )}
     </>
   )
 }
