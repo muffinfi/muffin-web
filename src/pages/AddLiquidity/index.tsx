@@ -354,7 +354,7 @@ export default function AddLiquidity({
     errorMessage = <Trans>Connect Wallet</Trans>
   }
   if (poolState === PoolState.INVALID) {
-    errorMessage = errorMessage ?? <Trans>Invalid pair</Trans>
+    errorMessage = errorMessage ?? <Trans>Invalid token pair</Trans>
   }
   if (isInvalidPrice) {
     errorMessage = errorMessage ?? <Trans>Invalid price input</Trans>
@@ -968,7 +968,7 @@ export default function AddLiquidity({
                   approvalStates[Field.CURRENCY_B] !== ApproveOrPermitState.APPROVED)
               }
             >
-              {errorMessage ? errorMessage : expertMode ? <Trans>Add</Trans> : <Trans>Preview</Trans>}
+              {errorMessage ? errorMessage : expertMode ? <Trans>Add Liquidity</Trans> : <Trans>Preview</Trans>}
             </M.ButtonRow>
           </M.Column>
         )}
@@ -1016,7 +1016,7 @@ export default function AddLiquidity({
           )}
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
-              <Trans>Add</Trans>
+              <Trans>Add Liquidity</Trans>
             </M.ButtonRowPrimary>
           )}
         />
