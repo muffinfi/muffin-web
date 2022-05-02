@@ -75,7 +75,7 @@ export const PriceRangeExpr = memo(function PriceRangeExpr({
     <RowBaseline wrap="wrap" columnGap="0.666em" rowGap="0.25em" {...rest}>
       <Row wrap="wrap" columnGap="0.5em" rowGap="0.25em">
         <Text>{formatTickPrice(priceLower, tickAtLimit, Bound.LOWER)}</Text>
-        <Text size="base">⟷</Text>
+        <Text style={{ fontSize: '0.875em' }}>⟷</Text>
         <Text>{formatTickPrice(priceUpper, tickAtLimit, Bound.UPPER)}</Text>
       </Row>
       <PriceUnit style={{ fontSize: '0.875em' }} currencyBase={currencyBase} currencyQuote={currencyQuote} />
@@ -97,15 +97,16 @@ export const PoolTierExpr = memo(function PoolTierExpr({
   tier,
   noLogo,
   noFee,
+  ...rest
 }: {
   currencyBase: Currency | undefined
   currencyQuote: Currency | undefined
   tier: Tier | undefined
   noLogo?: boolean
   noFee?: boolean
-}) {
+} & RowParams) {
   return (
-    <Row gap="0.75em">
+    <Row gap="0.75em" {...rest}>
       {!noLogo && <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin />}
       <Text>
         {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
