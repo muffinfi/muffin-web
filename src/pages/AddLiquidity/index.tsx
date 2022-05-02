@@ -896,7 +896,10 @@ export default function AddLiquidity({
           <M.Text weight="semibold">
             {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
           </M.Text>
-          <SettingsTab placeholderSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE} noDeadline={true} />
+          <M.Row gap="0.5em">
+            <M.AccountWalletButton />
+            <SettingsTab placeholderSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE} noDeadline={true} />
+          </M.Row>
         </M.RowBetween>
 
         <CurrencyInputPanel

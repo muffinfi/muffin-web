@@ -37,8 +37,9 @@ export default memo(function SwapHeader({
           <Trans>Limit Range</Trans>
         </StyledNavLink>
       </M.Row>
-      <M.Row>
+      <M.Row gap="0.75em">
         {extraContents?.()}
+        <M.AccountWalletButton />
         <SettingsTab placeholderSlippage={allowedSlippage} />
       </M.Row>
     </M.RowBetween>
