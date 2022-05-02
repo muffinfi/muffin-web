@@ -25,7 +25,6 @@ import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { ArrowWrapper, FieldsWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
-import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { TierOption } from 'components/TierSelector/TierOption'
 import TokenWarningModal from 'components/TokenWarningModal'
@@ -43,7 +42,7 @@ import { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
-import useCurrency from 'lib/hooks/useCurrency'
+import useCurrency from 'hooks/useCurrency'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
@@ -808,9 +807,13 @@ export default function LimitRange({ history }: RouteComponentProps) {
         onStateChanged={setApprovalState}
         onSubmitApproval={onSubmitApproval}
       />
-      {!pool ? (
+      {!inputCurrency || !outputCurrency ? (
         <M.ButtonRowPrimary disabled>
-          <Trans>Unsupported Asset</Trans>
+          <Trans>Select a token</Trans>
+        </M.ButtonRowPrimary>
+      ) : !pool || defaultSqrtGamma == null ? (
+        <M.ButtonRowPrimary disabled>
+          <Trans>Token Pair Unsupported</Trans>
         </M.ButtonRowPrimary>
       ) : !account ? (
         <M.ButtonRowSecondary onClick={toggleWalletModal}>
@@ -821,7 +824,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
           onClick={() => {
             isExpertMode ? onAdd() : setShowTxModalConfirm(true)
           }}
-          color={isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient ? 'error' : 'primary'}
+          id="swap-button"
           disabled={
             isInvalidPriceRange ||
             isInvalidPrice ||
@@ -831,6 +834,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
             invalidRecipient ||
             approvalState !== ApproveOrPermitState.APPROVED
           }
+          color={isInvalidPriceRange || isInvalidPrice || insufficientFunding || invalidRecipient ? 'error' : 'primary'}
         >
           <M.Text size="lg">
             {isInvalidPriceRange ? (
@@ -846,7 +850,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
             ) : invalidRecipient ? (
               <Trans>Invalid recipient</Trans>
             ) : (
-              <Trans>Place Order</Trans>
+              <Trans>Swap</Trans>
             )}
           </M.Text>
         </M.ButtonRow>
@@ -880,9 +884,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
           )}
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
-              <M.Text size="lg">
-                <Trans>Create Position</Trans>
-              </M.Text>
+              <Trans>Create Position</Trans>
             </M.ButtonRowPrimary>
           )}
         />
@@ -1010,7 +1012,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
       </AlertWrapper>
 
       <SwitchLocaleLink />
-      {!pool && <UnsupportedCurrencyFooter show currencies={[inputCurrency, outputCurrency]} />}
     </>
   )
 }
