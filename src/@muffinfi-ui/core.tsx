@@ -59,6 +59,10 @@ const linkMixin = css<LinkProps>`
   &:hover {
     color: ${({ hoverColor }) => hoverColor && `var(--${hoverColor})`};
   }
+
+  &[role='button'] {
+    user-select: none;
+  }
 `
 
 export const Anchor = styled.a<LinkProps>`

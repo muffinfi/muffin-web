@@ -4,12 +4,12 @@ import styled, { css } from 'styled-components/macro'
 
 const activeOnMixin = css`
   color: #fff;
-  background: var(--primary1);
+  background: var(--primary0);
 `
 
 const activeOffMixin = css`
   color: #fff;
-  background: var(--text3);
+  background: var(--text2);
 `
 
 const inactiveMixin = css`

@@ -2,7 +2,7 @@
 import { t, Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 import useENS from '../../hooks/useENS'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
@@ -13,17 +13,19 @@ const InputPanel = styled.div`
   width: 100%;
 `
 
-const ContainerRow = styled.div<{ error: boolean }>`
+const ContainerRow = styled.div<{ error: boolean; $focused: boolean }>`
   padding: 1rem;
-
   border-radius: 16px;
-  border: 1px solid ${({ error }) => (error ? 'var(--error-bg)' : 'var(--layer2)')};
   background-color: var(--layer2);
+  border: 1px solid var(--layer2);
+  transition: border-color 150ms, color 150ms;
+  :focus,
+  :hover {
+    border-color: var(--borderColor1);
+  }
 
-  /* prettier-ignore */
-  transition:
-    border-color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')},
-    color 500ms ${({ error }) => (error ? 'step-end' : 'step-start')};
+  ${({ $focused }) => $focused && 'border-color: var(--borderColor1);'};
+  ${({ error }) => error && `&& {border-color: var(--error-bg);}`};
 `
 
 const Input = styled.input<{ error?: boolean }>`
@@ -33,7 +35,7 @@ const Input = styled.input<{ error?: boolean }>`
   flex: 1 1 auto;
   width: 0;
   background-color: var(--layer2);
-  transition: color 300ms ${({ error }) => (error ? 'step-end' : 'step-start')};
+  transition: color 150ms;
   color: ${({ error }) => (error ? 'var(--error-bg)' : 'var(--text1)')};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,9 +93,14 @@ export default function AddressInputPanel({
 
   const error = Boolean(value.length > 0 && !loading && !address)
 
+  // input focus state, for ui
+  const [focused, setFocused] = useState(false)
+  const onFocus = useCallback(() => setFocused(true), [])
+  const onBlur = useCallback(() => setFocused(false), [])
+
   return (
     <InputPanel id={id}>
-      <ContainerRow error={error}>
+      <ContainerRow error={error} $focused={focused}>
         <M.Column stretch gap="12px">
           <M.RowBetween>
             <M.Text color="text2" size="sm">
@@ -121,6 +128,8 @@ export default function AddressInputPanel({
             pattern="^(0x[a-fA-F0-9]{40})$"
             onChange={handleInput}
             value={value}
+            onFocus={onFocus}
+            onBlur={onBlur}
           />
         </M.Column>
       </ContainerRow>

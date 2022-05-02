@@ -1,6 +1,5 @@
 import { darken, lighten } from 'polished'
-import { memo, useEffect, useRef, useState } from 'react'
-import { css, createGlobalStyle } from 'styled-components/macro'
+import { createGlobalStyle, css } from 'styled-components/macro'
 
 const lightThemeMixin = css`
   /* color */

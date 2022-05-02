@@ -1,9 +1,15 @@
+import * as M from '@muffinfi-ui'
 import { TooltipContainer } from 'components/Tooltip'
 import { transparentize } from 'polished'
 import { ReactNode } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { css } from 'styled-components/macro'
+
+export const FieldsWrapper = styled(M.Column).attrs({ stretch: true })`
+  position: relative;
+  z-index: 0;
+`
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   padding: 4px;

@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Minus, Plus } from 'react-feather'
-import styled, { keyframes } from 'styled-components/macro'
+import { Minus, Plus, RefreshCw } from 'react-feather'
+import styled, { css, keyframes } from 'styled-components/macro'
 import { Input as NumericalInput } from '../NumericalInput'
 
 const pulse = (color: string) => keyframes`
@@ -19,7 +19,7 @@ const pulse = (color: string) => keyframes`
   }
 `
 
-const FocusedOutlineCard = styled.div<{ active?: boolean; pulsing?: boolean }>`
+const FocusedOutlineCard = styled.div<{ active?: boolean; pulsing?: boolean; locked?: boolean }>`
   padding: 12px;
   border-radius: 16px;
   background: var(--layer2);
@@ -28,20 +28,42 @@ const FocusedOutlineCard = styled.div<{ active?: boolean; pulsing?: boolean }>`
   border: 1px solid transparent;
   border-color: ${({ active }) => (active ? 'var(--borderColor1)' : 'transparent')};
   animation: ${({ pulsing, theme }) => pulsing && pulse(theme.blue1)} 0.8s linear;
+
+  :focus,
+  :hover {
+    border-color: var(--borderColor1);
+  }
+
+  ${({ locked }) =>
+    locked &&
+    css`
+      && {
+        border-color: transparent;
+        background-color: transparent;
+
+        :focus,
+        :hover {
+          border-color: transparent;
+        }
+      }
+    `}
 `
 
 const StepButton = styled(M.Button).attrs({ color: 'tertiary' })`
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0;
-  height: 26px;
-  width: 26px;
+  height: 20px;
+  width: 20px;
   border: 0;
   flex-shrink: 0;
+  :disabled {
+    opacity: 0.1;
+  }
 `
 
 const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
   background-color: transparent;
-  text-align: center;
+  text-align: left;
   width: 100%;
   font-weight: 500;
   padding: 0;
@@ -67,6 +89,7 @@ interface StepCounterProps {
   title: ReactNode
   tokenA: string | undefined
   tokenB: string | undefined
+  toggleRate?: () => void
   handleChangeImmediately?: boolean
   disablePulsing?: boolean
 }
@@ -83,6 +106,7 @@ const StepCounter = ({
   title,
   tokenA,
   tokenB,
+  toggleRate,
   handleChangeImmediately,
   disablePulsing,
 }: StepCounterProps) => {
@@ -155,26 +179,40 @@ const StepCounter = ({
   // generate random string for input id
   const inputFieldId = useMemo(() => `${Date.now()}-${Math.random()}`, [])
 
+  const handleClickUnit = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault() // prevent focusing on input
+      toggleRate?.()
+    },
+    [toggleRate]
+  )
+
+  const makePriceUnit = () => (
+    <M.Row gap="0.5em">
+      <span>
+        <Trans>
+          {tokenB ?? '-'} per {tokenA ?? '-'}
+        </Trans>
+      </span>
+      <M.TextContents color="primary1">{toggleRate && <RefreshCw size="1em" />}</M.TextContents>
+    </M.Row>
+  )
+
   return (
     <FocusedOutlineCard
       pulsing={pulsing}
       active={active}
+      locked={locked}
       style={width ? { width } : undefined}
       as="label"
       htmlFor={inputFieldId}
     >
-      <M.ColumnCenter stretch gap="8px">
+      <M.Column stretch gap="8px">
         <M.Text color="text2" size="xs">
           {title}
         </M.Text>
 
-        <M.Row wrap="nowrap" gap="6px">
-          {!locked && (
-            <StepButton onClick={handleDecrement} disabled={decrementDisabled}>
-              <Minus size={16} />
-            </StepButton>
-          )}
-
+        <M.Row wrap="nowrap" gap="8px">
           <StyledInput
             id={inputFieldId}
             className="rate-input-0"
@@ -187,22 +225,30 @@ const StepCounter = ({
           />
 
           {!locked && (
+            <StepButton onClick={handleDecrement} disabled={decrementDisabled}>
+              <Minus size={16} />
+            </StepButton>
+          )}
+
+          {!locked && (
             <StepButton onClick={handleIncrement} disabled={incrementDisabled}>
               <Plus size={16} />
             </StepButton>
           )}
         </M.Row>
 
-        <M.Text color="text2" size="xs">
-          {tokenA || tokenB ? (
-            <Trans>
-              {tokenB ?? '-'} per {tokenA ?? '-'}
-            </Trans>
-          ) : (
-            <span>&nbsp;</span>
-          )}
-        </M.Text>
-      </M.ColumnCenter>
+        {tokenA || tokenB ? (
+          <M.TextContents color="text2" size="xs">
+            {toggleRate ? (
+              <M.Anchor role="button" hoverColor="text1" onClick={handleClickUnit}>
+                {makePriceUnit()}
+              </M.Anchor>
+            ) : (
+              makePriceUnit()
+            )}
+          </M.TextContents>
+        ) : null}
+      </M.Column>
     </FocusedOutlineCard>
   )
 }

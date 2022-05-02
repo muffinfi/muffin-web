@@ -26,7 +26,7 @@ import AddressInputPanel from '../../components/AddressInputPanel'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
-import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
+import { ArrowWrapper, FieldsWrapper, SwapCallbackError } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TokenWarningModal from '../../components/TokenWarningModal'
@@ -53,11 +53,6 @@ import { warningSeverity } from '../../utils/prices'
 const AlertWrapper = styled.div`
   max-width: 460px;
   width: 100%;
-`
-
-const FieldsWrapper = styled(M.Column).attrs({ stretch: true })`
-  position: relative;
-  z-index: 0;
 `
 
 const StyledSectionCard = styled(M.SectionCard)`
