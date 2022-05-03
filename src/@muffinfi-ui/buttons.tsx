@@ -87,7 +87,7 @@ export const buttonMixins = {
     `,
     badge: css`
       padding: 0.167em 0.333em;
-      border-radius: 0.333em;
+      border-radius: 0.4em;
       font-size: var(--text-xs);
       font-weight: var(--semibold);
     `,
