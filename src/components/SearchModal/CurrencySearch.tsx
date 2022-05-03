@@ -41,8 +41,8 @@ const Footer = styled.div`
   padding: 20px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  background-color: ${({ theme }) => theme.bg1};
-  border-top: 1px solid ${({ theme }) => theme.bg2};
+  background-color: var(--layer2);
+  border-top: var(--borderColor);
 `
 
 interface CurrencySearchProps {
