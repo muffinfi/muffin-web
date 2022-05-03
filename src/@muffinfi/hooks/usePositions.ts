@@ -1,7 +1,8 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-v1-sdk'
+import type { ILens } from '@muffinfi/typechain'
 import { skipToken } from '@reduxjs/toolkit/query/react'
-import { CallStateResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { useSingleContractMultipleData } from 'lib/hooks/multicall'
 import ms from 'ms.macro'
 import { useMemo } from 'react'
 import { usePositionTokenIdsQuery } from 'state/data/enhanced'
@@ -45,7 +46,7 @@ export function useMuffinPositionDetailsFromTokenIds(tokenIds: BigNumberish[] | 
   const positions = useMemo(() => {
     if (loading || error) return undefined
     return results.map((call, i) => {
-      const result = call.result as CallStateResult
+      const result = call.result as Awaited<ReturnType<ILens['getDerivedPosition']>>
       const [info, position] = result
       return {
         tokenId: _tokenIds[i][0],
