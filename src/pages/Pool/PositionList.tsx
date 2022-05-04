@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
+import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import styled from 'styled-components/macro'
 import PositionListItem, { BasePositionRow } from './PositionListItem'
 
@@ -54,9 +54,9 @@ export default function PositionList({
           <span>Status</span>
         </PositionListHeader>
 
-        {positions.map((p) => {
-          return <PositionListItem key={p.tokenId.toString()} positionDetails={p} />
-        })}
+        {positions.map((p) => (
+          <PositionListItem key={p.tokenId.toString()} positionDetails={p} />
+        ))}
       </M.Column>
     </>
   )

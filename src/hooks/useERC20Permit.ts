@@ -1,6 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { splitSignature } from '@ethersproject/bytes'
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { PermitOptions, SelfPermit, Trade } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -15,6 +14,7 @@ import {
 } from 'lib/utils/erc20Permit'
 import { useEffect, useMemo, useState } from 'react'
 import { useEIP2612Contract } from './useContract'
+import { useManagerAddress } from './useContractAddress'
 import useIsArgentWallet from './useIsArgentWallet'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from './usePreviousExclude'
 
@@ -51,6 +51,7 @@ export function useERC20Permit(
   const prevTokenAddress = usePreviousExclude(tokenAddress, EXCLUDE_NULL_OR_UNDEFINED)
 
   const eip2612Contract = useEIP2612Contract(tokenAddress)
+  const managerAddress = useManagerAddress()
   const isArgentWallet = useIsArgentWallet()
 
   // NOTE: fetch nonce from chain. invalid result = token no support permit
@@ -102,7 +103,7 @@ export function useERC20Permit(
   useEffect(() => {
     if (
       forceNotApplicable ||
-      !chainId ||
+      !managerAddress ||
       !library ||
       !currencyAmount?.currency?.isToken ||
       !signatureData ||
@@ -120,7 +121,7 @@ export function useERC20Permit(
     )
     library
       .getSigner()
-      .estimateGas({ to: MUFFIN_MANAGER_ADDRESSES[chainId], data })
+      .estimateGas({ to: managerAddress, data })
       .catch(() => ignore || setForceNotApplicable(true))
       .finally(() => ignore || setCheckedState(CheckDomainState.CHECKED))
     return () => {
@@ -128,7 +129,7 @@ export function useERC20Permit(
     }
   }, [
     forceNotApplicable,
-    chainId,
+    managerAddress,
     checkedState,
     currencyAmount?.currency,
     isSignatureDataValid,
@@ -249,12 +250,11 @@ export function useERC20PermitFromTrade(
   allowedSlippage: Percent,
   transactionDeadline: BigNumber | undefined
 ) {
-  const { chainId } = useActiveWeb3React()
-  const managerAddress = trade && chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const managerAddress = useManagerAddress()
   const amountToApprove = useMemo(
     () => (trade ? trade.maximumAmountIn(allowedSlippage) : undefined),
     [trade, allowedSlippage]
   )
 
-  return useERC20Permit(amountToApprove, managerAddress, transactionDeadline, null)
+  return useERC20Permit(amountToApprove, trade && managerAddress, transactionDeadline, null)
 }

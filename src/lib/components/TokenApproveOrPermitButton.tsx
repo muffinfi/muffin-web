@@ -1,13 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import * as M from '@muffinfi-ui'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { DesktopOnlyBox, MobileOnlyBox } from 'components/Box'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
 import { MouseoverTooltip } from 'components/Tooltip'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useManagerAddress } from 'hooks/useContractAddress'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useApproveOrPermit, { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { CheckCircle, HelpCircle } from 'lib/icons'
@@ -129,10 +128,9 @@ export default function TokenApproveOrPermitButton({
   onSubmitApproval?: (buttonId?: string) => void
   onStateChanged?: (state: ApproveOrPermitState | null, buttonId?: string) => void
 }) {
-  const { chainId } = useActiveWeb3React()
   const [approvalSubmitted, setApprovalSubmitted] = useState(false)
   const [submitCount, setSubmitCount] = useState(0)
-  const spender = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const spender = useManagerAddress()
   const tokenAddress = amount?.currency?.isToken ? amount.currency.address : undefined
   const prevTokenAddress = usePreviousExclude(tokenAddress, EXCLUDE_NULL_OR_UNDEFINED)
 

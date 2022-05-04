@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency } from '@uniswap/sdk-core'
-import * as M from '@muffinfi-ui'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -51,7 +51,7 @@ export const PositionPreview = ({
     setBaseCurrency(quoteCurrency)
   }, [quoteCurrency])
 
-  const removed = position?.liquidity && JSBI.equal(position?.liquidity, JSBI.BigInt(0))
+  const removed = position?.liquidity && JSBI.equal(position.liquidity, JSBI.BigInt(0))
 
   return (
     <M.Column stretch gap="24px">
@@ -59,7 +59,7 @@ export const PositionPreview = ({
         <M.TextContents size="lg" weight="bold">
           <M.PoolTierExpr currencyBase={currency1} currencyQuote={currency0} tier={position.poolTier} />
         </M.TextContents>
-        <RangeBadge removed={removed} inRange={inRange} />
+        <RangeBadge removed={removed} inRange={inRange} settled={position.settled} />
       </M.RowBetween>
 
       <LightCard>

@@ -2,18 +2,18 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
-import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
-import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
+import { LimitOrderType, Position } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
-import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Fraction, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
+import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
 import CurrencyLogo from 'components/CurrencyLogo'
+import CollectConfirmModalContent from 'components/positions/CollectConfirmModalContent'
 import { Dots } from 'components/swap/styleds'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
 import { CHAIN_INFO } from 'constants/chainInfo'
@@ -27,12 +27,10 @@ import { useIsTransactionPending, useTransactionAdder } from 'state/transactions
 import styled from 'styled-components/macro'
 import { shortenAddress } from 'utils'
 import { currencyId } from 'utils/currencyId'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import RateToggle from '../../components/RateToggle'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TransactionType } from '../../state/transactions/actions'
-import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
 
@@ -70,35 +68,6 @@ function LinkedCurrency({ chainId, currency }: { chainId?: number; currency?: Cu
       </M.Text>
     </M.Row>
   )
-}
-
-function getRatio(
-  lower: Price<Currency, Currency>,
-  current: Price<Currency, Currency>,
-  upper: Price<Currency, Currency>
-) {
-  try {
-    if (!current.greaterThan(lower)) {
-      return 100
-    } else if (!current.lessThan(upper)) {
-      return 0
-    }
-
-    const a = Number.parseFloat(lower.toSignificant(15))
-    const b = Number.parseFloat(upper.toSignificant(15))
-    const c = Number.parseFloat(current.toSignificant(15))
-
-    // the weight of token0 in the position in terms of the cash value
-    const ratio = Math.floor((1 / ((Math.sqrt(a * b) - Math.sqrt(b * c)) / (c - Math.sqrt(b * c)) + 1)) * 100)
-
-    if (ratio < 0 || ratio > 100) {
-      throw Error('Out of range')
-    }
-
-    return ratio
-  } catch {
-    return undefined
-  }
 }
 
 const TokenAmountAndValue = ({
@@ -151,7 +120,7 @@ export function PositionPage({
     params: { tokenId: tokenIdFromUrl },
   },
 }: RouteComponentProps<{ tokenId?: string }>) {
-  const { chainId, account, library } = useActiveWeb3React()
+  const { chainId, account } = useActiveWeb3React()
 
   /*=====================================================================
    *                             POSITION
@@ -161,8 +130,7 @@ export function PositionPage({
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
   const { loading, position: positionDetail } = useMuffinPositionDetailFromTokenId(parsedTokenId)
   const { token0, token1, poolState, position } = useDerivedMuffinPosition(positionDetail)
-  const pool = position?.pool
-  const tier = position?.poolTier
+  const { pool, poolTier: tier, settled }: Partial<Position> = position ?? {}
 
   // if token is WETH, unwrap it to ETH
   const currency0 = token0 ? unwrappedToken(token0) : undefined
@@ -208,36 +176,30 @@ export function PositionPage({
 
   // ratio between the values of the two underlying tokens
   const ratio = useMemo(() => {
-    return priceLower && priceUpper && tier
-      ? getRatio(
-          inverted ? priceUpper.invert() : priceLower,
-          tier.token0Price,
-          inverted ? priceLower.invert() : priceUpper
-        )
-      : undefined
-  }, [inverted, tier, priceLower, priceUpper])
+    if (!fiatValuesOfLiquidity) return undefined
+    const amount0 = fiatValuesOfLiquidity[0].asFraction
+    const sum = amount0.add(fiatValuesOfLiquidity[1].asFraction)
+    const percent = sum && amount0.multiply(100).divide(sum).toFixed(0)
+    return percent ? parseInt(percent) : undefined
+  }, [fiatValuesOfLiquidity])
 
   /*=====================================================================
    *                        UNCLAIMED FEES CARD
    *====================================================================*/
 
-  const [feeAmt0Str, feeAmt1Str] = useMemo(
-    () => (positionDetail ? [positionDetail.feeAmount0.toString(), positionDetail.feeAmount1.toString()] : []),
-    [positionDetail]
-  )
-  const [feeAmount0, feeAmount1] = useMemo(
-    () =>
-      currency0 && currency1 && feeAmt0Str && feeAmt1Str
-        ? [CurrencyAmount.fromRawAmount(currency0, feeAmt0Str), CurrencyAmount.fromRawAmount(currency1, feeAmt1Str)]
-        : [],
-    [currency0, currency1, feeAmt0Str, feeAmt1Str]
-  )
+  const [feeAmount0, feeAmount1] = useMemo(() => {
+    const [feeAmt0Str, feeAmt1Str] = positionDetail
+      ? [positionDetail.feeAmount0.toString(), positionDetail.feeAmount1.toString()]
+      : []
+    return token0 && token1 && feeAmt0Str && feeAmt1Str
+      ? [CurrencyAmount.fromRawAmount(token0, feeAmt0Str), CurrencyAmount.fromRawAmount(token1, feeAmt1Str)]
+      : []
+  }, [token0, token1, positionDetail])
 
   const [collecting, setCollecting] = useState<boolean>(false)
   const [collectMigrationHash, setCollectMigrationHash] = useState<string | null>(null)
   const isCollectPending = useIsTransactionPending(collectMigrationHash ?? undefined)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [storeInInternalAccount, toggleStoreInInternalAccount] = useUserStoreIntoInternalAccount()
 
   // flag for receiving WETH
   // const [receiveWETH, setReceiveWETH] = useState(true)
@@ -309,70 +271,44 @@ export function PositionPage({
    *====================================================================*/
 
   const tokenId = positionDetail?.tokenId
-  const manager = useManagerContract()
   const addTransaction = useTransactionAdder()
+  const onBeforeCollect = useCallback(() => setCollecting(true), [])
+  const onCollectError = useCallback((error: any) => {
+    setCollecting(false)
+    console.error(error)
+  }, [])
+  const onCollectSuccess = useCallback(
+    (response: TransactionResponse, tokenDestination: BalanceSource) => {
+      if (!feeAmount0?.currency || !feeAmount1?.currency || !position) return
+      setCollectMigrationHash(response.hash)
+      setCollecting(false)
 
-  const collect = useCallback(() => {
-    if (!chainId || !feeAmount0 || !feeAmount1 || !manager || !account || !tokenId || !library || !position) return
+      ReactGA.event({
+        category: 'Liquidity',
+        action: position?.settled ? 'Settle' : 'CollectV3',
+        label: [feeAmount0.currency.symbol, feeAmount1.currency.symbol].join('/'),
+      })
 
-    setCollecting(true)
-
-    const { calldata, value } = PositionManager.removeCallParameters(position, {
-      tokenId: tokenId.toString(),
-      liquidityPercentage: new Percent(0),
-      slippageTolerance: new Percent(0),
-      withdrawalRecipient: storeInInternalAccount ? ADDRESS_ZERO : account,
-      collectAllFees: true,
-    })
-
-    const txn = {
-      to: manager.address,
-      data: calldata,
-      value,
-    }
-
-    library
-      .getSigner()
-      .estimateGas(txn)
-      .then((estimate) => {
-        const newTxn = { ...txn, gasLimit: calculateGasMargin(estimate) }
-        return library
-          .getSigner()
-          .sendTransaction(newTxn)
-          .then((response: TransactionResponse) => {
-            setCollectMigrationHash(response.hash)
-            setCollecting(false)
-
-            ReactGA.event({
-              category: 'Liquidity',
-              action: 'CollectV3',
-              label: [feeAmount0.currency.symbol, feeAmount1.currency.symbol].join('/'),
-            })
-
-            addTransaction(response, {
+      addTransaction(
+        response,
+        position.settled
+          ? {
+              type: TransactionType.COLLECT_SETTLED,
+              currencyId0: currencyId(feeAmount0.currency),
+              currencyId1: currencyId(feeAmount1.currency),
+              zeroForOne: position.limitOrderType === LimitOrderType.ZeroForOne,
+              tokenDestination,
+            }
+          : {
               type: TransactionType.COLLECT_FEES,
               currencyId0: currencyId(feeAmount0.currency),
               currencyId1: currencyId(feeAmount1.currency),
-              tokenDestination: storeInInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : BalanceSource.WALLET,
-            })
-          })
-      })
-      .catch((error) => {
-        setCollecting(false)
-        console.error(error)
-      })
-  }, [
-    chainId,
-    feeAmount0,
-    feeAmount1,
-    manager,
-    account,
-    tokenId,
-    library,
-    position,
-    storeInInternalAccount,
-    addTransaction,
-  ])
+              tokenDestination,
+            }
+      )
+    },
+    [addTransaction, feeAmount0?.currency, feeAmount1?.currency, position]
+  )
 
   /*=====================================================================
    *                          REACT COMPONENT
@@ -409,14 +345,17 @@ export function PositionPage({
         <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
       </M.TextContents>
 
-      <RangeBadge removed={removed} inRange={inRange} />
+      <M.Row gap="8px">
+        <RangeOrderBadge limitOrderType={positionDetail?.limitOrderType} token0={token0} token1={token1} />
+        <RangeBadge removed={removed} inRange={inRange} settled={settled} />
+      </M.Row>
     </M.Column>
   )
 
   const makeButtonSection = () =>
     ownsNFT ? (
       <M.Row wrap="wrap" gap="0.75em">
-        {positionDetail && currency0 && currency1 ? (
+        {positionDetail && currency0 && currency1 && !positionDetail.settled ? (
           <M.ButtonPrimary
             as={Link}
             to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${position.poolTier.sqrtGamma}/${
@@ -427,13 +366,16 @@ export function PositionPage({
           </M.ButtonPrimary>
         ) : null}
 
-        {positionDetail && !removed ? (
+        {positionDetail && !removed && !positionDetail.settled ? (
           <M.ButtonPrimary as={Link} to={`/remove/${positionDetail.tokenId}`}>
             <Trans>Decrease Liquidity</Trans>
           </M.ButtonPrimary>
         ) : null}
 
-        {feeAmount0?.greaterThan(0) || feeAmount1?.greaterThan(0) || !!collectMigrationHash ? (
+        {feeAmount0?.greaterThan(0) ||
+        feeAmount1?.greaterThan(0) ||
+        !!collectMigrationHash ||
+        positionDetail?.settled ? (
           <M.Button
             color={!!collectMigrationHash && !isCollectPending ? 'tertiary' : 'secondary'}
             disabled={collecting || !!collectMigrationHash}
@@ -445,6 +387,8 @@ export function PositionPage({
               <Dots>
                 <Trans>Collecting</Trans>
               </Dots>
+            ) : positionDetail?.settled ? (
+              <Trans>Collect fulfilled</Trans>
             ) : (
               <Trans>Collect fees</Trans>
             )}
@@ -563,7 +507,7 @@ export function PositionPage({
             <M.TextContents weight="semibold">
               <M.PriceExpr price={inverted ? tier?.token1Price : tier?.token0Price} />
             </M.TextContents>
-            <RangeBadge removed={removed} inRange={inRange} />
+            <RangeBadge removed={removed} inRange={inRange} settled={settled} />
           </M.Column>
         </M.Column>
       </M.SectionCard>
@@ -649,43 +593,6 @@ export function PositionPage({
     </M.SectionCard>
   )
 
-  const makeConfirmModalContent = () => (
-    <M.Column stretch gap="1em" style={{ marginTop: '0' }}>
-      <M.Column stretch gap="0.666em">
-        <M.RowBetween>
-          <M.Row gap="0.5em">
-            <CurrencyLogo currency={underlyings.quote.currency} size="1.25em" />
-            <M.Text weight="medium">{underlyings.quote.currency?.wrapped.symbol}</M.Text>
-          </M.Row>
-          <M.Text>{underlyings.quote.fee.amount ? formatCurrencyAmount(underlyings.quote.fee.amount, 4) : '-'}</M.Text>
-        </M.RowBetween>
-        <M.RowBetween>
-          <M.Row gap="0.5em">
-            <CurrencyLogo currency={underlyings.base.currency} size="1.25em" />
-            <M.Text weight="medium">{underlyings.base.currency?.wrapped.symbol}</M.Text>
-          </M.Row>
-          <M.Text>{underlyings.base.fee.amount ? formatCurrencyAmount(underlyings.base.fee.amount, 4) : '-'}</M.Text>
-        </M.RowBetween>
-      </M.Column>
-
-      <M.TextContents weight="semibold" size="sm">
-        <M.OutputDestinationToggle
-          toInternalAccount={storeInInternalAccount}
-          questionHelperContent={<Trans>Choose the destination of the collected fee.</Trans>}
-          onToggle={toggleStoreInInternalAccount}
-        />
-      </M.TextContents>
-
-      <M.Text color="text2" size="xs">
-        <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
-      </M.Text>
-
-      <M.ButtonRowPrimary onClick={collect}>
-        <Trans>Collect</Trans>
-      </M.ButtonRowPrimary>
-    </M.Column>
-  )
-
   return (
     <>
       <M.Container maxWidth="45rem">
@@ -696,12 +603,24 @@ export function PositionPage({
           hash={collectMigrationHash ?? ''}
           content={() => (
             <ConfirmationModalContent
-              title={<Trans>Collect fees</Trans>}
+              title={positionDetail?.settled ? <Trans>Collect fulfilled</Trans> : <Trans>Collect fees</Trans>}
               onDismiss={() => setShowConfirm(false)}
-              topContent={makeConfirmModalContent}
+              topContent={() => (
+                <CollectConfirmModalContent
+                  tokenId={tokenId}
+                  position={position}
+                  qouteLiquidityAmount={underlyings.quote.liquidity.amount}
+                  qouteFeeAmount={underlyings.quote.fee.amount}
+                  baseLiquidityAmount={underlyings.base.liquidity.amount}
+                  baseFeeAmount={underlyings.base.fee.amount}
+                  onBeforeCollect={onBeforeCollect}
+                  onCollectError={onCollectError}
+                  onCollectSuccess={onCollectSuccess}
+                />
+              )}
             />
           )}
-          pendingText={<Trans>Collecting fees</Trans>}
+          pendingText={position.settled ? <Trans>Collecting fulfilled</Trans> : <Trans>Collecting fees</Trans>}
         />
 
         <M.Column stretch gap="32px">

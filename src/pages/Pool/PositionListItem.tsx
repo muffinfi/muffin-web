@@ -5,6 +5,7 @@ import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
+import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import Loader from 'components/Loader'
 import { useToken } from 'hooks/useCurrency'
@@ -50,6 +51,18 @@ const LoaderWrapper = styled(M.Row)`
   `}
 `
 
+const LastColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    flex-direction: row;
+    align-items: flex-start;
+  `}
+`
+
 export default function PositionListItem({ positionDetails }: { positionDetails: MuffinPositionDetail }) {
   const {
     token0: token0Address,
@@ -59,6 +72,8 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
     tickLower,
     tickUpper,
     tokenId,
+    limitOrderType,
+    settled,
   } = positionDetails
 
   // NOTE: fetch token basic info, init Token objects from sdk-core
@@ -112,9 +127,10 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
             <Trans>{tier.feePercent.toFixed(2)}%</Trans>
           </M.Text>
           <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
-          <M.Row>
-            <RangeBadge removed={removed} inRange={!outOfRange} />
-          </M.Row>
+          <LastColumn>
+            <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
+            <RangeBadge removed={removed} inRange={!outOfRange} settled={settled} />
+          </LastColumn>
         </>
       ) : (
         <LoaderWrapper>

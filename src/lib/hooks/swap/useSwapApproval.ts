@@ -1,8 +1,7 @@
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { getTxOptimizedSwapRouter, SwapRouterVersion } from '@muffinfi/utils/getTxOptimizedSwapRouter'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useManagerAddress } from 'hooks/useContractAddress'
 import { useERC20PermitFromTrade, UseERC20PermitState } from 'hooks/useERC20Permit'
 import useTransactionDeadline from 'lib/hooks/useTransactionDeadline'
 import { useCallback, useMemo, useState } from 'react'
@@ -16,22 +15,19 @@ function useSwapApprovalStates(
   allowedSlippage: Percent,
   useIsPendingApproval: (token?: Token, spender?: string) => boolean
 ): { v1: ApprovalState } {
-  const { chainId } = useActiveWeb3React()
-
   const amountToApprove = useMemo(
     () => (trade && trade.inputAmount.currency.isToken ? trade.maximumAmountIn(allowedSlippage) : undefined),
     [trade, allowedSlippage]
   )
 
-  const v1ManagerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const v1ManagerAddress = useManagerAddress()
   const v1 = useApprovalStateForSpender(amountToApprove, v1ManagerAddress, useIsPendingApproval)
 
   return useMemo(() => ({ v1 }), [v1])
 }
 
 export function useSwapRouterAddress(trade: Trade<Currency, Currency, TradeType> | undefined) {
-  const { chainId } = useActiveWeb3React()
-  return chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  return useManagerAddress()
 }
 
 // wraps useApproveCallback in the context of a swap

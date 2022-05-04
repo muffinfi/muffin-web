@@ -1,13 +1,13 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { t, Trans } from '@lingui/macro' // eslint-disable-line no-restricted-imports
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { SwapManager, Trade } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
+import { useManagerAddress } from 'hooks/useContractAddress'
 import useENS from 'hooks/useENS'
 import { SignatureData } from 'lib/utils/erc20Permit'
 import { ReactNode, useMemo } from 'react'
@@ -75,11 +75,12 @@ function useSwapCallArguments(
   deadline: BigNumber | undefined,
   signatureData: SignatureData | null | undefined
 ): SwapCall[] {
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, library } = useActiveWeb3React()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
   const argentWalletContract = useArgentWalletContract()
+  const managerAddress = useManagerAddress()
   const tryInternalAccount = useIsUsingInternalAccount()
 
   const internalBalance = useTokenBalances(
@@ -92,9 +93,8 @@ function useSwapCallArguments(
   )
 
   return useMemo(() => {
-    if (!trade || !recipient || !library || !account || !chainId || !deadline) return []
+    if (!trade || !recipient || !library || !account || !managerAddress || !deadline) return []
 
-    const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
     if (!managerAddress) return []
 
     const fromAccount =
@@ -162,7 +162,7 @@ function useSwapCallArguments(
     account,
     allowedSlippage,
     argentWalletContract,
-    chainId,
+    managerAddress,
     deadline,
     internalBalance,
     library,

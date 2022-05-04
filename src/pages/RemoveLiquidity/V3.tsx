@@ -1,5 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
@@ -7,7 +8,6 @@ import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import * as M from '@muffinfi-ui'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -401,7 +401,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     <SettingsTab placeholderSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE} noDeadline />
                   </M.RowBetween>
                   <span>
-                    <RangeBadge removed={removed} inRange={!outOfRange} />
+                    <RangeBadge removed={removed} inRange={!outOfRange} settled={position.settled} />
                   </span>
                 </M.Column>
 

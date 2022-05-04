@@ -31,6 +31,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCurrency from 'hooks/useCurrency'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
+import { useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
@@ -43,7 +44,7 @@ import { resetMintState as resetMintV3State } from 'state/mint/v3/actions'
 import { useRangeHopCallbacks, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { tryParseTick } from 'state/mint/v3/utils'
 import { tryParseAmount } from 'state/swap/hooks'
-import { useCurrencyBalances, useTokenBalance } from 'state/wallet/hooks'
+import { useCurrencyBalances } from 'state/wallet/hooks'
 import { ThemeContext } from 'styled-components/macro'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -567,23 +568,10 @@ export default function AddLiquidity({
     isOutOfRange ? ZERO_PERCENT : DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE
   )
   const addTransaction = useTransactionAdder()
-  const internalAmountA = useTokenBalance(
+  const internalAmounts = useTokenBalances(
     account ?? undefined,
-    tokenA,
+    useMemo(() => (tokenA && tokenB ? [tokenA, tokenB] : []), [tokenA, tokenB]),
     tryUseInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : 0
-  )
-  const internalAmountB = useTokenBalance(
-    account ?? undefined,
-    tokenB,
-    tryUseInternalAccount ? BalanceSource.INTERNAL_ACCOUNT : 0
-  )
-  const useAccount = useMemo(
-    () =>
-      (tryUseInternalAccount &&
-        ((!depositADisabled && internalAmountA?.greaterThan(0)) ||
-          (!depositBDisabled && internalAmountB?.greaterThan(0)))) ??
-      false,
-    [tryUseInternalAccount, depositADisabled, internalAmountA, depositBDisabled, internalAmountB]
   )
 
   /**
@@ -596,6 +584,11 @@ export default function AddLiquidity({
     if (!baseCurrency || !quoteCurrency || !manager || !position || !deadline) return
 
     const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
+    const useAccount =
+      (tryUseInternalAccount &&
+        ((!depositADisabled && internalAmounts?.[baseCurrency.wrapped.address]?.greaterThan(0)) ||
+          (!depositBDisabled && internalAmounts?.[quoteCurrency.wrapped.address]?.greaterThan(0)))) ??
+      false
 
     const isTokenAt0 = position.amount0.currency.equals(currencyA)
     const { calldata, value } = PositionManager.addCallParameters(position, {
@@ -657,11 +650,14 @@ export default function AddLiquidity({
     manager,
     position,
     deadline,
+    tryUseInternalAccount,
+    depositADisabled,
+    internalAmounts,
+    depositBDisabled,
     currencyA,
     hasExistingPosition,
     tokenId,
     noLiquidity,
-    useAccount,
     slippageTolerance,
     permitSignatures,
     argentWalletContract,

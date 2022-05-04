@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { useHubContract } from '@muffinfi/hooks/useContract'
 import { useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
 import { useSettlement } from '@muffinfi/hooks/useSettlements'
@@ -35,6 +34,8 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
+import { useManagerAddress } from 'hooks/useContractAddress'
+import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePrevious from 'hooks/usePrevious'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -42,7 +43,6 @@ import { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
-import useCurrency from 'hooks/useCurrency'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
@@ -226,14 +226,16 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const { tickSpacing: settlementTickSpacing }: Partial<ReturnType<typeof useSettlement>> =
     useSettlement(hubContract, pool, tierId, endTick, !!zeroForOne) ?? {}
 
+  const tickSpacing = settlementTickSpacing || pool?.tickSpacing
+
   const tickSpacingMultiplier = useMemo(() => {
-    const multiplier = settlementTickSpacing || (isValidTier && tierId != null && tickSpacingMultipliers?.[tierId])
+    const multiplier = isValidTier && tierId != null && tickSpacingMultipliers?.[tierId]
     return typeof multiplier === 'number' ? multiplier : undefined
-  }, [isValidTier, settlementTickSpacing, tickSpacingMultipliers, tierId])
+  }, [isValidTier, tickSpacingMultipliers, tierId])
 
   const fullTickSpacing = useMemo(
-    () => (pool?.tickSpacing && tickSpacingMultiplier ? tickSpacingMultiplier * pool.tickSpacing : undefined),
-    [pool?.tickSpacing, tickSpacingMultiplier]
+    () => (tickSpacing && tickSpacingMultiplier ? tickSpacingMultiplier * tickSpacing : undefined),
+    [tickSpacing, tickSpacingMultiplier]
   )
 
   const startTick = useMemo(() => {
@@ -256,7 +258,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
     UPPER?: number
     END?: number
   } = useMemo(() => {
-    const tickSpacing = pool?.tickSpacing
     const currentTick = selectedTier?.computedTick
     if (!tickSpacing || currentTick == null || fullTickSpacing == null) return {}
     const limits = zeroForOne
@@ -271,8 +272,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
           END: 0,
         }
     limits.END = zeroForOne ? limits.LOWER : limits.UPPER
+
     return limits
-  }, [pool?.tickSpacing, fullTickSpacing, selectedTier?.computedTick, zeroForOne])
+  }, [tickSpacing, fullTickSpacing, selectedTier?.computedTick, zeroForOne])
 
   const { areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
@@ -300,21 +302,21 @@ export default function LimitRange({ history }: RouteComponentProps) {
   }, [endTick, startTick, tickLimits.LOWER, tickLimits.UPPER, token0, token1, zeroForOne])
 
   const handlePriceIncrement = useCallback(() => {
-    if (!pool?.tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
+    if (!tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
       return endPriceTypedAmount
     }
     const newPrice = tickToPrice(
       baseToken,
       quoteToken,
       endTick != null && !isInvalidPriceRange
-        ? endTick + pool.tickSpacing * (endPriceInverted ? -1 : 1)
+        ? endTick + (endPriceInverted ? -tickSpacing : tickSpacing)
         : tickLimits.END
     )
     return (
       newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
     )
   }, [
-    pool?.tickSpacing,
+    tickSpacing,
     tickLimits.END,
     baseToken,
     quoteToken,
@@ -325,21 +327,21 @@ export default function LimitRange({ history }: RouteComponentProps) {
   ])
 
   const handlePriceDecrement = useCallback(() => {
-    if (!pool?.tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
+    if (!tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
       return endPriceTypedAmount
     }
     const newPrice = tickToPrice(
       baseToken,
       quoteToken,
       endTick != null && !isInvalidPriceRange
-        ? endTick - pool.tickSpacing * (endPriceInverted ? -1 : 1)
+        ? endTick - (endPriceInverted ? -tickSpacing : tickSpacing)
         : tickLimits.END
     )
     return (
       newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
     )
   }, [
-    pool?.tickSpacing,
+    tickSpacing,
     tickLimits.END,
     baseToken,
     quoteToken,
@@ -602,7 +604,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     parsedAmounts[Field.INPUT]?.greaterThan(0) && parsedAmounts[Field.OUTPUT]?.greaterThan(0)
   )
   const isInvalidPrice = !endPriceTypedAmount || !endPrice0
-  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const managerAddress = useManagerAddress()
 
   const tryInternalAccount = useIsUsingInternalAccount()
   const internalBalance = useCurrencyBalance(account ?? undefined, tokenA, BalanceSource.INTERNAL_ACCOUNT)

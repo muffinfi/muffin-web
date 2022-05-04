@@ -1,9 +1,10 @@
 import { Interface } from '@ethersproject/abi'
-import { useHubContract, useManagerContract } from '@muffinfi/hooks/useContract'
+import { useHubContract } from '@muffinfi/hooks/useContract'
 import { getAccountHash } from '@muffinfi/utils/getAccountHash'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import ERC20ABI from 'abis/erc20.json'
 import { Erc20Interface } from 'abis/types/Erc20'
+import { useManagerAddress } from 'hooks/useContractAddress'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
@@ -29,7 +30,7 @@ export function useWalletTokenBalancesWithLoadingIndicator(
   validatedTokens?: Token[]
 ): [{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }, boolean] {
   const validatedTokenAddresses = useMemo(
-    () => (address ? validatedTokens?.map((vt) => vt.address) ?? [] : []),
+    () => (address && validatedTokens ? validatedTokens.map((vt) => vt.address) : []),
     [address, validatedTokens]
   )
 
@@ -67,14 +68,14 @@ export function useInternalTokenBalancesWithLoadingIndicator(
   validatedTokens?: Token[]
 ): [{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }, boolean] {
   const hubContract = useHubContract()
-  const managerContract = useManagerContract()
+  const managerAddress = useManagerAddress()
   const balances = useSingleContractMultipleData(
-    managerContract && address ? hubContract : null,
+    managerAddress && address && validatedTokens?.length ? hubContract : null,
     'accounts',
     useMemo(() => {
-      const accHash = getAccountHash(managerContract?.address, address)
-      return accHash ? validatedTokens?.map((token) => [token.address, accHash]) ?? [] : []
-    }, [managerContract, address, validatedTokens])
+      const accHash = getAccountHash(managerAddress, address)
+      return accHash && validatedTokens ? validatedTokens.map((token) => [token.address, accHash]) : []
+    }, [managerAddress, address, validatedTokens])
   )
 
   return useMemo(

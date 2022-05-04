@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
 import { AccountManager, StandardPermitArguments } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
@@ -15,6 +14,7 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { useIsTokenActive } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
+import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -39,11 +39,11 @@ import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 
 export default function Deposit({ history }: RouteComponentProps) {
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, library } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
   const addTransaction = useTransactionAdder()
   const isExpertMode = useIsExpertMode()
-  const managerAddress = chainId ? MUFFIN_MANAGER_ADDRESSES[chainId] : undefined
+  const managerAddress = useManagerAddress()
 
   const { currency: defaultCurrencyId }: { currency?: string | string[] } = useParsedQueryString()
   const defaultCurrency = useCurrency(Array.isArray(defaultCurrencyId) ? defaultCurrencyId[0] : defaultCurrencyId)

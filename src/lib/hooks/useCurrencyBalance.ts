@@ -60,13 +60,11 @@ export function useTokenBalancesWithLoadingIndicator(
   const isUseInternalAccount = useIsUsingInternalAccount()
   const validatedTokens = useValidatedTokens(tokens)
   const [walletBalances, loadingWallet] = useWalletTokenBalancesWithLoadingIndicator(
-    typeof source === 'undefined' || source & BalanceSource.WALLET ? address : undefined,
+    source == null || source & BalanceSource.WALLET ? address : undefined,
     validatedTokens
   )
   const [internalBalances, loadingInternal] = useInternalTokenBalancesWithLoadingIndicator(
-    (typeof source === 'undefined' && isUseInternalAccount) || (source ?? 0) & BalanceSource.INTERNAL_ACCOUNT
-      ? address
-      : undefined,
+    (source == null && isUseInternalAccount) || (source ?? 0) & BalanceSource.INTERNAL_ACCOUNT ? address : undefined,
     validatedTokens
   )
   return useMemo(

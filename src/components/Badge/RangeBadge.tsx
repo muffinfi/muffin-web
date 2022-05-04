@@ -19,9 +19,11 @@ const ActiveDot = styled.span`
 export default function RangeBadge({
   removed,
   inRange,
+  settled,
 }: {
   removed: boolean | undefined
   inRange: boolean | undefined
+  settled: boolean | undefined
 }) {
   return (
     <>
@@ -30,6 +32,15 @@ export default function RangeBadge({
           <StyledBadge variant={BadgeVariant.DEFAULT}>
             <AlertCircle size="1em" />
             <Trans>Closed</Trans>
+          </StyledBadge>
+        </MouseoverTooltip>
+      ) : settled ? (
+        <MouseoverTooltip
+          text={<Trans>Your limit range order is fulfilled but not yet collected, and is not earning fees.</Trans>}
+        >
+          <StyledBadge variant={BadgeVariant.POSITIVE}>
+            <AlertCircle size="1em" />
+            <Trans>Pending to collect</Trans>
           </StyledBadge>
         </MouseoverTooltip>
       ) : inRange ? (
