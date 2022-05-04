@@ -435,6 +435,25 @@ export default function LimitRange({ history }: RouteComponentProps) {
     )
   }, [pool, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
+  const priceChangeRate = useMemo(() => {
+    if (!selectedTier?.token0Price || !selectedTier?.token1Price || !tickPrices.LOWER || !tickPrices.UPPER) {
+      return undefined
+    }
+    const currentPrice = endPriceInverted ? selectedTier.token1Price : selectedTier.token0Price
+    const endPrice0 = zeroForOne ? tickPrices.UPPER : tickPrices.LOWER
+    const endPrice = endPriceInverted ? endPrice0.invert() : endPrice0
+    const changeRate = endPrice.divide(currentPrice).subtract(1)
+    const changePercent = new Percent(changeRate.numerator, changeRate.denominator)
+    return changePercent.lessThan(100) ? changePercent : new Percent(999999, 10000)
+  }, [
+    selectedTier?.token0Price,
+    selectedTier?.token1Price,
+    tickPrices.LOWER,
+    tickPrices.UPPER,
+    endPriceInverted,
+    zeroForOne,
+  ])
+
   /*======================================================================
    *                       INPUT/OUTPUT AMOUNTS
    *====================================================================*/
@@ -732,6 +751,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *====================================================================*/
 
   const toggleWalletModal = useWalletModalToggle()
+  const isBuying = outputCurrency && baseCurrency?.equals(outputCurrency)
 
   const [upperFieldLabel, lowerFieldLabel] = useMemo(
     () => [
@@ -740,8 +760,29 @@ export default function LimitRange({ history }: RouteComponentProps) {
     ],
     [independentField]
   )
-  const leftStepCounterLabel = useMemo(() => <Trans>End price</Trans>, [])
-  const rightStepCounterLabel = useMemo(() => <Trans>Start Price</Trans>, [])
+  const leftStepCounterLabel = useMemo(
+    () =>
+      isBuying ? (
+        <>
+          <Trans>End buying {outputCurrency?.symbol} at</Trans>{' '}
+          <M.Text color={isInvalidPriceRange ? 'error' : 'green'}>
+            {!priceChangeRate ? '' : `(${priceChangeRate.lessThan(0) ? '' : '+'}${priceChangeRate.toFixed(2)}%)`}
+          </M.Text>
+        </>
+      ) : (
+        <>
+          <Trans>End selling {inputCurrency?.symbol} at</Trans>{' '}
+          <M.Text color={isInvalidPriceRange ? 'error' : 'green'}>
+            {!priceChangeRate ? '' : `(${priceChangeRate.lessThan(0) ? '' : '+'}${priceChangeRate.toFixed(2)}%)`}
+          </M.Text>
+        </>
+      ),
+    [isBuying, outputCurrency?.symbol, inputCurrency?.symbol, priceChangeRate, isInvalidPriceRange]
+  )
+  const rightStepCounterLabel = useMemo(
+    () => (isBuying ? <Trans>Start buying at</Trans> : <Trans>Start selling at</Trans>),
+    [isBuying]
+  )
   const noopStepCounterButton = useCallback(() => '', [])
   const noopOnUserInput = useCallback(() => null, [])
 
@@ -998,11 +1039,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
                   <M.RowBetween gap="1em">
                     <M.Text>
-                      {inputCurrency && quoteCurrency?.equals(inputCurrency) ? (
-                        <Trans>Average buying price</Trans>
-                      ) : (
-                        <Trans>Average selling price</Trans>
-                      )}
+                      {isBuying ? <Trans>Average buying price</Trans> : <Trans>Average selling price</Trans>}
                     </M.Text>
                     {averagePrice0 &&
                     !JSBI.equal(averagePrice0.denominator, ZERO) &&
