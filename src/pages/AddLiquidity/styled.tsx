@@ -26,7 +26,7 @@ export const CurrencyDropdown = styled(CurrencyInputPanel)`
 `
 
 export const StyledInput = styled(Input)`
-  background-color: ${({ theme }) => theme.bg0};
+  background-color: inherit;
   text-align: left;
   font-size: 18px;
   width: 100%;

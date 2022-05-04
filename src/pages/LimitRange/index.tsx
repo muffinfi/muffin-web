@@ -850,7 +850,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
             ) : invalidRecipient ? (
               <Trans>Invalid recipient</Trans>
             ) : (
-              <Trans>Swap</Trans>
+              <Trans>Place Order</Trans>
             )}
           </M.Text>
         </M.ButtonRow>

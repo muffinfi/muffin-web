@@ -1,11 +1,10 @@
 import { faBuildingColumns, faWallet } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Trans } from '@lingui/macro'
 import { useInternalAccountModeManager } from '@muffinfi/state/user/hooks'
 import { memo } from 'react'
 import styled from 'styled-components/macro'
 import { Button } from '../buttons'
-import { Row, Text } from '../core'
+import { Row } from '../core'
 
 const StyledButton = styled(Button)<{ active: boolean }>`
   --btn-bg: var(--layer2);

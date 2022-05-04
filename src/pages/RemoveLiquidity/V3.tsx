@@ -345,7 +345,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         <M.Text size="sm">{storeInInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}</M.Text>
       </M.RowBetween>
       <M.ButtonRowPrimary onClick={burn}>
-        <Trans>Remove</Trans>
+        <Trans>Remove Liquidity</Trans>
       </M.ButtonRowPrimary>
     </M.Column>
   )
@@ -447,7 +447,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                   disabled={removed || percent === 0 || !partialAmount0}
                   onClick={() => setShowConfirm(true)}
                 >
-                  {removed ? <Trans>Closed</Trans> : error ?? <Trans>Remove</Trans>}
+                  {removed ? <Trans>Closed</Trans> : error ?? <Trans>Remove Liquidity</Trans>}
                 </M.ButtonRowPrimary>
               </M.Column>
             </M.SectionCard>

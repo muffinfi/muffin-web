@@ -137,6 +137,10 @@ export const GlobalStyle = createGlobalStyle<{ darkMode: boolean }>`
     }
   }
 
+  input[type=checkbox] {
+    accent-color: var(--text2);
+  }
+
   table {
     width: 100%;
     text-indent: 0;

@@ -1,14 +1,14 @@
 import { Trans } from '@lingui/macro'
-import useScrollPosition from '@react-hook/window-scroll'
 import * as M from '@muffinfi-ui'
+import useScrollPosition from '@react-hook/window-scroll'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { match, NavLink } from 'react-router-dom'
-import { useDarkModeManager } from 'state/user/hooks'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled, { css } from 'styled-components/macro'
-import { ReactComponent as Logo } from '../../assets/svg/logo.svg'
+import { ReactComponent as LogoText } from '../../assets/svg/muffin_logo_text.svg'
+import { ReactComponent as Logo } from '../../assets/svg/muffin_logo.svg'
 import Menu from '../Menu'
 import Web3Status from '../Web3Status'
 import HeaderButton from './HeaderButton'
@@ -58,6 +58,34 @@ const BalanceText = styled.div`
   `};
 `
 
+const LogoLink = styled(M.Link)`
+  line-height: 0px;
+  /* font-size: 0px; */
+
+  & > svg {
+    transition: fill 200ms;
+    fill: var(--text1);
+    :hover {
+      fill: var(--primary0);
+    }
+  }
+
+  & > svg {
+    /* logo with text */
+    :first-child {
+      margin-bottom: 5.454%; // 5px for 110px tall
+      display: inline;
+      ${({ theme }) => theme.mediaWidth.upToExtraSmall`display: none;`};
+    }
+
+    /* logo only */
+    :last-child {
+      display: none;
+      ${({ theme }) => theme.mediaWidth.upToExtraSmall`display: inline;`};
+    }
+  }
+`
+
 /////////////////////
 
 const isSwapActive = (matchOrNull: match | null, location: { pathname: string }) => {
@@ -69,7 +97,6 @@ export default function Header() {
   const { account, chainId } = useActiveWeb3React()
 
   const userEthBalance = useNativeCurrencyBalances(account ? [account] : [])?.[account ?? '']
-  const [darkMode] = useDarkModeManager()
 
   const scrollY = useScrollPosition()
 
@@ -81,10 +108,11 @@ export default function Header() {
 
   return (
     <HeaderWrapper showBackground={scrollY > 45}>
-      <M.Row gap="32px">
-        <M.Link to=".">
-          <Logo fill={darkMode ? 'white' : 'black'} width="24px" height="100%" title="logo" />
-        </M.Link>
+      <M.Row gap="40px">
+        <LogoLink to=".">
+          <LogoText width="110px" height="auto" />
+          <Logo width="26px" height="auto" />
+        </LogoLink>
         <NavItemRow gap="32px">
           <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
             <Trans>Swap</Trans>

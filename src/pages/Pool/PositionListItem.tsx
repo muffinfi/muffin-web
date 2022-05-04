@@ -6,20 +6,17 @@ import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import { Position } from '@muffinfi/muffin-v1-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Loader'
 import { useToken } from 'hooks/useCurrency'
 import { usePricesFromPositionForUI } from 'hooks/usePricesFromPositionForUI'
 import { useMemo } from 'react'
-import { Bound } from 'state/mint/v3/actions'
 import styled, { css } from 'styled-components/macro'
-import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
 export const BasePositionRow = css`
   display: grid;
   align-items: center;
-  grid-template-columns: 1.25rem 9rem 4rem 1fr max-content;
+  grid-template-columns: 1.25rem 11rem 4rem 1fr max-content;
   gap: 1.5rem;
   padding: 16px 24px;
 
@@ -107,25 +104,14 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
         <>
           <M.Row gap="0.5em">
             <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin em={1.333} />
-            <M.Text weight="semibold" ellipsis>
+            <M.Text weight="semibold">
               {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
             </M.Text>
           </M.Row>
           <M.Text weight="semibold">
             <Trans>{tier.feePercent.toFixed(2)}%</Trans>
           </M.Text>
-          <M.Row wrap="wrap" columnGap="0.5em" rowGap="0.25em" style={{ alignItems: 'baseline' }}>
-            <M.Row wrap="wrap" columnGap="0.5em" rowGap="0.25em">
-              <M.TextContents weight="semibold" nowrap>
-                <M.Text>{formatTickPrice(priceLower, tickAtLimit, Bound.LOWER)}</M.Text>
-                <M.Text size="xs">⟷</M.Text>
-                <M.Text>{formatTickPrice(priceUpper, tickAtLimit, Bound.UPPER)}</M.Text>
-              </M.TextContents>
-            </M.Row>
-            <M.Text size="sm" color="text2" nowrap>
-              <HoverInlineText text={currencyQuote?.symbol} /> per <HoverInlineText text={currencyBase?.symbol} />
-            </M.Text>
-          </M.Row>
+          <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
           <M.Row>
             <RangeBadge removed={removed} inRange={!outOfRange} />
           </M.Row>

@@ -76,7 +76,7 @@ export default function Pool() {
 
   return (
     <>
-      <M.Container maxWidth="880px">
+      <M.Container maxWidth="900px">
         <M.Column stretch gap="32px">
           <M.RowBetween>
             <M.Text size="xl" weight="bold">
