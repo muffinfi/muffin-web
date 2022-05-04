@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Tier } from '@muffinfi/muffin-v1-sdk'
-import { Currency, Price, Token } from '@uniswap/sdk-core'
+import { Currency, Price, Rounding, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
@@ -45,14 +45,15 @@ export const PriceUnit = memo(function PriceUnit({
 
 export const PriceExpr = memo(function PriceExpr({
   price,
+  rounding,
   ...rest
-}: { price: Price<Currency, Currency> | undefined } & RowParams) {
+}: { price: Price<Currency, Currency> | undefined; rounding?: Rounding } & RowParams) {
   const currencyBase = price ? unwrappedToken(price.baseCurrency) : undefined
   const currencyQuote = price ? unwrappedToken(price.quoteCurrency) : undefined
 
   return (
     <RowBaseline wrap="wrap" columnGap="0.666em" rowGap="0.25em" {...rest}>
-      <Text>{price?.toSignificant(6)}</Text>
+      <Text>{price?.toSignificant(6, undefined, rounding)}</Text>
       <PriceUnit style={{ fontSize: '0.875em' }} currencyBase={currencyBase} currencyQuote={currencyQuote} />
     </RowBaseline>
   )

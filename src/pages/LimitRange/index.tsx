@@ -11,6 +11,7 @@ import {
   Position,
   PositionManager,
   priceToClosestTick,
+  TickMath,
   tickToPrice,
   ZERO,
 } from '@muffinfi/muffin-v1-sdk'
@@ -276,7 +277,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     return limits
   }, [tickSpacing, fullTickSpacing, selectedTier?.computedTick, zeroForOne])
 
-  const { areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
+  const { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
       startTick != null && endTick != null
         ? {
@@ -298,7 +299,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
       LOWER: token0 && token1 && ticks.LOWER != null ? tickToPrice(token0, token1, ticks.LOWER) : undefined,
       UPPER: token0 && token1 && ticks.UPPER != null ? tickToPrice(token0, token1, ticks.UPPER) : undefined,
     }
-    return { areEndPriceAtLimit, isInvalidPriceRange, tickPrices }
+    return { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices }
   }, [endTick, startTick, tickLimits.LOWER, tickLimits.UPPER, token0, token1, zeroForOne])
 
   const handlePriceIncrement = useCallback(() => {
@@ -376,49 +377,63 @@ export default function LimitRange({ history }: RouteComponentProps) {
   )
 
   const position = useMemo(() => {
-    if (!pool || !tokenA || !parsedAmount || tierId == null || endTick == null || startTick == null) {
+    if (!pool || !parsedAmount || tierId == null || ticks.LOWER == null || ticks.UPPER == null) {
       return undefined
     }
 
-    const [tickLower, tickUpper] = startTick > endTick ? [endTick, startTick] : [startTick, endTick]
     const limitOrderType = zeroForOne ? LimitOrderType.ZeroForOne : LimitOrderType.OneForZero
 
-    if (isExactIn) {
-      return Position.fromAmounts({
-        pool,
-        tierId,
-        tickLower,
-        tickUpper,
-        amount0: zeroForOne ? parsedAmount.quotient : ZERO,
-        amount1: zeroForOne ? ZERO : parsedAmount.quotient,
-        limitOrderType,
-      })
-    }
-
-    return Position.fromLimitOrderExactOutput({
-      pool,
-      tierId,
-      tickLower,
-      tickUpper,
-      amount0: zeroForOne ? ZERO : parsedAmount.quotient,
-      amount1: zeroForOne ? parsedAmount.quotient : ZERO,
-      limitOrderType,
-    })
-  }, [endTick, zeroForOne, isExactIn, parsedAmount, pool, startTick, tierId, tokenA])
+    return isExactIn
+      ? Position.fromAmounts({
+          pool,
+          tierId,
+          tickLower: ticks.LOWER,
+          tickUpper: ticks.UPPER,
+          amount0: zeroForOne ? parsedAmount.quotient : ZERO,
+          amount1: zeroForOne ? ZERO : parsedAmount.quotient,
+          limitOrderType,
+        })
+      : Position.fromLimitOrderExactOutput({
+          pool,
+          tierId,
+          tickLower: ticks.LOWER,
+          tickUpper: ticks.UPPER,
+          amount0: zeroForOne ? ZERO : parsedAmount.quotient,
+          amount1: zeroForOne ? parsedAmount.quotient : ZERO,
+          limitOrderType,
+        })
+  }, [pool, parsedAmount, tierId, ticks.LOWER, ticks.UPPER, zeroForOne, isExactIn])
 
   const averagePrice0 = useMemo(() => {
-    if (!position || !token0 || !token1) return undefined
-    const { amount0: mintAmount0, amount1: mintAmount1 } = position.mintAmounts
+    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null) {
+      return undefined
+    }
+
+    const limitOrderType = zeroForOne ? LimitOrderType.ZeroForOne : LimitOrderType.OneForZero
+
+    const position = Position.fromLimitOrderExactOutput({
+      pool,
+      tierId,
+      tickLower: ticks.LOWER,
+      tickUpper: ticks.UPPER,
+      amount0: zeroForOne ? ZERO : tryParseCurrencyAmount('1', pool.token0)?.quotient ?? 1,
+      amount1: zeroForOne ? tryParseCurrencyAmount('1', pool.token1)?.quotient ?? 1 : ZERO,
+      limitOrderType,
+    })
+    const { amount0: mintAmount0, amount1: mintAmount1 } = position.amountsAtPrice(
+      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1),
+      true
+    )
     const { amount0: settleAmount0, amount1: settleAmount1 } = position.settleAmounts
     const settleAmount = zeroForOne ? settleAmount1 : settleAmount0
     if (!settleAmount) return undefined
     return new Price(
-      token0,
-      token1,
+      pool.token0,
+      pool.token1,
       (zeroForOne ? mintAmount0 : settleAmount).toString(),
       (!zeroForOne ? mintAmount1 : settleAmount).toString()
     )
-  }, [zeroForOne, position, token0, token1])
+  }, [pool, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
   /*======================================================================
    *                       INPUT/OUTPUT AMOUNTS
@@ -431,17 +446,25 @@ export default function LimitRange({ history }: RouteComponentProps) {
       [Field.INPUT]:
         independentField === Field.INPUT
           ? parsedAmount
+          : isInvalidPriceRange
+          ? undefined
           : inputCurrency &&
-            (rawAmount = zeroForOne ? position?.mintAmounts.amount0 : position?.mintAmounts.amount1) &&
-            CurrencyAmount.fromRawAmount(inputCurrency, rawAmount.toString()),
+            position &&
+            CurrencyAmount.fromRawAmount(
+              inputCurrency,
+              (zeroForOne ? position.mintAmounts.amount0 : position.mintAmounts.amount1).toString()
+            ),
       [Field.OUTPUT]:
         independentField === Field.OUTPUT
           ? parsedAmount
+          : isInvalidPriceRange
+          ? undefined
           : outputCurrency &&
-            (rawAmount = zeroForOne ? position?.settleAmounts.amount1 : position?.settleAmounts.amount0) &&
+            position &&
+            (rawAmount = zeroForOne ? position.settleAmounts.amount1 : position.settleAmounts.amount0) &&
             CurrencyAmount.fromRawAmount(outputCurrency, rawAmount.toString()),
     }
-  }, [independentField, inputCurrency, outputCurrency, parsedAmount, position, zeroForOne])
+  }, [independentField, inputCurrency, isInvalidPriceRange, outputCurrency, parsedAmount, position, zeroForOne])
 
   // make formated input and output amounts
   const formattedAmounts = useMemo(() => {
@@ -980,7 +1003,11 @@ export default function LimitRange({ history }: RouteComponentProps) {
                     {averagePrice0 &&
                     !JSBI.equal(averagePrice0.denominator, ZERO) &&
                     !JSBI.equal(averagePrice0.numerator, ZERO) ? (
-                      <M.PriceExpr price={endPriceInverted ? averagePrice0.invert() : averagePrice0} justifyEnd />
+                      <M.PriceExpr
+                        price={endPriceInverted ? averagePrice0.invert() : averagePrice0}
+                        rounding={Rounding.ROUND_DOWN}
+                        justifyEnd
+                      />
                     ) : (
                       <span>-</span>
                     )}
