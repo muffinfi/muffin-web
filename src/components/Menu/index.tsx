@@ -195,7 +195,7 @@ export default function Menu() {
                       <MenuItemInternalLink to="/swap" onClick={toggleMenu}>
                         <Trans>Swap</Trans>
                       </MenuItemInternalLink>
-                      <MenuItemInternalLink to="/pool" onClick={toggleMenu}>
+                      <MenuItemInternalLink to="/positions" onClick={toggleMenu}>
                         <Trans>Pool</Trans>
                       </MenuItemInternalLink>
                       <MenuItemInternalLink to="/account" onClick={toggleMenu}>

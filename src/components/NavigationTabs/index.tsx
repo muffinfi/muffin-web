@@ -60,7 +60,7 @@ export function AddRemoveTabs({
     <Tabs>
       <RowBetween style={{ marginBottom: '20px' }}>
         <StyledHistoryLink
-          to={'/pool' + (!!positionID ? `/${positionID.toString()}` : '')}
+          to={'/positions' + (!!positionID ? `/${positionID.toString()}` : '')}
           onClick={() => {
             if (adding) {
               // not 100% sure both of these are needed

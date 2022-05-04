@@ -13,7 +13,7 @@ describe('Landing Page', () => {
 
   it('allows navigation to pool', () => {
     cy.get('#pool-nav-link').click()
-    cy.url().should('include', '/pool')
+    cy.url().should('include', '/positions')
   })
 
   it('is connected', () => {

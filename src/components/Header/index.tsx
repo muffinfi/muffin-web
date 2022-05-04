@@ -7,8 +7,8 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { match, NavLink } from 'react-router-dom'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled, { css } from 'styled-components/macro'
-import { ReactComponent as LogoText } from '../../assets/svg/muffin_logo_text.svg'
 import { ReactComponent as Logo } from '../../assets/svg/muffin_logo.svg'
+import { ReactComponent as LogoText } from '../../assets/svg/muffin_logo_text.svg'
 import Menu from '../Menu'
 import Web3Status from '../Web3Status'
 import HeaderButton from './HeaderButton'
@@ -119,7 +119,7 @@ export default function Header() {
           </NavItem>
           <NavItem
             id={`pool-nav-link`}
-            to={'/pool'}
+            to={'/positions'}
             isActive={(match, { pathname }) =>
               Boolean(match) ||
               pathname.startsWith('/add') ||

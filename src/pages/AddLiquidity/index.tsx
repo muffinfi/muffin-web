@@ -549,7 +549,7 @@ export default function AddLiquidity({
     // if there was a tx hash, we want to clear the input
     if (txHash) {
       onFieldAInput('')
-      history.push('/pool') // jump to position listing page after creating
+      history.push('/positions') // jump to position listing page after creating
     }
     setTxHash('')
   }, [history, onFieldAInput, txHash])
@@ -1032,7 +1032,7 @@ export default function AddLiquidity({
         <M.Column stretch gap="32px">
           <M.Link
             color="text2"
-            to={`/pool${tokenId ? `/${tokenId.toString()}` : ''}`}
+            to={`/positions${tokenId ? `/${tokenId.toString()}` : ''}`}
             onClick={() => {
               dispatch(resetMintV3State())
             }}

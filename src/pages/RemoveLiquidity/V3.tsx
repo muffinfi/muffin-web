@@ -104,7 +104,7 @@ export default function RemoveLiquidity({ location, match: { params } }: RouteCo
 
   if (parsedTokenId == null || parsedTokenId.eq(0)) {
     // redirect invalid tokenIds
-    return <Redirect to={{ ...location, pathname: '/pool' }} />
+    return <Redirect to={{ ...location, pathname: '/positions' }} />
   }
 
   return <Remove tokenId={parsedTokenId} />
@@ -378,7 +378,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
       <M.Container maxWidth="24rem">
         <M.Column stretch gap="32px">
-          <M.Link color="text2" to={`/pool/${tokenId.toString()}`}>
+          <M.Link color="text2" to={`/positions/${tokenId.toString()}`}>
             <Trans>← Back</Trans>
           </M.Link>
 

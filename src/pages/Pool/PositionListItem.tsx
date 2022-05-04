@@ -106,7 +106,7 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
   // check if price is within range
   const outOfRange: boolean = tier ? tier.computedTick < tickLower || tier.computedTick >= tickUpper : false
 
-  const positionSummaryLink = '/pool/' + tokenId
+  const positionSummaryLink = `/positions/${tokenId}`
 
   const removed = liquidityD8?.eq(0)
 

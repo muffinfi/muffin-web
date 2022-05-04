@@ -624,7 +624,7 @@ export function PositionPage({
         />
 
         <M.Column stretch gap="32px">
-          <M.Link to="/pool" color="text2">
+          <M.Link to="/positions" color="text2">
             <Trans>← Back to Positions</Trans>
           </M.Link>
 
