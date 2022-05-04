@@ -20,6 +20,7 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
+import { YellowCard } from 'components/Card'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
@@ -39,6 +40,7 @@ import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePrevious from 'hooks/usePrevious'
+import useTheme from 'hooks/useTheme'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
@@ -50,7 +52,7 @@ import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Perm
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { Review } from 'pages/AddLiquidity/Review'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowDown } from 'react-feather'
+import { AlertTriangle, ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
 import { useWalletModalToggle } from 'state/application/hooks'
@@ -60,6 +62,7 @@ import { TransactionType } from 'state/transactions/actions'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useExpertModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 import { isAddress } from 'utils'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -750,6 +753,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *                         REACT COMPONENT
    *====================================================================*/
 
+  const theme = useTheme()
   const toggleWalletModal = useWalletModalToggle()
   const isBuying = outputCurrency && baseCurrency?.equals(outputCurrency)
 
@@ -862,6 +866,101 @@ export default function LimitRange({ history }: RouteComponentProps) {
     </M.Column>
   )
 
+  const makeOrderInfoCard = () =>
+    inputCurrency && outputCurrency && !pool ? (
+      <M.Row
+        gap="12px"
+        style={{
+          padding: '1rem 1rem',
+          borderRadius: 16,
+          background: 'var(--secondary0)',
+          color: 'var(--primary2)',
+        }}
+      >
+        <AlertTriangle stroke={theme.red3} size="16px" />
+        <ThemedText.Main color="red3" fontSize="12px">
+          <Trans>No pool has been created for this token pair. Limit Range Orders are therefore not supported.</Trans>
+        </ThemedText.Main>
+      </M.Row>
+    ) : pool && defaultSqrtGamma == null ? (
+      <YellowCard padding="12px" $borderRadius="12px">
+        <M.Row gap="12px">
+          <AlertTriangle stroke={theme.yellow3} size="16px" />
+          <ThemedText.Yellow fontSize="12px">
+            <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
+          </ThemedText.Yellow>
+        </M.Row>
+      </YellowCard>
+    ) : (
+      <M.TextContents size="sm">
+        <CardColumn gap="10px">
+          <div>
+            <M.RowBetween gap="1em">
+              <M.Text>
+                <Trans>Position&apos;s fee tier</Trans>
+              </M.Text>
+              <M.Row gap="0.5em">
+                <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
+                {showEditTierButton && (
+                  <M.Anchor role="button" color="primary0" hoverColor="primary1" onClick={handleOpenEditTierDropdown}>
+                    {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
+                  </M.Anchor>
+                )}
+              </M.Row>
+            </M.RowBetween>
+
+            <AnimatedDropdown open={isEditTierDropdownOpened}>
+              <M.Column stretch gap="8px" style={{ padding: '12px 0 12px' }}>
+                <M.Text size="xs" color="text2">
+                  Fee tiers supporting Limit Range Orders
+                </M.Text>
+                <Select>
+                  {availableSqrtGammas.map((value) => (
+                    <TierOption
+                      key={value}
+                      active={value === sqrtGamma}
+                      activeColor="var(--primary1)"
+                      sqrtGamma={value}
+                      handleTierSelect={setSqrtGamma}
+                    />
+                  ))}
+                </Select>
+              </M.Column>
+            </AnimatedDropdown>
+          </div>
+
+          <M.RowBetween gap="1em">
+            <M.Text>
+              <Trans>Tier&apos;s current price</Trans>
+            </M.Text>
+            {selectedTier ? (
+              <M.PriceExpr
+                price={endPriceInverted ? selectedTier.token0Price.invert() : selectedTier.token0Price}
+                justifyEnd
+              />
+            ) : (
+              <span>-</span>
+            )}
+          </M.RowBetween>
+
+          <M.RowBetween gap="1em">
+            <M.Text>{isBuying ? <Trans>Average buying price</Trans> : <Trans>Average selling price</Trans>}</M.Text>
+            {averagePrice0 &&
+            !JSBI.equal(averagePrice0.denominator, ZERO) &&
+            !JSBI.equal(averagePrice0.numerator, ZERO) ? (
+              <M.PriceExpr
+                price={endPriceInverted ? averagePrice0.invert() : averagePrice0}
+                rounding={Rounding.ROUND_DOWN}
+                justifyEnd
+              />
+            ) : (
+              <span>-</span>
+            )}
+          </M.RowBetween>
+        </CardColumn>
+      </M.TextContents>
+    )
+
   const makeButton = () => (
     <M.Column stretch gap="12px">
       <TokenApproveOrPermitButton
@@ -879,7 +978,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
         </M.ButtonRowPrimary>
       ) : !pool || defaultSqrtGamma == null ? (
         <M.ButtonRowPrimary disabled>
-          <Trans>Token Pair Unsupported</Trans>
+          <Trans>Select another token pair</Trans>
         </M.ButtonRowPrimary>
       ) : !account ? (
         <M.ButtonRowSecondary onClick={toggleWalletModal}>
@@ -978,83 +1077,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
               <SwapHeader swapState={swapState} allowedSlippage={DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE} />
 
               {makeInputFields()}
-
-              <M.TextContents size="sm">
-                <CardColumn gap="10px">
-                  <div>
-                    <M.RowBetween gap="1em">
-                      <M.Text>
-                        <Trans>Position&apos;s fee tier</Trans>
-                      </M.Text>
-                      <M.Row gap="0.5em">
-                        <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
-                        {showEditTierButton && (
-                          <M.Anchor
-                            role="button"
-                            color="primary0"
-                            hoverColor="primary1"
-                            onClick={handleOpenEditTierDropdown}
-                          >
-                            {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
-                          </M.Anchor>
-                        )}
-                      </M.Row>
-                    </M.RowBetween>
-
-                    <AnimatedDropdown open={isEditTierDropdownOpened}>
-                      <M.Column stretch gap="8px" style={{ padding: '12px 0 12px' }}>
-                        <M.Text size="xs" color="text2">
-                          Fee tiers supporting Limit Range Orders
-                        </M.Text>
-                        <Select>
-                          {availableSqrtGammas.map((value) => (
-                            <TierOption
-                              key={value}
-                              active={value === sqrtGamma}
-                              activeColor="var(--primary1)"
-                              sqrtGamma={value}
-                              handleTierSelect={setSqrtGamma}
-                            />
-                          ))}
-                        </Select>
-                      </M.Column>
-                    </AnimatedDropdown>
-                  </div>
-
-                  {/* <Separator /> */}
-
-                  <M.RowBetween gap="1em">
-                    <M.Text>
-                      <Trans>Tier&apos;s current price</Trans>
-                    </M.Text>
-                    {selectedTier ? (
-                      <M.PriceExpr
-                        price={endPriceInverted ? selectedTier.token0Price.invert() : selectedTier.token0Price}
-                        justifyEnd
-                      />
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </M.RowBetween>
-
-                  <M.RowBetween gap="1em">
-                    <M.Text>
-                      {isBuying ? <Trans>Average buying price</Trans> : <Trans>Average selling price</Trans>}
-                    </M.Text>
-                    {averagePrice0 &&
-                    !JSBI.equal(averagePrice0.denominator, ZERO) &&
-                    !JSBI.equal(averagePrice0.numerator, ZERO) ? (
-                      <M.PriceExpr
-                        price={endPriceInverted ? averagePrice0.invert() : averagePrice0}
-                        rounding={Rounding.ROUND_DOWN}
-                        justifyEnd
-                      />
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </M.RowBetween>
-                </CardColumn>
-              </M.TextContents>
+              {makeOrderInfoCard()}
 
               {recipient !== null && (
                 <M.Column stretch gap="8px">
