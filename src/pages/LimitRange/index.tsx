@@ -998,7 +998,11 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
                   <M.RowBetween gap="1em">
                     <M.Text>
-                      <Trans>Average selling price</Trans>
+                      {inputCurrency && quoteCurrency?.equals(inputCurrency) ? (
+                        <Trans>Average buying price</Trans>
+                      ) : (
+                        <Trans>Average selling price</Trans>
+                      )}
                     </M.Text>
                     {averagePrice0 &&
                     !JSBI.equal(averagePrice0.denominator, ZERO) &&
