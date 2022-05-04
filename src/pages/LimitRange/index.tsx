@@ -24,6 +24,7 @@ import { YellowCard } from 'components/Card'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import QuestionHelper from 'components/QuestionHelper'
 import { ArrowWrapper, FieldsWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
@@ -896,9 +897,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
         <CardColumn gap="10px">
           <div>
             <M.RowBetween gap="1em">
-              <M.Text>
-                <Trans>Position&apos;s fee tier</Trans>
-              </M.Text>
+              <M.Row gap="0.5em">
+                <M.Text>
+                  <Trans>Position&apos;s fee tier</Trans>
+                </M.Text>
+                <QuestionHelper
+                  text={
+                    <Trans>
+                      This is the fee tier of your limit-range-order position. While your order is being filled, you
+                      also earn swap fees from the swaps that are executed in your selected price range
+                    </Trans>
+                  }
+                />
+              </M.Row>
               <M.Row gap="0.5em">
                 <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
                 {showEditTierButton && (
