@@ -1,16 +1,28 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
+import { MouseoverTooltip } from 'components/Tooltip'
 import type { ReactNode } from 'react'
 import { HelpCircle } from 'react-feather'
 import styled from 'styled-components/macro'
 
-const Wrapper = styled(M.Row)<{ padding?: string | null }>`
-  align-items: flex-start;
+const Wrapper = styled(M.TextDiv).attrs({
+  size: 'sm',
+  color: 'text2',
+  paragraphLineHeight: true,
+})<{ padding?: string | null }>`
   padding: ${({ padding }) => padding};
 `
 
-const StyledHelpCircle = styled(HelpCircle)`
-  stroke: var(--text2);
+// const StyledHelpCircle = styled(HelpCircle)`
+//   stroke: var(--text2);
+// `
+
+const StyledBlockNumber = styled(M.Text).attrs({
+  size: 'xs',
+  color: 'text2',
+})`
+  display: inline-block;
+  white-space: nowrap;
 `
 
 export default function SubgraphIndexingNote({
@@ -23,16 +35,20 @@ export default function SubgraphIndexingNote({
   blockNumber?: number
 }) {
   return (
-    <Wrapper gap="12px" padding={padding}>
-      <M.TextDiv paragraphLineHeight>
-        <StyledHelpCircle size="12px" />
-      </M.TextDiv>
-      <M.TextDiv size="sm" color="text2" paragraphLineHeight>
-        {children}
-        <M.TextDiv align="right" size="xs" color="text2">
-          {blockNumber && <Trans>Current indexing block: {blockNumber}</Trans>}
-        </M.TextDiv>
-      </M.TextDiv>
+    <Wrapper padding={padding}>
+      {children}
+      {blockNumber && (
+        <MouseoverTooltip
+          wrapperProps={{ display: 'inline-block', ml: '4px' }}
+          text={
+            <StyledBlockNumber>
+              <Trans>Current indexing block: {blockNumber}</Trans>
+            </StyledBlockNumber>
+          }
+        >
+          <HelpCircle size="12px" />
+        </MouseoverTooltip>
+      )}
     </Wrapper>
   )
 }
