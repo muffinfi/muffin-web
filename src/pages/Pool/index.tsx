@@ -6,6 +6,7 @@ import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { useMemo } from 'react'
 import { Inbox } from 'react-feather'
 import { Link } from 'react-router-dom'
@@ -74,6 +75,8 @@ export default function Pool() {
     [userHideClosedPositions, openPositions, closedPositions]
   )
   const showConnectAWallet = Boolean(!account)
+
+  useScrollToTopOnMount()
 
   return (
     <>

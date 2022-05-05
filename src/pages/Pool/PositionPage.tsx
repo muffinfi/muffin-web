@@ -20,6 +20,7 @@ import { CHAIN_INFO } from 'constants/chainInfo'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { PoolState } from 'hooks/usePools'
 import { usePricesFromPositionForUI } from 'hooks/usePricesFromPositionForUI'
+import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Link, RouteComponentProps } from 'react-router-dom'
@@ -313,6 +314,8 @@ export function PositionPage({
   /*=====================================================================
    *                          REACT COMPONENT
    *====================================================================*/
+
+  useScrollToTopOnMount()
 
   if (loading || poolState === PoolState.LOADING || !position) {
     return (

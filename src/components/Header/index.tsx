@@ -88,9 +88,18 @@ const LogoLink = styled(M.Link)`
 
 /////////////////////
 
-const isSwapActive = (matchOrNull: match | null, location: { pathname: string }) => {
-  if (matchOrNull) return true
-  return location.pathname.startsWith('/limit-range')
+const isSwapActive = (matchOrNull: match | null, { pathname }: { pathname: string }) => {
+  return Boolean(matchOrNull) || pathname.startsWith('/limit-range')
+}
+
+const isPositionsActive = (matchOrNull: match | null, { pathname }: { pathname: string }) => {
+  return (
+    Boolean(matchOrNull) ||
+    pathname.startsWith('/add') ||
+    pathname.startsWith('/remove') ||
+    pathname.startsWith('/increase') ||
+    pathname.startsWith('/find')
+  )
 }
 
 export default function Header() {
@@ -117,18 +126,8 @@ export default function Header() {
           <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
             <Trans>Swap</Trans>
           </NavItem>
-          <NavItem
-            id={`pool-nav-link`}
-            to={'/positions'}
-            isActive={(match, { pathname }) =>
-              Boolean(match) ||
-              pathname.startsWith('/add') ||
-              pathname.startsWith('/remove') ||
-              pathname.startsWith('/increase') ||
-              pathname.startsWith('/find')
-            }
-          >
-            <Trans>Pool</Trans>
+          <NavItem id={`pool-nav-link`} to={'/positions'} isActive={isPositionsActive}>
+            <Trans>Positions</Trans>
           </NavItem>
           <NavItem id={`account-nav-link`} to={'/account'}>
             <Trans>Account</Trans>
