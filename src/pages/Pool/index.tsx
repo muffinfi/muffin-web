@@ -1,7 +1,8 @@
 import { Trans } from '@lingui/macro'
-import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
+import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import DowntimeWarning from 'components/DowntimeWarning'
+import HelpTextRow from 'components/HelpTextRow'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -117,6 +118,12 @@ export default function Pool() {
               </NoLiquidity>
             )}
           </M.SectionCard>
+          <HelpTextRow padding="0 24px">
+            <Trans>
+              If you can&apos;t see the newly added positions even the transaction is confirmed, please wait for few
+              minutes due to the subgraph indexing.
+            </Trans>
+          </HelpTextRow>
         </M.Column>
         <HideSmall>
           <NetworkAlert />

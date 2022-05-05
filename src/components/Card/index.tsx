@@ -40,6 +40,11 @@ export const YellowCard = styled(Card)`
   font-weight: 500;
 `
 
+export const ErrorCard = styled(Card)`
+  background-color: var(--secondary0);
+  color: 'var(--primary2)';
+`
+
 export const BlueCard = styled(Card)`
   background-color: ${({ theme }) => theme.primary5};
   color: ${({ theme }) => theme.blue2};

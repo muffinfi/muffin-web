@@ -3,6 +3,7 @@ import * as M from '@muffinfi-ui'
 import { useAccountTokens } from '@muffinfi/hooks/account/useAccountTokens'
 import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffinfi/state/user/hooks'
 import TokenRow from 'components/account/TokenRow'
+import HelpTextRow from 'components/HelpTextRow'
 import { LoadingRows } from 'components/Loader/styled'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useAllTokens } from 'hooks/Tokens'
@@ -111,6 +112,13 @@ export default function Account(props: RouteComponentProps) {
               )}
             </M.Column>
           </M.SectionCard>
+
+          <HelpTextRow>
+            <Trans>
+              If you can&apos;t see the newly deposited tokens even the transaction is confirmed, please wait for few
+              minutes due to the subgraph indexing.
+            </Trans>
+          </HelpTextRow>
         </M.Column>
       </M.Container>
 

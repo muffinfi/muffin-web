@@ -50,7 +50,7 @@ import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { OutlineCard, YellowCard } from '../../components/Card'
+import { ErrorCard, OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import DowntimeWarning from '../../components/DowntimeWarning'
 import LiquidityChartRangeInput from '../../components/LiquidityChartRangeInput'
@@ -745,21 +745,14 @@ export default function AddLiquidity({
             ) : null}
           </M.RowBetween>
 
-          <M.Row
-            style={{
-              padding: '1rem 1rem',
-              borderRadius: 16,
-              background: 'var(--secondary0)',
-              color: 'var(--primary2)',
-            }}
-          >
-            <M.Text size="sm" paragraphLineHeight>
+          <ErrorCard>
+            <M.Text color="primary2" size="sm" paragraphLineHeight>
               <Trans>
                 This pool requires initialization. Please set a starting price for the pool. Also, gas fees will be
                 higher than usual due to initialization.
               </Trans>
             </M.Text>
-          </M.Row>
+          </ErrorCard>
 
           <M.DataGroup>
             <M.DataLabel>
@@ -856,7 +849,7 @@ export default function AddLiquidity({
           {isOutOfRange ? (
             <YellowCard padding="12px" $borderRadius="12px">
               <M.RowBetween gap="12px">
-                <AlertTriangle stroke={theme.yellow3} size="16px" />
+                <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
                 <ThemedText.Yellow fontSize="12px">
                   <Trans>
                     Your position will not earn fees or be used in trades until the market price moves into your range.

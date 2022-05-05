@@ -20,7 +20,7 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import { YellowCard } from 'components/Card'
+import { ErrorCard, YellowCard } from 'components/Card'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
@@ -883,24 +883,18 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
   const makeOrderInfoCard = () =>
     poolState === PoolState.NOT_EXISTS ? (
-      <M.Row
-        gap="12px"
-        style={{
-          padding: '1rem 1rem',
-          borderRadius: 16,
-          background: 'var(--secondary0)',
-          color: 'var(--primary2)',
-        }}
-      >
-        <AlertTriangle stroke={theme.red3} size="16px" />
-        <ThemedText.Main color="red3" fontSize="12px">
-          <Trans>No pool has been created for this token pair. Limit Range Orders are therefore not supported.</Trans>
-        </ThemedText.Main>
-      </M.Row>
-    ) : pool && defaultSqrtGamma == null ? (
-      <YellowCard padding="12px" $borderRadius="12px">
+      <ErrorCard>
         <M.Row gap="12px">
-          <AlertTriangle stroke={theme.yellow3} size="16px" />
+          <AlertTriangle stroke={theme.red3} size="16px" style={{ flexShrink: 0 }} />
+          <ThemedText.Main color="red3" fontSize="12px">
+            <Trans>No pool has been created for this token pair. Limit Range Orders are therefore not supported.</Trans>
+          </ThemedText.Main>
+        </M.Row>
+      </ErrorCard>
+    ) : pool && defaultSqrtGamma == null ? (
+      <YellowCard>
+        <M.Row gap="12px">
+          <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
           <ThemedText.Yellow fontSize="12px">
             <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
           </ThemedText.Yellow>
