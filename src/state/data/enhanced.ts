@@ -19,10 +19,19 @@ export const api = generatedApi.enhanceEndpoints({
     accountTokens: {
       providesTags: [CHAIN_TAG],
     },
+    subgraphState: {
+      providesTags: [CHAIN_TAG],
+    },
   },
 })
 
 export const AllV3TicksQueryResultKeys = ['tier0', 'tier1', 'tier2', 'tier3', 'tier4', 'tier5'] as const
 export type AllV3TicksQueryResultKey = typeof AllV3TicksQueryResultKeys[number]
 
-export const { useAllV3TicksQuery, useFeeTierDistributionQuery, usePositionTokenIdsQuery, useAccountTokensQuery } = api
+export const {
+  useSubgraphStateQuery,
+  useAllV3TicksQuery,
+  useFeeTierDistributionQuery,
+  usePositionTokenIdsQuery,
+  useAccountTokensQuery,
+} = api

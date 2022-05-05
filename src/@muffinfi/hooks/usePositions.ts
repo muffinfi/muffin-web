@@ -89,20 +89,24 @@ export function useMuffinPositionTokenIds(account: string | null | undefined) {
     pollingInterval: ms`30s`,
   })
 
+  const queryData = data as PositionTokenIdsQuery | undefined
+
   return useMemo(
     () => ({
       isLoading,
-      tokenIds: data ? (data as PositionTokenIdsQuery).positions.map((position) => position.tokenId) : undefined,
+      subgraphBlockNumber: queryData?._meta?.block.number,
+      tokenIds: queryData?.positions.map((position) => position.tokenId),
     }),
-    [isLoading, data]
+    [isLoading, queryData]
   )
 }
 
 export function useMuffinPositionDetails(account: string | null | undefined) {
-  const { isLoading, tokenIds } = useMuffinPositionTokenIds(account)
+  const { isLoading, tokenIds, subgraphBlockNumber } = useMuffinPositionTokenIds(account)
   const { positions, loading: positionsLoading } = useMuffinPositionDetailsFromTokenIds(tokenIds)
   return {
     loading: isLoading || positionsLoading,
+    subgraphBlockNumber,
     positions,
   }
 }

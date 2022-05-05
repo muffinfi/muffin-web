@@ -21,6 +21,20 @@ export const api = createApi({
   reducerPath: 'dataApi',
   baseQuery: graphqlRequestBaseQuery(),
   endpoints: (builder) => ({
+    subgraphState: builder.query({
+      query: () => ({
+        document: gql`
+          query subgraphState {
+            _meta {
+              hasIndexingErrors
+              block {
+                number
+              }
+            }
+          }
+        `,
+      }),
+    }),
     allV3Ticks: builder.query({
       query: ({ poolId, skip = 0 }) => ({
         document: gql`
@@ -100,6 +114,11 @@ export const api = createApi({
       query: ({ owner, skip = 0 }) => ({
         document: gql`
           query positionTokenIds($owner: Bytes!, $skip: Int!) {
+            _meta {
+              block {
+                number
+              }
+            }
             positions(first: 1000, skip: $skip, where: { owner: $owner }, orderBy: tokenId) {
               tokenId
             }
@@ -115,6 +134,11 @@ export const api = createApi({
       query: ({ accountHash, skip = 0 }) => ({
         document: gql`
           query accountTokens($accountHash: String!, $skip: Int!) {
+            _meta {
+              block {
+                number
+              }
+            }
             accountTokenBalances(
               first: 1000
               skip: $skip

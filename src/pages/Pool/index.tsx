@@ -2,8 +2,8 @@ import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
 import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import DowntimeWarning from 'components/DowntimeWarning'
-import HelpTextRow from 'components/HelpTextRow'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemo } from 'react'
@@ -55,7 +55,7 @@ export default function Pool() {
 
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
-  const { positions, loading: positionsLoading } = useMuffinPositionDetails(account)
+  const { positions, loading: positionsLoading, subgraphBlockNumber } = useMuffinPositionDetails(account)
 
   const [openPositions, closedPositions] = useMemo(
     () =>
@@ -118,12 +118,12 @@ export default function Pool() {
               </NoLiquidity>
             )}
           </M.SectionCard>
-          <HelpTextRow padding="0 24px">
+          <SubgraphIndexingNote padding="0 24px" blockNumber={subgraphBlockNumber}>
             <Trans>
               If you can&apos;t see the newly added positions even the transaction is confirmed, please wait for few
               minutes due to the subgraph indexing.
             </Trans>
-          </HelpTextRow>
+          </SubgraphIndexingNote>
         </M.Column>
         <HideSmall>
           <NetworkAlert />

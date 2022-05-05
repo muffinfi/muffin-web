@@ -3,8 +3,8 @@ import * as M from '@muffinfi-ui'
 import { useAccountTokens } from '@muffinfi/hooks/account/useAccountTokens'
 import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffinfi/state/user/hooks'
 import TokenRow from 'components/account/TokenRow'
-import HelpTextRow from 'components/HelpTextRow'
 import { LoadingRows } from 'components/Loader/styled'
+import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -33,7 +33,7 @@ const InputCheckbox = styled.input.attrs({ type: 'checkbox' })`
 
 export default function Account(props: RouteComponentProps) {
   const { account } = useActiveWeb3React()
-  const { isLoading, tokenIds } = useAccountTokens(account)
+  const { isLoading, tokenIds, subgraphBlockNumber } = useAccountTokens(account)
   const allTokens = useAllTokens()
 
   const [showZeroBalance, setShowZeroBalance] = useUserShowZeroBalanceTokens()
@@ -113,12 +113,12 @@ export default function Account(props: RouteComponentProps) {
             </M.Column>
           </M.SectionCard>
 
-          <HelpTextRow>
+          <SubgraphIndexingNote blockNumber={subgraphBlockNumber}>
             <Trans>
               If you can&apos;t see the newly deposited tokens even the transaction is confirmed, please wait for few
               minutes due to the subgraph indexing.
             </Trans>
-          </HelpTextRow>
+          </SubgraphIndexingNote>
         </M.Column>
       </M.Container>
 

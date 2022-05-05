@@ -13,13 +13,15 @@ export function useAccountTokens(account: string | null | undefined) {
   const { isLoading, data } = useAccountTokensQuery(accountHash ? { accountHash, skip: 0 } : skipToken, {
     pollingInterval: ms`30s`,
   })
+
+  const queryData = data as AccountTokensQuery | undefined
+
   return useMemo(
     () => ({
       isLoading,
-      tokenIds: data
-        ? (data as AccountTokensQuery).accountTokenBalances.map(({ token }) => validateAndParseAddress(token.id))
-        : undefined,
+      subgraphBlockNumber: queryData?._meta?.block.number,
+      tokenIds: queryData?.accountTokenBalances.map(({ token }) => validateAndParseAddress(token.id)),
     }),
-    [isLoading, data]
+    [isLoading, queryData]
   )
 }
