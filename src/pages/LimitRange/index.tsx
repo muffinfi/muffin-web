@@ -40,7 +40,7 @@ import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
-import usePrevious from 'hooks/usePrevious'
+import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useTheme from 'hooks/useTheme'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDCValue } from 'hooks/useUSDCPrice'
@@ -148,6 +148,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
   const hubContract = useHubContract()
   const [poolState, pool] = useMuffinPool(inputCurrency, outputCurrency)
+  const previousPool = usePreviousExclude(pool, EXCLUDE_NULL_OR_UNDEFINED)
+  const isPoolChanged = Boolean(!pool || !previousPool?.equals(pool))
   const tickSpacingMultipliers = useLimitOrderTickSpacingMultipliers(hubContract, pool)
   const [sqrtGamma, setSqrtGamma] = useState<number | undefined>()
   const [isEditTierDropdownOpened, setEditTierDropdownOpened] = useState(false)
@@ -204,7 +206,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *                          RATE AND PRICE
    *====================================================================*/
 
-  const [endPriceInverted, setEndPriceInverted] = useState(false)
+  const [endPriceInverted, setEndPriceInverted] = useState<boolean | undefined>() // undefined means didn't initialized
   const [endTick, setEndTick] = useState<number | undefined>()
   const quoteCurrency = endPriceInverted ? currency0 : currency1
   const baseCurrency = endPriceInverted ? currency1 : currency0
@@ -333,12 +335,12 @@ export default function LimitRange({ history }: RouteComponentProps) {
     })
   }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, isInvalidPriceRange, endPriceInverted])
 
-  // update default price
-  const previousPool = usePrevious(pool)
+  // set default price
   useEffect(() => {
     if (!pool || tickLimits.END == null || !baseToken || !quoteToken) return
-    if (previousPool === pool && endTick != null) return
-    if (endTick == null) {
+    if (!isPoolChanged && endTick != null) return // don't update on same pool and endTick exists
+    // set default end price direction
+    if (typeof endPriceInverted === 'undefined') {
       const inverted = Boolean(
         urlEndPriceInverted &&
           typeof urlEndPriceInverted === 'string' &&
@@ -346,30 +348,40 @@ export default function LimitRange({ history }: RouteComponentProps) {
           urlEndPriceInverted?.toLowerCase() !== 'false'
       )
       setEndPriceInverted(inverted)
-      if (typeof urlEndPrice === 'string' && tickSpacing != null) {
-        const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
-        const baseAmount = tryParseAmount('1', baseToken)
-        if (!quoteAmount || !baseAmount || !quoteToken || !baseToken) return
-
-        const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
-        if (!price) return
-        setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
-        return
-      }
     }
-    setEndTick(tickLimits.END)
+    // reset to limit if changed pool but endTick exists or no url provided price
+    if (endTick != null || typeof urlEndPrice !== 'string' || tickSpacing == null) {
+      setEndTick(tickLimits.END)
+      return
+    }
+    // set to url defined price
+    const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
+    const baseAmount = tryParseAmount('1', baseToken)
+    if (!quoteAmount || !baseAmount) return
+
+    const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
+    if (!price) return
+    setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
   }, [
     pool,
     baseToken,
     endPriceInverted,
     quoteToken,
-    previousPool,
+    isPoolChanged,
     endTick,
     tickLimits.END,
     urlEndPrice,
     urlEndPriceInverted,
     tickSpacing,
   ])
+
+  // always make end tick usable
+  useEffect(() => {
+    setEndTick((oldValue) => {
+      if (oldValue == null || tickSpacing == null) return oldValue
+      return nearestUsableTick(oldValue, tickSpacing)
+    })
+  }, [tickSpacing])
 
   /*======================================================================
    *                              POSITION
@@ -411,7 +423,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
   }, [pool, parsedAmount, tierId, ticks.LOWER, ticks.UPPER, zeroForOne, isExactIn])
 
   const averagePrice0 = useMemo(() => {
-    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null) {
+    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolChanged) {
+      // when pool changed, set to undefined to wait for new valid endTick set up
       return undefined
     }
 
@@ -439,7 +452,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
       (zeroForOne ? mintAmount0 : settleAmount).toString(),
       (!zeroForOne ? mintAmount1 : settleAmount).toString()
     )
-  }, [pool, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
+  }, [pool, isPoolChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
   const priceChangeRate = useMemo(() => {
     if (!selectedTier?.token0Price || !selectedTier?.token1Price || !tickPrices.LOWER || !tickPrices.UPPER) {
@@ -510,7 +523,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const maxInputAmount = useMemo(() => maxAmountSpend(inputBalance), [inputBalance])
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
 
-  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient } = useSwapActionHandlers()
+  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient, reset } = useSwapActionHandlers()
 
   const handleTypeInput = useCallback(
     (value: string) => {
@@ -640,8 +653,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
     setDismissTokenWarning(true)
+    reset()
     history.push('/limit-range')
-  }, [history])
+  }, [history, reset])
 
   /*=====================================================================
    *                        MINT CONFIRMATION

@@ -197,7 +197,7 @@ const StepCounter = ({
   )
 
   const makePriceUnit = () => (
-    <M.Row gap="0.5em">
+    <M.Row gap="0.5em" style={{ display: 'inline-flex' }}>
       <span>
         <Trans>
           {tokenB ?? '-'} per {tokenA ?? '-'}
@@ -251,7 +251,7 @@ const StepCounter = ({
         </M.Row>
 
         {tokenA || tokenB ? (
-          <M.TextContents color="text2" size="xs">
+          <M.TextDiv color="text2" size="xs">
             {toggleRate ? (
               <M.Anchor role="button" hoverColor="text1" onClick={handleClickUnit}>
                 {makePriceUnit()}
@@ -259,7 +259,7 @@ const StepCounter = ({
             ) : (
               makePriceUnit()
             )}
-          </M.TextContents>
+          </M.TextDiv>
         ) : null}
       </M.Column>
     </FocusedOutlineCard>

@@ -32,6 +32,7 @@ export function useSwapActionHandlers(): {
   onSwitchTokens: () => void
   onUserInput: (field: Field, typedValue: string) => void
   onChangeRecipient: (recipient: string | null) => void
+  reset: () => void
 } {
   const dispatch = useAppDispatch()
   const onCurrencySelection = useCallback(
@@ -64,11 +65,23 @@ export function useSwapActionHandlers(): {
     [dispatch]
   )
 
+  const reset = useCallback(() => {
+    dispatch(
+      replaceSwapState({
+        typedValue: '',
+        field: Field.INPUT,
+        inputCurrencyId: 'ETH',
+        recipient: null,
+      })
+    )
+  }, [dispatch])
+
   return {
     onSwitchTokens,
     onCurrencySelection,
     onUserInput,
     onChangeRecipient,
+    reset,
   }
 }
 
