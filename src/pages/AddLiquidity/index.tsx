@@ -843,7 +843,6 @@ export default function AddLiquidity({
               onRightRangeInput={onRightRangeInput}
               currencyA={baseCurrency}
               currencyB={quoteCurrency}
-              tierId={tierId}
               ticksAtLimit={areTicksAtLimit}
             />
 

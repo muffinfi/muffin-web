@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components/macro'
-
 import { escapeRegExp } from '../../utils'
 
 const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: string }>`
@@ -13,7 +12,7 @@ const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: s
   flex: 1 1 auto;
   background-color: var(--layer2);
   font-size: ${({ fontSize }) => fontSize ?? '1.75rem'};
-  text-align: ${({ align }) => align && align};
+  text-align: ${({ align }) => align};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

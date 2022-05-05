@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { Currency, Price, Token } from '@uniswap/sdk-core'
 import * as M from '@muffinfi-ui'
+import { Currency, Price, Token } from '@uniswap/sdk-core'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { Bound } from 'state/mint/v3/actions'
 
@@ -16,7 +16,6 @@ export default function RangeSelector({
   getIncrementUpper,
   currencyA,
   currencyB,
-  tierId,
   ticksAtLimit,
 }: {
   priceLower?: Price<Token, Token>
@@ -29,7 +28,6 @@ export default function RangeSelector({
   onRightRangeInput: (typedValue: string) => void
   currencyA?: Currency | null
   currencyB?: Currency | null
-  tierId?: number
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 }) {
   const tokenA = (currencyA ?? undefined)?.wrapped

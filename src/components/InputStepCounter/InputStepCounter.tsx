@@ -90,7 +90,9 @@ interface StepCounterProps {
   tokenA: string | undefined
   tokenB: string | undefined
   toggleRate?: () => void
-  handleChangeImmediately?: boolean
+  onImmediateInput?: (value: string) => void
+  onDecrement?: () => void
+  onIncrement?: () => void
   disablePulsing?: boolean
 }
 
@@ -107,7 +109,9 @@ const StepCounter = ({
   tokenA,
   tokenB,
   toggleRate,
-  handleChangeImmediately,
+  onImmediateInput,
+  onDecrement,
+  onIncrement,
   disablePulsing,
 }: StepCounterProps) => {
   //  for focus state, styled components doesnt let you select input parent container
@@ -119,6 +123,9 @@ const StepCounter = ({
 
   // animation if parent value updates local value
   const [pulsing, setPulsing] = useState<boolean>(false)
+
+  const timeoutId = useRef<ReturnType<typeof setTimeout>>()
+  const lastButtonClickedAt = useRef<number>(0)
 
   const handleOnFocus = useCallback(() => {
     setUseLocalValue(true)
@@ -133,48 +140,49 @@ const StepCounter = ({
 
   // for button clicks
   const handleDecrement = useCallback(() => {
-    timestampLastButtonClick.current = Date.now()
+    lastButtonClickedAt.current = Date.now()
     setUseLocalValue(false)
-    onUserInput(decrement())
-  }, [decrement, onUserInput])
+    if (onDecrement) {
+      onDecrement()
+    } else {
+      onUserInput(decrement())
+    }
+  }, [decrement, onDecrement, onUserInput])
 
   const handleIncrement = useCallback(() => {
-    timestampLastButtonClick.current = Date.now()
+    lastButtonClickedAt.current = Date.now()
     setUseLocalValue(false)
-    onUserInput(increment())
-  }, [increment, onUserInput])
+    if (onIncrement) {
+      onIncrement()
+    } else {
+      onUserInput(increment())
+    }
+  }, [increment, onIncrement, onUserInput])
 
   const handleInput = useCallback(
     (val: string) => {
       setLocalValue(val)
-      handleChangeImmediately && onUserInput(val)
+      onImmediateInput?.(val)
     },
-    [handleChangeImmediately, onUserInput]
+    [onImmediateInput]
   )
 
-  const timeoutId = useRef<ReturnType<typeof setTimeout>>()
-  const timestampLastButtonClick = useRef<number>(0)
-
   useEffect(() => {
-    if (localValue !== value && !useLocalValue) {
-      if (disablePulsing) {
-        setLocalValue(value)
-      } else {
-        // setTimeout(() => {
-        setLocalValue(value) // reset local value to match parent
+    if (localValue === value || useLocalValue) return
+    setLocalValue(value) // reset local value to match parent
 
-        if (Date.now() - timestampLastButtonClick.current > 200) {
-          setPulsing(true) // trigger animation
+    // don't trigger animation when disabled or changed from +/- buttons
+    if (locked || Date.now() - lastButtonClickedAt.current < 200) return
 
-          if (timeoutId.current) clearTimeout(timeoutId.current)
-          timeoutId.current = setTimeout(() => {
-            setPulsing(false)
-          }, 1800)
-        }
-        // }, 0)
-      }
-    }
-  }, [disablePulsing, localValue, useLocalValue, value])
+    setPulsing(false) // retrigger animation
+    setTimeout(() => {
+      setPulsing(true)
+      if (timeoutId.current) clearTimeout(timeoutId.current)
+      timeoutId.current = setTimeout(() => {
+        setPulsing(false)
+      }, 850)
+    }, 0)
+  }, [locked, localValue, useLocalValue, value])
 
   // generate random string for input id
   const inputFieldId = useMemo(() => `${Date.now()}-${Math.random()}`, [])
@@ -182,6 +190,7 @@ const StepCounter = ({
   const handleClickUnit = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault() // prevent focusing on input
+      lastButtonClickedAt.current = Date.now()
       toggleRate?.()
     },
     [toggleRate]
@@ -194,7 +203,11 @@ const StepCounter = ({
           {tokenB ?? '-'} per {tokenA ?? '-'}
         </Trans>
       </span>
-      <M.TextContents color="primary1">{toggleRate && <RefreshCw size="1em" />}</M.TextContents>
+      {toggleRate && (
+        <M.TextContents color="primary1">
+          <RefreshCw size="1em" />
+        </M.TextContents>
+      )}
     </M.Row>
   )
 

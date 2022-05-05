@@ -57,6 +57,7 @@ import { AlertTriangle, ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
 import { useWalletModalToggle } from 'state/application/hooks'
+import { tryParseTick } from 'state/mint/v3/utils'
 import { Field } from 'state/swap/actions'
 import { tryParseAmount, useDefaultsFromURLSearch, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { TransactionType } from 'state/transactions/actions'
@@ -112,11 +113,8 @@ const CardColumn = styled(M.Column).attrs({ stretch: true })`
   padding: 14px;
 `
 
-// const Separator = styled.div`
-//   width: 100%;
-//   height: 1px;
-//   background-color: var(--borderColor);
-// `
+const noopStepCounterButton = () => ''
+const noopOnUserInput = () => null
 
 const MemoizedCurrencyInputPanel = memo(CurrencyInputPanel)
 const MemoizedStepCounter = memo(StepCounter)
@@ -207,25 +205,15 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *====================================================================*/
 
   const [endPriceInverted, setEndPriceInverted] = useState(false)
-  const [endPriceTypedAmount, setEndPriceTypedAmount] = useState('')
+  const [endTick, setEndTick] = useState<number | undefined>()
   const quoteCurrency = endPriceInverted ? currency0 : currency1
   const baseCurrency = endPriceInverted ? currency1 : currency0
   const quoteToken = endPriceInverted ? token0 : token1
   const baseToken = endPriceInverted ? token1 : token0
 
-  const endPrice0 = useMemo(() => {
-    const quoteAmount = tryParseAmount(endPriceTypedAmount, quoteToken)
-    const baseAmount = tryParseAmount('1', baseToken)
-    if (!quoteAmount || !baseAmount || !quoteToken || !baseToken) return undefined
-
-    const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
-    return endPriceInverted ? price?.invert() : price
-  }, [endPriceTypedAmount, endPriceInverted, quoteToken, baseToken])
-
-  const endTick = useMemo(
-    () =>
-      endPrice0 && pool?.tickSpacing ? nearestUsableTick(priceToClosestTick(endPrice0), pool.tickSpacing) : undefined,
-    [endPrice0, pool?.tickSpacing]
+  const endPrice0 = useMemo(
+    () => (token0 && token1 && endTick != null ? tickToPrice(token0, token1, endTick) : undefined),
+    [token0, token1, endTick]
   )
 
   const { tickSpacing: settlementTickSpacing }: Partial<ReturnType<typeof useSettlement>> =
@@ -254,9 +242,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
   )
 
   const handleRateToggle = useCallback(() => {
-    setEndPriceInverted(!endPriceInverted)
-    setEndPriceTypedAmount((endPriceInverted ? endPrice0 : endPrice0?.invert())?.toSignificant(6) ?? '')
-  }, [endPrice0, endPriceInverted])
+    setEndPriceInverted((value) => !value)
+  }, [])
 
   const tickLimits: {
     LOWER?: number
@@ -306,62 +293,52 @@ export default function LimitRange({ history }: RouteComponentProps) {
     return { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices }
   }, [endTick, startTick, tickLimits.LOWER, tickLimits.UPPER, token0, token1, zeroForOne])
 
+  const handleUserInput = useCallback(
+    (value: string) => {
+      const normalizedValue = value.replace(/\.$/, '')
+      setEndTick(
+        token0 && token1 && pool?.tickSpacing && parseFloat(normalizedValue) !== 0
+          ? endPriceInverted
+            ? tryParseTick(token1, token0, pool.tickSpacing, normalizedValue)
+            : tryParseTick(token0, token1, pool.tickSpacing, normalizedValue)
+          : undefined
+      )
+    },
+    [endPriceInverted, pool?.tickSpacing, token0, token1]
+  )
+
   const handlePriceIncrement = useCallback(() => {
-    if (!tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
-      return endPriceTypedAmount
-    }
-    const newPrice = tickToPrice(
-      baseToken,
-      quoteToken,
-      endTick != null && !isInvalidPriceRange
-        ? endTick + (endPriceInverted ? -tickSpacing : tickSpacing)
-        : tickLimits.END
-    )
-    return (
-      newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
-    )
-  }, [
-    tickSpacing,
-    tickLimits.END,
-    baseToken,
-    quoteToken,
-    endTick,
-    isInvalidPriceRange,
-    endPriceInverted,
-    endPriceTypedAmount,
-  ])
+    setEndTick((oldValue) => {
+      if (!tickSpacing || tickLimits.END == null || tickLimits.LOWER == null || tickLimits.UPPER == null) {
+        return oldValue
+      }
+      return oldValue == null || isInvalidPriceRange
+        ? tickLimits.END
+        : endPriceInverted
+        ? Math.max(tickLimits.LOWER, oldValue - tickSpacing)
+        : Math.min(tickLimits.UPPER, oldValue + tickSpacing)
+    })
+  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, isInvalidPriceRange, endPriceInverted])
 
   const handlePriceDecrement = useCallback(() => {
-    if (!tickSpacing || tickLimits.END == null || !baseToken || !quoteToken) {
-      return endPriceTypedAmount
-    }
-    const newPrice = tickToPrice(
-      baseToken,
-      quoteToken,
-      endTick != null && !isInvalidPriceRange
-        ? endTick - (endPriceInverted ? -tickSpacing : tickSpacing)
-        : tickLimits.END
-    )
-    return (
-      newPrice.toFixed(quoteToken.decimals, undefined, endPriceInverted ? Rounding.ROUND_DOWN : Rounding.ROUND_UP) ?? ''
-    )
-  }, [
-    tickSpacing,
-    tickLimits.END,
-    baseToken,
-    quoteToken,
-    endTick,
-    isInvalidPriceRange,
-    endPriceInverted,
-    endPriceTypedAmount,
-  ])
+    setEndTick((oldValue) => {
+      if (!tickSpacing || tickLimits.END == null || tickLimits.LOWER == null || tickLimits.UPPER == null) {
+        return oldValue
+      }
+      return oldValue == null || isInvalidPriceRange
+        ? tickLimits.END
+        : endPriceInverted
+        ? Math.min(tickLimits.UPPER, oldValue + tickSpacing)
+        : Math.max(tickLimits.LOWER, oldValue - tickSpacing)
+    })
+  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, isInvalidPriceRange, endPriceInverted])
 
   // update default price
   const previousPool = usePrevious(pool)
   useEffect(() => {
     if (!pool || tickLimits.END == null || !baseToken || !quoteToken) return
-    if (previousPool !== pool && endPriceTypedAmount) return
-    if (!endPriceTypedAmount) {
+    if (previousPool === pool && endTick != null) return
+    if (endTick == null) {
       const inverted = Boolean(
         urlEndPriceInverted &&
           typeof urlEndPriceInverted === 'string' &&
@@ -369,28 +346,29 @@ export default function LimitRange({ history }: RouteComponentProps) {
           urlEndPriceInverted?.toLowerCase() !== 'false'
       )
       setEndPriceInverted(inverted)
-      if (typeof urlEndPrice === 'string') {
-        setEndPriceTypedAmount(urlEndPrice)
+      if (typeof urlEndPrice === 'string' && tickSpacing != null) {
+        const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
+        const baseAmount = tryParseAmount('1', baseToken)
+        if (!quoteAmount || !baseAmount || !quoteToken || !baseToken) return
+
+        const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
+        if (!price) return
+        setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
         return
       }
     }
-    setEndPriceTypedAmount(
-      getTickToPrice(baseToken, quoteToken, tickLimits.END)?.toFixed(
-        quoteToken.decimals,
-        undefined,
-        Rounding.ROUND_UP
-      ) ?? ''
-    )
+    setEndTick(tickLimits.END)
   }, [
     pool,
     baseToken,
     endPriceInverted,
     quoteToken,
     previousPool,
-    endPriceTypedAmount,
+    endTick,
     tickLimits.END,
     urlEndPrice,
     urlEndPriceInverted,
+    tickSpacing,
   ])
 
   /*======================================================================
@@ -673,7 +651,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const isInvalidTypedAmount = !(
     parsedAmounts[Field.INPUT]?.greaterThan(0) && parsedAmounts[Field.OUTPUT]?.greaterThan(0)
   )
-  const isInvalidPrice = !endPriceTypedAmount || !endPrice0
+  const isInvalidPrice = endTick == null || !endPrice0
   const managerAddress = useManagerAddress()
 
   const tryInternalAccount = useIsUsingInternalAccount()
@@ -767,7 +745,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     setShowTxModalConfirm(false)
     // if there was a tx hash, we want to clear the input
     if (txHash) {
-      setEndPriceTypedAmount('')
+      setEndTick(undefined)
       onUserInput(Field.INPUT, '')
       history.push('/limit-range') // jump to position listing page after creating
     }
@@ -812,8 +790,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
     () => (isBuying ? <Trans>Start buying at</Trans> : <Trans>Start selling at</Trans>),
     [isBuying]
   )
-  const noopStepCounterButton = useCallback(() => '', [])
-  const noopOnUserInput = useCallback(() => null, [])
 
   const makeInputFields = () => (
     <M.Column stretch gap="12px">
@@ -859,18 +835,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
       <StepCountersRow gap="12px">
         <MemoizedStepCounter
-          value={endPriceTypedAmount}
-          onUserInput={setEndPriceTypedAmount}
-          decrement={handlePriceDecrement}
-          increment={handlePriceIncrement}
+          value={(endPriceInverted ? endPrice0?.invert() : endPrice0)?.toSignificant(6) ?? ''}
+          onUserInput={handleUserInput}
+          decrement={noopStepCounterButton}
+          increment={noopStepCounterButton}
           decrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'UPPER' : 'LOWER']}
           incrementDisabled={areEndPriceAtLimit[endPriceInverted ? 'LOWER' : 'UPPER']}
           title={leftStepCounterLabel}
           tokenA={baseCurrency?.symbol}
           tokenB={quoteCurrency?.symbol}
           toggleRate={handleRateToggle}
-          handleChangeImmediately
-          disablePulsing
+          onDecrement={handlePriceDecrement}
+          onIncrement={handlePriceIncrement}
+          onImmediateInput={handleUserInput}
         />
 
         <MemoizedStepCounter
@@ -885,7 +862,6 @@ export default function LimitRange({ history }: RouteComponentProps) {
           tokenA={baseCurrency?.symbol}
           tokenB={quoteCurrency?.symbol}
           toggleRate={handleRateToggle}
-          disablePulsing
         />
       </StepCountersRow>
     </M.Column>
