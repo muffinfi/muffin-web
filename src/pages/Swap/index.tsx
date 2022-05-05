@@ -506,7 +506,7 @@ export default function Swap({ history }: RouteComponentProps) {
           <M.Text size="lg">
             {swapInputError ? (
               swapInputError
-            ) : priceImpactTooHigh ? (
+            ) : trade && priceImpactTooHigh ? (
               <Trans>High Price Impact</Trans>
             ) : trade && priceImpactSeverity > 2 ? (
               <Trans>Swap Anyway</Trans>
