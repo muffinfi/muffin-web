@@ -309,9 +309,9 @@ export function ButtonDropdownLight({ disabled = false, children, ...rest }: { d
   )
 }
 
-const ActiveOutlined = styled(ButtonOutlined)<{ activeColor?: string }>`
+const ActiveOutlined = styled(ButtonOutlined)<{ $activeColor?: string }>`
   border: 1px solid;
-  border-color: ${({ activeColor, theme }) => activeColor ?? theme.primary1};
+  border-color: ${({ $activeColor, theme }) => $activeColor ?? theme.primary1};
 `
 
 const Circle = styled.div<{ activeColor?: string }>`
@@ -352,7 +352,7 @@ export function ButtonRadioChecked({
     )
   } else {
     return (
-      <ActiveOutlined {...rest} activeColor={activeColor} padding="12px 8px" $borderRadius="12px">
+      <ActiveOutlined {...rest} $activeColor={activeColor} padding="12px 8px" $borderRadius="12px">
         {
           <RowBetween>
             {children}

@@ -14,8 +14,8 @@ const appendQuery = (base: string, search?: string) => {
 const StyledNavLink = styled(M.NavLink).attrs({
   color: 'text2',
   weight: 'regular',
-  activeColor: 'text1',
-  activeWeight: 'semibold',
+  $activeColor: 'text1',
+  $activeWeight: 'semibold',
 })``
 
 export default memo(function SwapHeader({

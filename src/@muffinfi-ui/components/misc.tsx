@@ -14,10 +14,10 @@ export const ExternalLink = styled(Anchor).attrs({
 export const NavLink = styled(Link).attrs({
   as: RouterNavLink,
   activeClassName: 'ACTIVE',
-})<{ activeColor?: string; activeWeight?: string }>`
+})<{ $activeColor?: string; $activeWeight?: string }>`
   &.ACTIVE {
-    font-weight: ${({ activeWeight }) => activeWeight && `var(--${activeWeight})`};
-    color: ${({ activeColor }) => activeColor && `var(--${activeColor})`};
+    font-weight: ${({ $activeWeight }) => $activeWeight && `var(--${$activeWeight})`};
+    color: ${({ $activeColor }) => $activeColor && `var(--${$activeColor})`};
   }
 `
 
