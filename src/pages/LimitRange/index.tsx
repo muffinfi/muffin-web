@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
 import { useHubContract } from '@muffinfi/hooks/useContract'
-import { useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
+import { PoolState, useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
 import { useSettlement } from '@muffinfi/hooks/useSettlements'
 import {
   LimitOrderType,
@@ -149,12 +149,12 @@ export default function LimitRange({ history }: RouteComponentProps) {
    *====================================================================*/
 
   const hubContract = useHubContract()
-  const [, pool] = useMuffinPool(inputCurrency, outputCurrency)
+  const [poolState, pool] = useMuffinPool(inputCurrency, outputCurrency)
   const tickSpacingMultipliers = useLimitOrderTickSpacingMultipliers(hubContract, pool)
   const [sqrtGamma, setSqrtGamma] = useState<number | undefined>()
   const [isEditTierDropdownOpened, setEditTierDropdownOpened] = useState(false)
 
-  const { sqrtGamma: urlSqrtGamma } = useParsedQueryString()
+  const { sqrtGamma: urlSqrtGamma, price: urlEndPrice, priceInverted: urlEndPriceInverted } = useParsedQueryString()
 
   const [tierId, selectedTier] = useMemo(() => {
     const res = pool?.getTierBySqrtGamma(sqrtGamma) ?? []
@@ -195,12 +195,12 @@ export default function LimitRange({ history }: RouteComponentProps) {
 
   // set default tier id
   useEffect(() => {
-    if (isValidTier) return
+    if (poolState === PoolState.EXISTS && defaultSqrtGamma != null && isValidTier) return
     const parsedSqrtGamma = (typeof urlSqrtGamma === 'string' && parseInt(urlSqrtGamma)) || undefined
     setSqrtGamma(
       parsedSqrtGamma != null && availableSqrtGammas.includes(parsedSqrtGamma) ? parsedSqrtGamma : defaultSqrtGamma
     )
-  }, [defaultSqrtGamma, availableSqrtGammas, isValidTier, urlSqrtGamma])
+  }, [poolState, defaultSqrtGamma, availableSqrtGammas, isValidTier, urlSqrtGamma])
 
   /*======================================================================
    *                          RATE AND PRICE
@@ -356,10 +356,24 @@ export default function LimitRange({ history }: RouteComponentProps) {
     endPriceTypedAmount,
   ])
 
+  // update default price
   const previousPool = usePrevious(pool)
   useEffect(() => {
-    if (!pool || !selectedTier || !baseToken || !quoteToken) return
-    if (previousPool === pool && endPriceTypedAmount) return
+    if (!pool || tickLimits.END == null || !baseToken || !quoteToken) return
+    if (previousPool !== pool && endPriceTypedAmount) return
+    if (!endPriceTypedAmount) {
+      const inverted = Boolean(
+        urlEndPriceInverted &&
+          typeof urlEndPriceInverted === 'string' &&
+          urlEndPriceInverted !== '0' &&
+          urlEndPriceInverted?.toLowerCase() !== 'false'
+      )
+      setEndPriceInverted(inverted)
+      if (typeof urlEndPrice === 'string') {
+        setEndPriceTypedAmount(urlEndPrice)
+        return
+      }
+    }
     setEndPriceTypedAmount(
       getTickToPrice(baseToken, quoteToken, tickLimits.END)?.toFixed(
         quoteToken.decimals,
@@ -367,7 +381,17 @@ export default function LimitRange({ history }: RouteComponentProps) {
         Rounding.ROUND_UP
       ) ?? ''
     )
-  }, [pool, selectedTier, baseToken, endPriceInverted, quoteToken, previousPool, endPriceTypedAmount, tickLimits.END])
+  }, [
+    pool,
+    baseToken,
+    endPriceInverted,
+    quoteToken,
+    previousPool,
+    endPriceTypedAmount,
+    tickLimits.END,
+    urlEndPrice,
+    urlEndPriceInverted,
+  ])
 
   /*======================================================================
    *                              POSITION
@@ -868,7 +892,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   )
 
   const makeOrderInfoCard = () =>
-    inputCurrency && outputCurrency && !pool ? (
+    poolState === PoolState.NOT_EXISTS ? (
       <M.Row
         gap="12px"
         style={{
@@ -987,7 +1011,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
         <M.ButtonRowPrimary disabled>
           <Trans>Select a token</Trans>
         </M.ButtonRowPrimary>
-      ) : !pool || defaultSqrtGamma == null ? (
+      ) : poolState === PoolState.NOT_EXISTS || (pool && defaultSqrtGamma == null) ? (
         <M.ButtonRowPrimary disabled>
           <Trans>Select another token pair</Trans>
         </M.ButtonRowPrimary>
@@ -1002,6 +1026,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
           }}
           id="swap-button"
           disabled={
+            !pool ||
+            defaultSqrtGamma == null ||
             isInvalidPriceRange ||
             isInvalidPrice ||
             insufficientFunding ||

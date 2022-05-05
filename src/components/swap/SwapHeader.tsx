@@ -30,10 +30,10 @@ export default memo(function SwapHeader({
   return (
     <M.RowBetween>
       <M.Row gap="2em">
-        <StyledNavLink to={appendQuery('/swap', swapStateToQueryParameters(swapState))}>
+        <StyledNavLink to={appendQuery('/swap', swapStateToQueryParameters(swapState).toString())}>
           <Trans>Swap</Trans>
         </StyledNavLink>
-        <StyledNavLink to={appendQuery('/limit-range', swapStateToQueryParameters(swapState))}>
+        <StyledNavLink to={appendQuery('/limit-range', swapStateToQueryParameters(swapState).toString())}>
           <Trans>Limit Range</Trans>
         </StyledNavLink>
       </M.Row>

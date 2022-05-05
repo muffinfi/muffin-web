@@ -277,7 +277,7 @@ export function swapStateToQueryParameters(swapState: SwapState) {
   if (swapState.recipient) {
     params.set('recipient', swapState.recipient)
   }
-  return params.toString()
+  return params
 }
 
 // updates the swap state to use the defaults for a given network
