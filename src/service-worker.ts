@@ -31,9 +31,9 @@ precacheAndRoute(manifest)
 // https://developers.google.com/web/fundamentals/architecture/app-shell
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$')
 registerRoute(({ request, url }: { request: Request; url: URL }) => {
-  // If this isn't app.uniswap.org, skip. IPFS gateways may not have domain
+  // If this isn't app.muffin.fi, skip. IPFS gateways may not have domain
   // separation, so they cannot use App Shell-style routing.
-  if (url.hostname !== 'app.uniswap.org') {
+  if (url.hostname !== 'app.muffin.fi') {
     return false
   }
 
