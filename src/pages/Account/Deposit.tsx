@@ -17,6 +17,7 @@ import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
+import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
@@ -394,6 +395,8 @@ export default function Deposit({ history }: RouteComponentProps) {
       setIsTokenWarningModelOpen(true)
     }
   }, [defaultCurrency, isDefaultTokenActive])
+
+  useScrollToTopOnMount()
 
   return (
     <>

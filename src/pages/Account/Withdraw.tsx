@@ -16,6 +16,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
+import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
@@ -327,6 +328,8 @@ export default function Withdraw({ history }: RouteComponentProps) {
     }
   }, [defaultCurrency, isDefaultTokenActive])
 
+  useScrollToTopOnMount()
+
   return (
     <>
       {makeTransactionModal()}
@@ -350,24 +353,6 @@ export default function Withdraw({ history }: RouteComponentProps) {
           </M.SectionCard>
         </M.Column>
       </M.Container>
-      {/*  */}
-      {/*  */}
-      {/*  */}
-
-      {/* <AutoColumn>
-        {makeTransactionModal()}
-        {makeTokenWarningModal()}
-        <AppBody>
-          <DepositWithdrawTabs title={<Trans>Withdraw</Trans>} />
-          <Wrapper>
-            <AutoColumn gap="md">
-              {makeInputFields()}
-              {makeAddRowButton()}
-              {makeButton()}
-            </AutoColumn>
-          </Wrapper>
-        </AppBody>
-      </AutoColumn> */}
       <AlertWrapper>
         <NetworkAlert />
       </AlertWrapper>

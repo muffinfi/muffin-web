@@ -8,6 +8,7 @@ import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components/macro'
 
@@ -40,6 +41,8 @@ export default function Account(props: RouteComponentProps) {
   const [showUntrustedTokens, setShowUntrustedTokens] = useUserShowUntrustesTokens()
 
   const hasTokens = tokenIds && tokenIds.length > 0
+
+  useScrollToTopOnMount()
 
   return (
     <>
