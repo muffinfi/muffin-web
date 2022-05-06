@@ -50,12 +50,6 @@ const ButtonLabel = styled.div`
   }
 `
 
-const BadgeWrapper = styled.div`
-  font-size: 14px;
-  display: flex;
-  justify-content: flex-end;
-`
-
 export default memo(function TokenRow({
   tokenId,
   trusted,
@@ -90,29 +84,31 @@ export default memo(function TokenRow({
       <CurrencyLogo currency={token} size={'28px'} />
 
       <M.Column stretch gap="4px">
-        <M.Text title={token.name} weight="medium" nowrap ellipsis>
-          {token.symbol}
-        </M.Text>
-        {!trusted && (
-          <BadgeWrapper>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  This token doesn&apos;t appear on the active token lists. Make sure this is a token you trust before
-                  using it.
-                </Trans>
-              }
-            >
-              <Badge variant={BadgeVariant.DEFAULT}>
-                <AlertCircle width={14} height={14} />
-                &nbsp;
-                <M.Text weight="medium" size="sm">
-                  <Trans>Untrusted</Trans>
-                </M.Text>
-              </Badge>
-            </MouseoverTooltip>
-          </BadgeWrapper>
-        )}
+        <M.Row gap="8px">
+          <M.Text title={token.name} weight="medium" nowrap ellipsis>
+            {token.symbol}
+          </M.Text>
+          {!trusted && (
+            <M.Row gap="4px">
+              <MouseoverTooltip
+                text={
+                  <Trans>
+                    This token doesn&apos;t appear on the active token lists. Make sure this is a token you trust before
+                    using it.
+                  </Trans>
+                }
+              >
+                <Badge variant={BadgeVariant.DEFAULT}>
+                  <AlertCircle width={14} height={14} />
+                  &nbsp;
+                  <M.Text weight="medium" size="sm">
+                    <Trans>Untrusted</Trans>
+                  </M.Text>
+                </Badge>
+              </MouseoverTooltip>
+            </M.Row>
+          )}
+        </M.Row>
         <M.Text size="xs" color="text2">
           {token.name}
         </M.Text>
