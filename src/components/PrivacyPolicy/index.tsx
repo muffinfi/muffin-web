@@ -7,7 +7,6 @@ import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { isMobile } from 'utils/userAgent'
-
 import { useModalOpen, useTogglePrivacyPolicy } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { AutoColumn } from '../Column'
@@ -47,10 +46,10 @@ const StyledLinkOut = styled(ArrowDown)`
 `
 
 const EXTERNAL_APIS = [
-  {
-    name: 'Auto Router',
-    description: <Trans>The app fetches the optimal trade route from a Uniswap Labs server.</Trans>,
-  },
+  // {
+  //   name: 'Auto Router',
+  //   description: <Trans>The app fetches the optimal trade route from a Uniswap Labs server.</Trans>,
+  // },
   {
     name: 'Infura',
     description: <Trans>The app fetches on-chain data and constructs contract calls with an Infura API.</Trans>,
@@ -75,7 +74,7 @@ const EXTERNAL_APIS = [
   },
   {
     name: 'The Graph',
-    description: <Trans>The app fetches blockchain data from The Graph’s hosted service.</Trans>,
+    description: <Trans>The app fetches blockchain data from The Graph&apos;s hosted service.</Trans>,
   },
 ]
 
@@ -98,7 +97,7 @@ export function PrivacyPolicyModal() {
       <AutoColumn gap="12px" ref={node as any}>
         <RowBetween padding="1rem 1rem 0.5rem 1rem">
           <ThemedText.MediumHeader>
-            <Trans>Legal & Privacy</Trans>
+            <Trans>Legal &amp; Privacy</Trans>
           </ThemedText.MediumHeader>
           <HoverText onClick={() => toggle()}>
             <X size={24} />
@@ -124,12 +123,12 @@ export function PrivacyPolicy() {
       <AutoColumn gap="16px">
         <AutoColumn gap="8px" style={{ width: '100%' }}>
           <StyledExternalCard>
-            <ExternalLink href={'https://uniswap.org/terms-of-service'}>
+            <ExternalLink href={'https://muffin.fi/terms-of-service'}>
               <RowBetween>
                 <AutoRow gap="4px">
                   <Info size={20} />
                   <ThemedText.Main fontSize={14} color={'primaryText1'}>
-                    <Trans>Uniswap Labs&apos; Terms of Service</Trans>
+                    <Trans>Muffin&apos;s Terms of Service</Trans>
                   </ThemedText.Main>
                 </AutoRow>
                 <StyledLinkOut size={20} />
@@ -137,7 +136,7 @@ export function PrivacyPolicy() {
             </ExternalLink>
           </StyledExternalCard>
           <StyledExternalCard>
-            <ExternalLink href={'https://uniswap.org/disclaimer/'}>
+            <ExternalLink href={'https://muffin.fi/disclaimer/'}>
               <RowBetween>
                 <AutoRow gap="4px">
                   <Info size={20} />

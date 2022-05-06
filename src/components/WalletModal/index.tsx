@@ -344,7 +344,7 @@ export default function WalletModal({
             </HoverText>
             <Row justify="center">
               <ThemedText.MediumHeader>
-                <Trans>Legal & Privacy</Trans>
+                <Trans>Legal &amp; Privacy</Trans>
               </ThemedText.MediumHeader>
             </Row>
           </HeaderRow>
@@ -393,10 +393,10 @@ export default function WalletModal({
               <AutoRow style={{ flexWrap: 'nowrap' }}>
                 <ThemedText.Black fontSize={14}>
                   <Trans>
-                    By connecting a wallet, you agree to Uniswap Labs’{' '}
-                    <ExternalLink href="https://uniswap.org/terms-of-service/">Terms of Service</ExternalLink> and
-                    acknowledge that you have read and understand the Uniswap{' '}
-                    <ExternalLink href="https://uniswap.org/disclaimer/">Protocol Disclaimer</ExternalLink>.
+                    By connecting a wallet, you agree to Muffin&apos;s{' '}
+                    <ExternalLink href="https://muffin.fi/terms-of-service/">Terms of Service</ExternalLink> and
+                    acknowledge that you have read and understand the Muffin{' '}
+                    <ExternalLink href="https://muffin.fi/disclaimer/">Protocol Disclaimer</ExternalLink>.
                   </Trans>
                 </ThemedText.Black>
               </AutoRow>

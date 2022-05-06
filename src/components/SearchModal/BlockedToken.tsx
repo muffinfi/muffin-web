@@ -4,7 +4,6 @@ import { ButtonPrimary } from 'components/Button'
 import { AlertCircle, ArrowLeft } from 'react-feather'
 import styled from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
-
 import TokenImportCard from './TokenImportCard'
 
 const Wrapper = styled.div`
@@ -59,7 +58,7 @@ const BlockedToken = ({ onBack, onDismiss, blockedTokens }: BlockedTokenProps) =
     <Icon />
     <Content>
       <Copy>
-        <Trans>This token is not supported in the Uniswap Labs app</Trans>
+        <Trans>This token is not supported in the Muffin Protocol</Trans>
       </Copy>
       <TokenImportCard token={blockedTokens[0]} />
       <Button disabled>

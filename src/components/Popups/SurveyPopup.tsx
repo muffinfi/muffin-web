@@ -8,7 +8,6 @@ import ReactGA from 'react-ga'
 import { useShowSurveyPopup } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText, Z_INDEX } from 'theme'
-
 import BGImage from '../../assets/images/survey-orb.svg'
 import useTheme from '../../hooks/useTheme'
 
@@ -97,7 +96,7 @@ export default function SurveyPopup() {
             </RowFixed>
           </ExternalLink>
           <ThemedText.Black style={{ zIndex: Z_INDEX.fixed }} fontWeight={400} fontSize="12px" color={theme.black}>
-            <Trans>Take a 10 minute survey to help us improve your experience in the Uniswap app.</Trans>
+            <Trans>Take a 10 minute survey to help us improve your experience in the Muffin app.</Trans>
           </ThemedText.Black>
         </Wrapper>
       )}

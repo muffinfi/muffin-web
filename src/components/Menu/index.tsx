@@ -15,7 +15,7 @@ import {
   // Globe,
   // HelpCircle,
   Info,
-  // MessageCircle,
+  MessageCircle,
   Moon,
   Sun,
 } from 'react-feather'
@@ -222,12 +222,12 @@ export default function Menu() {
                       </div>
                       <Coffee opacity={0.6} size={16} />
                     </MenuItemExternalLink> */}
-                    {/* <MenuItemExternalLink href="/">
+                    <MenuItemExternalLink href="https://discord.gg/TMaF2BFJhj">
                       <div>
                         <Trans>Discord</Trans>
                       </div>
                       <MessageCircle opacity={0.6} size={16} />
-                    </MenuItemExternalLink> */}
+                    </MenuItemExternalLink>
                     {/* <MenuItem onClick={() => setMenu('lang')}>
                       <div>
                         <Trans>Language</Trans>
@@ -246,7 +246,7 @@ export default function Menu() {
                     </MenuItemExternalLink>
                     <MenuItem onClick={() => togglePrivacyPolicy()}>
                       <div>
-                        <Trans>Legal & Privacy</Trans>
+                        <Trans>Legal &amp; Privacy</Trans>
                       </div>
                       <FileText opacity={0.6} size={16} />
                     </MenuItem>
