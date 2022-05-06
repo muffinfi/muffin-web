@@ -119,8 +119,8 @@ export default function Header() {
     <HeaderWrapper showBackground={scrollY > 45}>
       <M.Row gap="40px">
         <LogoLink to=".">
-          <LogoText width="110px" />
-          <Logo width="26px" />
+          <LogoText width="110px" height="30px" />
+          <Logo width="26px" height="29px" />
         </LogoLink>
         <NavItemRow gap="32px">
           <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
