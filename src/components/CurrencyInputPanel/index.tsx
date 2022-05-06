@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import * as M from '@muffinfi-ui'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
@@ -224,9 +224,9 @@ export default function CurrencyInputPanel({
                     {!hideBalance && currency && selectedCurrencyBalance ? (
                       renderBalance ? (
                         <M.Row gap="0.5rem">
-                          <M.Text size="sm" color="text2">
+                          <M.TextDiv size="sm" color="text2">
                             {renderBalance(selectedCurrencyBalance)}
-                          </M.Text>
+                          </M.TextDiv>
                           {onMax && (
                             <M.ButtonSecondary size="badge" onClick={onMax}>
                               Max

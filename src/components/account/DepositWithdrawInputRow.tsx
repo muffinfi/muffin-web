@@ -95,9 +95,19 @@ export default function DepositWithdrawInputRow({
   const renderBalance = useCallback(
     (amount: CurrencyAmount<Currency>) =>
       isDeposit ? (
-        <Trans>Wallet Balance: {formatCurrencyAmount(amount, 4)}</Trans>
+        <M.Row gap="0.5em">
+          <M.Text size="xs">
+            <FontAwesomeIcon icon={faWallet} />
+          </M.Text>
+          <Trans>Wallet: {formatCurrencyAmount(amount, 4)}</Trans>
+        </M.Row>
       ) : (
-        <Trans>Account Balance: {formatCurrencyAmount(amount.currency.isNative ? accountBalance : amount, 4)}</Trans>
+        <M.Row gap="0.5em">
+          <M.Text size="xs">
+            <FontAwesomeIcon icon={faBuildingColumns} />
+          </M.Text>
+          <Trans>Account: {formatCurrencyAmount(amount.currency.isNative ? accountBalance : amount, 4)}</Trans>
+        </M.Row>
       ),
     [isDeposit, accountBalance]
   )
