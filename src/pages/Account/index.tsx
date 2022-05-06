@@ -118,8 +118,8 @@ export default function Account(props: RouteComponentProps) {
 
           <SubgraphIndexingNote blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly deposited tokens even the transaction is confirmed, please wait for few
-              minutes due to the subgraph indexing.
+              If you can&apos;t see the newly deposited tokens even if the transaction is confirmed, please wait for a
+              few minutes due to the subgraph indexing.
             </Trans>
           </SubgraphIndexingNote>
         </M.Column>

@@ -42,7 +42,7 @@ export default function SubgraphIndexingNote({
           wrapperProps={{ display: 'inline-block', ml: '4px' }}
           text={
             <StyledBlockNumber>
-              <Trans>Current indexing block: {blockNumber}</Trans>
+              <Trans>Last indexed block: {blockNumber}</Trans>
             </StyledBlockNumber>
           }
         >

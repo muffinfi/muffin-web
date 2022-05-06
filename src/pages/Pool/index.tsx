@@ -123,8 +123,8 @@ export default function Pool() {
           </M.SectionCard>
           <SubgraphIndexingNote padding="0 24px" blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly added positions even the transaction is confirmed, please wait for few
-              minutes due to the subgraph indexing.
+              If you can&apos;t see the newly added positions even if the transaction is confirmed, please wait for a
+              few minutes due to the subgraph indexing.
             </Trans>
           </SubgraphIndexingNote>
         </M.Column>
