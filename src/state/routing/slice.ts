@@ -6,7 +6,6 @@ import { INFURA_NETWORK_URLS } from 'constants/infura'
 import { AUTO_ROUTER_SUPPORTED_CHAINS, getClientSideQuote } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
-
 import { GetQuoteResult } from './types'
 
 const routerProviders = new Map<ChainId, BaseProvider>()
@@ -32,6 +31,7 @@ const DEFAULT_QUERY_PARAMS = {
   // minSplits: '5',
 }
 
+// INFO: currently didn't used
 export const routingApi = createApi({
   reducerPath: 'routingApi',
   baseQuery: fetchBaseQuery({

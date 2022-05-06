@@ -136,7 +136,7 @@ function Pool({
   const tokenInfo1 = useTokenInfoFromActiveList(currency1)
 
   // TODO: specify tier choices?
-  // TODO - link pool icon to info.uniswap.org via query params
+  // TODO - link pool icon to info.muffin.fi via query params
   return (
     <MouseoverTooltip text={<Trans>{tokenInfo0?.symbol + '/' + tokenInfo1?.symbol} pool</Trans>}>
       <PoolBadge>

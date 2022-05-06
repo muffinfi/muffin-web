@@ -3,10 +3,9 @@ import Row from 'lib/components/Row'
 import { Logo } from 'lib/icons'
 import styled, { brand, ThemedText } from 'lib/theme'
 import { memo } from 'react'
-
 import ExternalLink from './ExternalLink'
 
-const UniswapA = styled(ExternalLink)`
+const MuffinLink = styled(ExternalLink)`
   color: ${({ theme }) => theme.secondary};
   cursor: pointer;
   text-decoration: none;
@@ -28,14 +27,14 @@ const UniswapA = styled(ExternalLink)`
 export default memo(function BrandedFooter() {
   return (
     <Row justify="center">
-      <UniswapA href={`https://uniswap.org/`}>
+      <MuffinLink href={`https://muffin.fi/`}>
         <Row gap={0.25}>
           <Logo />
           <ThemedText.Caption>
-            <Trans>Powered by the Uniswap protocol</Trans>
+            <Trans>Powered by the Muffin protocol</Trans>
           </ThemedText.Caption>
         </Row>
-      </UniswapA>
+      </MuffinLink>
     </Row>
   )
 })

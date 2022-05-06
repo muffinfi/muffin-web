@@ -11,7 +11,7 @@ import { useQueryTokens } from './querying'
 import { ChainTokenMap, tokensToChainTokenMap } from './utils'
 import { validateTokens } from './validateTokenList'
 
-export const DEFAULT_TOKEN_LIST = 'https://gateway.ipfs.io/ipns/tokens.uniswap.org'
+export const DEFAULT_TOKEN_LIST = 'https://tokens.uniswap.org'
 
 const chainTokenMapAtom = atom<ChainTokenMap | null>(null)
 

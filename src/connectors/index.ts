@@ -6,8 +6,7 @@ import { InjectedConnector } from 'web3-react-injected-connector'
 import { PortisConnector } from 'web3-react-portis-connector'
 import { WalletConnectConnector } from 'web3-react-walletconnect-connector'
 import { WalletLinkConnector } from 'web3-react-walletlink-connector'
-
-import UNISWAP_LOGO_URL from '../assets/svg/logo.svg'
+import APP_LOGO_URL from '../assets/svg/logo.svg'
 import getLibrary from '../utils/getLibrary'
 import { FortmaticConnector } from './Fortmatic'
 import { NetworkConnector } from './NetworkConnector'
@@ -51,7 +50,7 @@ export const portis = new PortisConnector({
 
 export const walletlink = new WalletLinkConnector({
   url: INFURA_NETWORK_URLS[SupportedChainId.MAINNET],
-  appName: 'Uniswap',
-  appLogoUrl: UNISWAP_LOGO_URL,
+  appName: 'Muffin',
+  appLogoUrl: APP_LOGO_URL,
   supportedChainIds: ALL_SUPPORTED_CHAIN_IDS,
 })

@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import React, { ErrorInfo } from 'react'
 import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
-
 import store, { AppState } from '../../state'
 import { ExternalLink, ThemedText } from '../../theme'
 import { userAgent } from '../../utils/userAgent'
@@ -47,7 +46,7 @@ type ErrorBoundaryState = {
   error: Error | null
 }
 
-const IS_UNISWAP = window.location.hostname === 'app.uniswap.org'
+const IS_MUFFIN = window.location.hostname === 'app.muffin.fi'
 
 export default class ErrorBoundary extends React.Component<unknown, ErrorBoundaryState> {
   constructor(props: unknown) {
@@ -86,12 +85,12 @@ export default class ErrorBoundary extends React.Component<unknown, ErrorBoundar
                   <ThemedText.Main fontSize={10}>{error.stack}</ThemedText.Main>
                 </code>
               </CodeBlockWrapper>
-              {IS_UNISWAP ? (
+              {IS_MUFFIN ? (
                 <AutoRow>
                   <LinkWrapper>
                     <ExternalLink
                       id="create-github-issue-link"
-                      href={`https://github.com/Uniswap/uniswap-interface/issues/new?assignees=&labels=bug&body=${encodedBody}&title=${encodeURIComponent(
+                      href={`https://github.com/muffinfi/muffin-v1-web/issues/new?assignees=&labels=bug&body=${encodedBody}&title=${encodeURIComponent(
                         `Crash report: \`${error.name}${error.message && `: ${error.message}`}\``
                       )}`}
                       target="_blank"
