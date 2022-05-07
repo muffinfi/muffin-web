@@ -177,11 +177,12 @@ export function PositionPage({
 
   // ratio between the values of the two underlying tokens
   const ratio = useMemo(() => {
-    if (!fiatValuesOfLiquidity) return undefined
-    const amount0 = fiatValuesOfLiquidity[0].asFraction
-    const sum = amount0.add(fiatValuesOfLiquidity[1].asFraction)
-    const percent = sum && amount0.multiply(100).divide(sum).toFixed(0)
-    return percent ? parseInt(percent) : undefined
+    if (!fiatValuesOfLiquidity || !fiatValuesOfLiquidity.total.greaterThan(0)) return undefined
+    const percent = fiatValuesOfLiquidity[0].asFraction
+      .multiply(100)
+      .divide(fiatValuesOfLiquidity.total.asFraction)
+      .toFixed(0)
+    return parseInt(percent)
   }, [fiatValuesOfLiquidity])
 
   /*=====================================================================
