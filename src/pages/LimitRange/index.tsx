@@ -221,22 +221,23 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const { tickSpacing: settlementTickSpacing }: Partial<ReturnType<typeof useSettlement>> =
     useSettlement(hubContract, pool, tierId, endTick, !!zeroForOne) ?? {}
 
-  const tickSpacing = settlementTickSpacing || pool?.tickSpacing
+  const tickSpacing = pool?.tickSpacing
 
   const tickSpacingMultiplier = useMemo(() => {
     const multiplier = isValidTier && tierId != null && tickSpacingMultipliers?.[tierId]
     return typeof multiplier === 'number' ? multiplier : undefined
   }, [isValidTier, tickSpacingMultipliers, tierId])
 
-  const fullTickSpacing = useMemo(
-    () => (tickSpacing && tickSpacingMultiplier ? tickSpacingMultiplier * tickSpacing : undefined),
-    [tickSpacing, tickSpacingMultiplier]
+  const positionPriceRange = useMemo(
+    () =>
+      tickSpacingMultiplier && tickSpacing ? tickSpacingMultiplier * (settlementTickSpacing || tickSpacing) : undefined,
+    [tickSpacing, settlementTickSpacing, tickSpacingMultiplier]
   )
 
   const startTick = useMemo(() => {
-    if (!fullTickSpacing || !selectedTier || endTick == null || !tickSpacingMultiplier) return undefined
-    return zeroForOne ? endTick - fullTickSpacing : endTick + fullTickSpacing
-  }, [endTick, fullTickSpacing, selectedTier, tickSpacingMultiplier, zeroForOne])
+    if (!positionPriceRange || endTick == null) return undefined
+    return zeroForOne ? endTick - positionPriceRange : endTick + positionPriceRange
+  }, [endTick, positionPriceRange, zeroForOne])
 
   const startPrice0 = useMemo(
     () => token0 && token1 && getTickToPrice(token0, token1, startTick),
@@ -248,27 +249,27 @@ export default function LimitRange({ history }: RouteComponentProps) {
   }, [])
 
   const tickLimits: {
-    LOWER?: number
-    UPPER?: number
-    END?: number
+    LOWER?: number // End tick limit lower
+    UPPER?: number // End tick limit upper
+    END?: number // End tick limit base on zero for one
   } = useMemo(() => {
     const currentTick = selectedTier?.computedTick
-    if (!tickSpacing || currentTick == null || fullTickSpacing == null) return {}
+    if (!tickSpacing || currentTick == null || positionPriceRange == null) return {}
     const limits = zeroForOne
       ? {
-          LOWER: nearestUsableTick(currentTick, tickSpacing) + fullTickSpacing + tickSpacing,
+          LOWER: nearestUsableTick(currentTick, tickSpacing) + positionPriceRange + tickSpacing,
           UPPER: nearestUsableTick(MAX_TICK, tickSpacing),
           END: 0,
         }
       : {
           LOWER: nearestUsableTick(MIN_TICK, tickSpacing),
-          UPPER: nearestUsableTick(currentTick, tickSpacing) - fullTickSpacing - tickSpacing,
+          UPPER: nearestUsableTick(currentTick, tickSpacing) - positionPriceRange - tickSpacing,
           END: 0,
         }
     limits.END = zeroForOne ? limits.LOWER : limits.UPPER
 
     return limits
-  }, [tickSpacing, fullTickSpacing, selectedTier?.computedTick, zeroForOne])
+  }, [tickSpacing, positionPriceRange, selectedTier?.computedTick, zeroForOne])
 
   const { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
@@ -299,14 +300,14 @@ export default function LimitRange({ history }: RouteComponentProps) {
     (value: string) => {
       const normalizedValue = value.replace(/\.$/, '')
       setEndTick(
-        token0 && token1 && pool?.tickSpacing && parseFloat(normalizedValue) !== 0
+        token0 && token1 && tickSpacing != null && parseFloat(normalizedValue) !== 0
           ? endPriceInverted
-            ? tryParseTick(token1, token0, pool.tickSpacing, normalizedValue)
-            : tryParseTick(token0, token1, pool.tickSpacing, normalizedValue)
+            ? tryParseTick(token1, token0, tickSpacing, normalizedValue)
+            : tryParseTick(token0, token1, tickSpacing, normalizedValue)
           : undefined
       )
     },
-    [endPriceInverted, pool?.tickSpacing, token0, token1]
+    [endPriceInverted, tickSpacing, token0, token1]
   )
 
   const handlePriceIncrement = useCallback(() => {
@@ -314,26 +315,26 @@ export default function LimitRange({ history }: RouteComponentProps) {
       if (!tickSpacing || tickLimits.END == null || tickLimits.LOWER == null || tickLimits.UPPER == null) {
         return oldValue
       }
-      return oldValue == null || isInvalidPriceRange
+      return oldValue == null
         ? tickLimits.END
         : endPriceInverted
         ? Math.max(tickLimits.LOWER, oldValue - tickSpacing)
         : Math.min(tickLimits.UPPER, oldValue + tickSpacing)
     })
-  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, isInvalidPriceRange, endPriceInverted])
+  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, endPriceInverted])
 
   const handlePriceDecrement = useCallback(() => {
     setEndTick((oldValue) => {
       if (!tickSpacing || tickLimits.END == null || tickLimits.LOWER == null || tickLimits.UPPER == null) {
         return oldValue
       }
-      return oldValue == null || isInvalidPriceRange
+      return oldValue == null
         ? tickLimits.END
         : endPriceInverted
         ? Math.min(tickLimits.UPPER, oldValue + tickSpacing)
         : Math.max(tickLimits.LOWER, oldValue - tickSpacing)
     })
-  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, isInvalidPriceRange, endPriceInverted])
+  }, [tickSpacing, tickLimits.END, tickLimits.UPPER, tickLimits.LOWER, endPriceInverted])
 
   // set default price
   useEffect(() => {
