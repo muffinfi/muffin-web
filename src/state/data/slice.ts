@@ -119,7 +119,7 @@ export const api = createApi({
                 number
               }
             }
-            positions(first: 1000, skip: $skip, where: { owner: $owner }, orderBy: tokenId) {
+            positions(first: 1000, skip: $skip, where: { owner: $owner }, orderBy: tokenId, orderDirection: desc) {
               tokenId
             }
           }
