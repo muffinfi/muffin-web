@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { AccountManager, StandardPermitArguments } from '@muffinfi/muffin-v1-sdk'
+import { AccountManager } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
@@ -22,6 +22,7 @@ import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
+import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
@@ -71,10 +72,15 @@ export default function Deposit({ history }: RouteComponentProps) {
     const amounts = (inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).sort((a, b) =>
       a.currency.isNative ? -1 : b.currency.isNative ? 1 : 0
     )
+    const permits = Object.fromEntries(
+      Object.entries(permitSignatures)
+        .map(([key, value]) => [key, signatureDataToPermitOptions(value)])
+        .filter(([, value]) => value)
+    )
     const { calldata, value } = AccountManager.depositCallParameters(amounts, {
       managerAddress,
       recipient: account,
-      inputTokenPermits: permitSignatures as { [address: string]: StandardPermitArguments },
+      inputTokenPermits: permits,
     })
     const req = argentWalletContract
       ? {
