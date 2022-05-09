@@ -27,15 +27,18 @@ import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
+import TokenWarningModal from 'components/TokenWarningModal'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCurrency from 'hooks/useCurrency'
+import useTheme from 'hooks/useTheme'
+import useTokenWarningModalHooks from 'hooks/useTokenWarningModalHooks'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
 import { ApproveOrPermitState } from 'lib/hooks/useApproveOrPermit'
 import { useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
-import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -45,7 +48,6 @@ import { useRangeHopCallbacks, useV3MintActionHandlers, useV3MintState } from 's
 import { tryParseTick } from 'state/mint/v3/utils'
 import { tryParseAmount } from 'state/swap/hooks'
 import { useCurrencyBalances } from 'state/wallet/hooks'
-import { ThemeContext } from 'styled-components/macro'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
@@ -667,10 +669,21 @@ export default function AddLiquidity({
   ])
 
   /*=====================================================================
+   *                     TOKEN WARNING MODAL (UI)
+   *====================================================================*/
+
+  const { importTokensNotInDefault, dismissTokenWarning, handleConfirmTokenWarning, handleDismissTokenWarning } =
+    useTokenWarningModalHooks(
+      useMemo(() => [currencyA, currencyB], [currencyA, currencyB]),
+      history,
+      '/add/ETH'
+    )
+
+  /*=====================================================================
    *                          REACT COMPONENTS
    *====================================================================*/
 
-  const theme = useContext(ThemeContext)
+  const theme = useTheme()
 
   const makeSelectPoolTierSection = () =>
     tokenId == null &&
@@ -1017,6 +1030,12 @@ export default function AddLiquidity({
 
   return (
     <>
+      <TokenWarningModal
+        isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
+        tokens={importTokensNotInDefault}
+        onConfirm={handleConfirmTokenWarning}
+        onDismiss={handleDismissTokenWarning}
+      />
       <DowntimeWarning />
       {makeTransactionModal()}
 

@@ -17,7 +17,7 @@ import {
 } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
-import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price, Rounding } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { ErrorCard, YellowCard } from 'components/Card'
@@ -34,7 +34,6 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { BAD_RECIPIENT_ADDRESSES } from 'constants/addresses'
 import { ZERO_PERCENT } from 'constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
@@ -42,6 +41,7 @@ import useCurrency from 'hooks/useCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useTheme from 'hooks/useTheme'
+import useTokenWarningModalHooks from 'hooks/useTokenWarningModalHooks'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDCValue } from 'hooks/useUSDCPrice'
 import JSBI from 'jsbi'
@@ -634,29 +634,23 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const loadedInputCurrency = useCurrency(loadedUrlParams?.[Field.INPUT].currencyId)
   const loadedOutputCurrency = useCurrency(loadedUrlParams?.[Field.OUTPUT].currencyId)?.wrapped
 
-  const defaultTokens = useAllTokens()
-
   // dismiss warning if all imported tokens are in active lists
-  const importTokensNotInDefault = useMemo(
-    () =>
-      [loadedInputCurrency, loadedOutputCurrency].filter(
-        (c): c is Token => (c?.isToken ?? false) && !Boolean(c?.isToken && c?.address in defaultTokens)
-      ),
-    [loadedInputCurrency, loadedOutputCurrency, defaultTokens]
+  const {
+    importTokensNotInDefault,
+    dismissTokenWarning,
+    handleConfirmTokenWarning,
+    handleDismissTokenWarning: _handleDismissTokenWarning,
+  } = useTokenWarningModalHooks(
+    useMemo(() => [loadedInputCurrency, loadedOutputCurrency], [loadedInputCurrency, loadedOutputCurrency]),
+    history,
+    '/limit-range'
   )
-
-  const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
-
-  const handleConfirmTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-  }, [])
 
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
+    _handleDismissTokenWarning()
     reset()
-    history.push('/limit-range')
-  }, [history, reset])
+  }, [_handleDismissTokenWarning, reset])
 
   /*=====================================================================
    *                        MINT CONFIRMATION

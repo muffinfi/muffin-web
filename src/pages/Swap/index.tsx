@@ -4,11 +4,12 @@ import { useSwapCallback } from '@muffinfi/hooks/swap/useSwapCallback'
 import { useTradeAdvancedDetails } from '@muffinfi/hooks/swap/useTradeAdvancedDetails'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
-import { Currency, Token, TradeType } from '@uniswap/sdk-core'
+import { Currency, TradeType } from '@uniswap/sdk-core'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import useTokenWarningModalHooks from 'hooks/useTokenWarningModalHooks'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import TokenApproveOrPermitButton from 'lib/components/TokenApproveOrPermitButton'
@@ -30,7 +31,6 @@ import { ArrowWrapper, FieldsWrapper, SwapCallbackError } from '../../components
 import SwapHeader from '../../components/swap/SwapHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TokenWarningModal from '../../components/TokenWarningModal'
-import { useAllTokens } from '../../hooks/Tokens'
 import { useApprovalOptimizedTrade } from '../../hooks/useApproveCallback'
 import useCurrency from '../../hooks/useCurrency'
 import useENSAddress from '../../hooks/useENSAddress'
@@ -201,28 +201,12 @@ export default function Swap({ history }: RouteComponentProps) {
   const loadedInputCurrency = useCurrency(loadedUrlParams?.[Field.INPUT].currencyId)
   const loadedOutputCurrency = useCurrency(loadedUrlParams?.[Field.OUTPUT].currencyId)
 
-  const defaultTokens = useAllTokens()
-
-  // dismiss warning if all imported tokens are in active lists
-  const importTokensNotInDefault = useMemo(
-    () =>
-      [loadedInputCurrency, loadedOutputCurrency].filter(
-        (c): c is Token => (c?.isToken ?? false) && !Boolean(c?.isToken && c?.address in defaultTokens)
-      ),
-    [loadedInputCurrency, loadedOutputCurrency, defaultTokens]
-  )
-
-  const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
-
-  const handleConfirmTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-  }, [])
-
-  // reset if they close warning without tokens in params
-  const handleDismissTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-    history.push('/swap/')
-  }, [history])
+  const { importTokensNotInDefault, dismissTokenWarning, handleConfirmTokenWarning, handleDismissTokenWarning } =
+    useTokenWarningModalHooks(
+      useMemo(() => [loadedInputCurrency, loadedOutputCurrency], [loadedInputCurrency, loadedOutputCurrency]),
+      history,
+      '/swap'
+    )
 
   /*======================================================================
    *                          UI STATES
