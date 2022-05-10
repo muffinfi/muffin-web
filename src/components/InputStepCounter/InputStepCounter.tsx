@@ -93,7 +93,6 @@ interface StepCounterProps {
   onImmediateInput?: (value: string) => void
   onDecrement?: () => void
   onIncrement?: () => void
-  disablePulsing?: boolean
 }
 
 const StepCounter = ({
@@ -112,7 +111,6 @@ const StepCounter = ({
   onImmediateInput,
   onDecrement,
   onIncrement,
-  disablePulsing,
 }: StepCounterProps) => {
   //  for focus state, styled components doesnt let you select input parent container
   const [active, setActive] = useState(false)
@@ -124,7 +122,7 @@ const StepCounter = ({
   // animation if parent value updates local value
   const [pulsing, setPulsing] = useState<boolean>(false)
 
-  const timeoutId = useRef<ReturnType<typeof setTimeout>>()
+  // used to record the last clicked at to prevent pulsing triggered by own buttons
   const lastButtonClickedAt = useRef<number>(0)
 
   const handleOnFocus = useCallback(() => {
@@ -174,14 +172,9 @@ const StepCounter = ({
     // don't trigger animation when disabled or changed from +/- buttons
     if (locked || Date.now() - lastButtonClickedAt.current < 200) return
 
-    setPulsing(false) // retrigger animation
-    setTimeout(() => {
-      setPulsing(true)
-      if (timeoutId.current) clearTimeout(timeoutId.current)
-      timeoutId.current = setTimeout(() => {
-        setPulsing(false)
-      }, 850)
-    }, 0)
+    // always retrigger animation
+    setPulsing(false)
+    setTimeout(() => setPulsing(true), 0)
   }, [locked, localValue, useLocalValue, value])
 
   // generate random string for input id
@@ -219,6 +212,7 @@ const StepCounter = ({
       style={width ? { width } : undefined}
       as="label"
       htmlFor={inputFieldId}
+      onAnimationEnd={() => setPulsing(false)}
     >
       <M.Column stretch gap="8px">
         <M.Text color="text2" size="xs">
