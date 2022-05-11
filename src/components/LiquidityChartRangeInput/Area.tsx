@@ -2,6 +2,7 @@ import { area, curveStepAfter, ScaleLinear, select, Series } from 'd3'
 import usePrevious from 'hooks/usePrevious'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
+import filterTicksLiquidityData from 'utils/filterTicksLiquidityData'
 
 const Path = styled.path<{ fill: string | undefined }>`
   opacity: 0.5;
@@ -56,26 +57,26 @@ export const Area = ({
   return useMemo(
     () => (
       <>
-        {stackedData.map((data, index) => (
-          <AnimatedPath
-            fill={colors[index % colors.length]}
-            key={data.key}
-            animate={previousSelectedKeyIndex === selectedKeyIndex && previousXScale === xScale}
-            hidden={hiddenKeyIndexes.includes(index)}
-            d={
-              area()
-                .curve(curveStepAfter)
-                .x((d: any) => xScale(d.data.price0))
-                .y0((d: any) => yScale(d[0]))
-                .y1((d: any) => yScale(d[1]))(
-                data.filter((d) => {
-                  const value = xScale(d.data.price0)
-                  return value > 0 && value <= window.innerWidth
-                }) as Iterable<[number, number]>
-              ) ?? undefined
-            }
-          />
-        ))}
+        {stackedData.map((data, index) => {
+          const iterator = filterTicksLiquidityData(data, xScale)
+          return (
+            <AnimatedPath
+              fill={colors[index % colors.length]}
+              key={data.key}
+              animate={previousSelectedKeyIndex === selectedKeyIndex && previousXScale === xScale}
+              hidden={hiddenKeyIndexes.includes(index)}
+              d={
+                (iterator &&
+                  area()
+                    .curve(curveStepAfter)
+                    .x((d: any) => xScale(d.data.price0))
+                    .y0((d: any) => yScale(d[0]))
+                    .y1((d: any) => yScale(d[1]))(iterator)) ??
+                undefined
+              }
+            />
+          )
+        })}
       </>
     ),
     [stackedData, colors, previousSelectedKeyIndex, selectedKeyIndex, previousXScale, xScale, hiddenKeyIndexes, yScale]
