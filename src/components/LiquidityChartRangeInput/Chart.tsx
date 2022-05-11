@@ -55,7 +55,7 @@ export function Chart({
   const yScale = useMemo(() => {
     const yDomainAccessor = getYDomainAccessor(hiddenKeyIndexes)
     return scaleLinear()
-      .domain([0, max(series, yDomainAccessor) || 1] as number[])
+      .domain([0, (max(series, yDomainAccessor) || 1) * 1.1] as number[])
       .range([innerHeight, 0])
   }, [hiddenKeyIndexes, series, innerHeight])
 
