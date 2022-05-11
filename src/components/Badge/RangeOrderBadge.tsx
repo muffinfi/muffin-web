@@ -28,7 +28,7 @@ export default function RangeOrderBadge({
     <MouseoverTooltip
       text={
         <Trans>
-          You are selling {sellingToken.symbol} in exchange of {buyingToken.symbol}.
+          This is a limit range order to sell {sellingToken.symbol} for {buyingToken.symbol}.
         </Trans>
       }
     >
