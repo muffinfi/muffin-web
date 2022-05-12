@@ -6,6 +6,7 @@ import { ThemedText } from 'lib/theme'
 import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { formatCurrencyAmount, formatPrice } from 'utils/formatCurrencyAmount'
+
 import { TextButton } from '../Button'
 
 interface PriceProps {

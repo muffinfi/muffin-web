@@ -1,5 +1,6 @@
 import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
+
 import computeSurroundingTicks from './computeSurroundingTicks'
 
 const getV3Tick = (tickIdx: number, liquidityNet: (number | undefined)[]) =>

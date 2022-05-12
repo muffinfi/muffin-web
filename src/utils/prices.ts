@@ -3,6 +3,7 @@ import { Currency, CurrencyAmount, Fraction, Percent, TradeType } from '@uniswap
 import { Pair } from '@uniswap/v2-sdk'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
+
 import {
   ALLOWED_PRICE_IMPACT_HIGH,
   ALLOWED_PRICE_IMPACT_LOW,

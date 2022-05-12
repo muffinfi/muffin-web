@@ -1,4 +1,5 @@
 import type { Currency, Token } from '@uniswap/sdk-core'
+
 import useCurrencyFromMap, { useTokenFromMapOrNetwork } from './useCurrencyFromMap'
 import { useTokenMap } from './useTokenList'
 

@@ -2,7 +2,7 @@
 import { t, Trans } from '@lingui/macro'
 import HeaderButton from 'components/Header/HeaderButton'
 import { PrivacyPolicyModal } from 'components/PrivacyPolicy'
-import { LOCALE_LABEL, SupportedLocale, SUPPORTED_LOCALES } from 'constants/locales'
+import { LOCALE_LABEL, SUPPORTED_LOCALES, SupportedLocale } from 'constants/locales'
 import { useActiveLocale } from 'hooks/useActiveLocale'
 import { useLocationLinkProps } from 'hooks/useLocationLinkProps'
 import React, { useEffect, useRef, useState } from 'react'
@@ -22,6 +22,7 @@ import {
 import { Link } from 'react-router-dom'
 import { useDarkModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
+
 import { ReactComponent as RawMenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalOpen, useToggleModal } from '../../state/application/hooks'

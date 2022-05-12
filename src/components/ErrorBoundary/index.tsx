@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import React, { ErrorInfo } from 'react'
 import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
+
 import store, { AppState } from '../../state'
 import { ExternalLink, ThemedText } from '../../theme'
 import { userAgent } from '../../utils/userAgent'

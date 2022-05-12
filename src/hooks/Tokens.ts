@@ -4,6 +4,7 @@ import { L2_CHAIN_IDS, SupportedChainId, SupportedL2ChainId } from 'constants/ch
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
+
 import { useAllLists, useCombinedActiveList, useInactiveListUrls } from '../state/lists/hooks'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens } from '../state/user/hooks'

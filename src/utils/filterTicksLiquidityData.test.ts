@@ -1,4 +1,5 @@
 import { scaleLinear, SeriesPoint, stack } from 'd3'
+
 import filterTicksLiquidityData from './filterTicksLiquidityData'
 
 const KEY = '0.3%'

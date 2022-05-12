@@ -4,6 +4,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
 import { useTokenBalance, useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import { useMemo } from 'react'
+
 import { UNI } from '../../constants/tokens'
 import { useAllTokens } from '../../hooks/Tokens'
 import { useUserUnclaimedAmount } from '../claim/hooks'

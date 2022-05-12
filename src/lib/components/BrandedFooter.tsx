@@ -3,6 +3,7 @@ import Row from 'lib/components/Row'
 import { Logo } from 'lib/icons'
 import styled, { brand, ThemedText } from 'lib/theme'
 import { memo } from 'react'
+
 import ExternalLink from './ExternalLink'
 
 const MuffinLink = styled(ExternalLink)`

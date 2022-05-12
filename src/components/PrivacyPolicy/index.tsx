@@ -7,6 +7,7 @@ import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { isMobile } from 'utils/userAgent'
+
 import { useModalOpen, useTogglePrivacyPolicy } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { AutoColumn } from '../Column'

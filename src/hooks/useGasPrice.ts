@@ -4,6 +4,7 @@ import { Web3Provider } from '@ethersproject/providers'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useState } from 'react'
+
 import useActiveWeb3React from './useActiveWeb3React'
 import { useContract } from './useContract'
 import useENSAddress from './useENSAddress'

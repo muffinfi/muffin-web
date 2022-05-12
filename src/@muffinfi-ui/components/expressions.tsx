@@ -9,6 +9,7 @@ import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
+
 import { Row, Text } from '../core'
 
 type TextParams = Parameters<typeof Text>[0]

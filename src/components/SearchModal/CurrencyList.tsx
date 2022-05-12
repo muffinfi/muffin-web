@@ -9,6 +9,7 @@ import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
+
 import TokenListLogo from '../../assets/svg/tokenlist.svg'
 import { useIsUserAddedToken } from '../../hooks/Tokens'
 import { useCombinedActiveList } from '../../state/lists/hooks'

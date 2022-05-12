@@ -8,8 +8,8 @@ import {
   Pool,
   Position,
   priceToClosestTick,
-  TickMath,
   TICK_SPACINGS,
+  TickMath,
 } from '@uniswap/v3-sdk'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { usePool } from 'hooks/usePools'
@@ -18,6 +18,7 @@ import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { getTickToPrice } from 'utils/getTickToPrice'
+
 import { BIG_INT_ZERO } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
 import { AppState } from '../../index'

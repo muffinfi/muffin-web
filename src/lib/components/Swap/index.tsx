@@ -12,6 +12,7 @@ import useTokenList, { useSyncTokenList } from 'lib/hooks/useTokenList'
 import { displayTxHashAtom } from 'lib/state/swap'
 import { SwapTransactionInfo, Transaction, TransactionType, WrapTransactionInfo } from 'lib/state/transactions'
 import { useMemo, useState } from 'react'
+
 import Dialog from '../Dialog'
 import Header from '../Header'
 import { BoundaryProvider } from '../Popover'

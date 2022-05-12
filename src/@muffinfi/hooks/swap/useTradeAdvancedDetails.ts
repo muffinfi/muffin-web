@@ -2,6 +2,7 @@ import { getPriceImpact, getRealizedFee, Hop, SwapQuoter, Trade } from '@muffinf
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { CallStateResult, useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
+
 import { useQuoterContract } from '../useContract'
 
 const allResultsExist = (results: (CallStateResult | undefined)[]): results is CallStateResult[] => {

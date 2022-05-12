@@ -1,13 +1,14 @@
 // eslint-disable-next-line no-restricted-imports
 import { Trans } from '@lingui/macro'
-import { Connector } from '@web3-react/types'
 import * as M from '@muffinfi-ui'
+import { Connector } from '@web3-react/types'
 import { darken } from 'polished'
 import { useMemo } from 'react'
 import { Activity } from 'react-feather'
 import styled, { css } from 'styled-components/macro'
 import { AbstractConnector } from 'web3-react-abstract-connector'
 import { UnsupportedChainIdError, useWeb3React } from 'web3-react-core'
+
 import { NetworkContextName } from '../../constants/misc'
 import useENSName from '../../hooks/useENSName'
 import { useWalletModalToggle } from '../../state/application/hooks'

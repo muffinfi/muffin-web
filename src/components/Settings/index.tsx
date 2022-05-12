@@ -6,6 +6,7 @@ import { useContext, useRef, useState } from 'react'
 import { Settings, X } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components/macro'
+
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalOpen, useToggleSettingsMenu } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'

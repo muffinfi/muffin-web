@@ -10,6 +10,7 @@ import TokenImg from 'lib/components/TokenImg'
 import { AutoRouter } from 'lib/icons'
 import styled, { Layer, ThemedText } from 'lib/theme'
 import { useMemo } from 'react'
+
 import { getTokenPath, RoutingDiagramEntry } from './utils'
 
 const StyledAutoRouterLabel = styled(ThemedText.ButtonSmall)`

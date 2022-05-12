@@ -5,6 +5,7 @@ import useTierColors from 'hooks/useTierColors'
 import { ColumnDisableable } from 'pages/AddLiquidity/styled'
 import { useMemo } from 'react'
 import styled from 'styled-components/macro'
+
 import { TierOption } from './TierOption'
 
 const Select = styled.div`

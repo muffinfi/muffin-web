@@ -4,6 +4,7 @@ import { ButtonPrimary } from 'components/Button'
 import { AlertCircle, ArrowLeft } from 'react-feather'
 import styled from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
+
 import TokenImportCard from './TokenImportCard'
 
 const Wrapper = styled.div`

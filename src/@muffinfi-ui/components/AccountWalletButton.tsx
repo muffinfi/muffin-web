@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useInternalAccountModeManager } from '@muffinfi/state/user/hooks'
 import { memo } from 'react'
 import styled from 'styled-components/macro'
+
 import { Button } from '../buttons'
 import { Row } from '../core'
 

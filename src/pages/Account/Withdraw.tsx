@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { AccountManager } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
 import { LightCard } from 'components/Card'
@@ -30,6 +30,7 @@ import { useIsExpertMode } from 'state/user/hooks'
 import useResizeObserver from 'use-resize-observer'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+
 import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 

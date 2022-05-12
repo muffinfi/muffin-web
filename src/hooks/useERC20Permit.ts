@@ -13,6 +13,7 @@ import {
   signatureDataToPermitOptions,
 } from 'lib/utils/erc20Permit'
 import { useEffect, useMemo, useState } from 'react'
+
 import { useEIP2612Contract } from './useContract'
 import { useManagerAddress } from './useContractAddress'
 import useIsArgentWallet from './useIsArgentWallet'

@@ -3,6 +3,7 @@ import { ButtonText } from 'components/Button'
 import { AutoRow } from 'components/Row'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
+
 import { MEDIA_WIDTHS } from '../../theme'
 
 const StyledAccountHeader = styled.div`

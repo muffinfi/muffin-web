@@ -8,6 +8,7 @@ import useMemoWithEqualCheck, { EQUALS_CHECK, useMemoArrayWithEqualCheck } from 
 import { useSingleCallResult, useSingleContractMultipleData, useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import type { Optional } from 'types/optional'
+
 import { useHubContract } from './useContract'
 
 export enum PoolState {

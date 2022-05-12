@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
+import * as M from '@muffinfi-ui'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { LoadingRows } from 'components/Loader/styled'
@@ -13,6 +13,7 @@ import { Plus } from 'react-feather'
 import { useDarkModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { Separator } from 'theme'
+
 import { AutoRouterLabel, AutoRouterLogo } from './RouterLabel'
 
 const Wrapper = styled(M.Column).attrs({ stretch: true })<{ darkMode?: boolean; fixedOpen?: boolean }>`

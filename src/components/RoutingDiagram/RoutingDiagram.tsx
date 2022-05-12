@@ -10,6 +10,7 @@ import { RoutingDiagramEntry } from 'lib/components/Swap/RoutingDiagram/utils'
 import { Box } from 'rebass'
 import styled from 'styled-components/macro'
 import { ThemedText, Z_INDEX } from 'theme'
+
 import { ReactComponent as DotLine } from '../../assets/svg/dot_line.svg'
 
 const Wrapper = styled(Box)`

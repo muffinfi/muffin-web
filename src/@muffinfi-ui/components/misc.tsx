@@ -1,6 +1,7 @@
 import { NavLink as RouterNavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components/macro'
 import { handleClickExternalLink } from 'utils/handleClickExternalLink'
+
 import { Anchor, Column, Link, Row, Text } from '../core'
 
 export const ExternalLink = styled(Anchor).attrs({

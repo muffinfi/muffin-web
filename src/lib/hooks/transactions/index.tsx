@@ -5,6 +5,7 @@ import { Transaction, TransactionInfo, transactionsAtom, TransactionType } from 
 import ms from 'ms.macro'
 import { useCallback, useMemo } from 'react'
 import invariant from 'tiny-invariant'
+
 import useBlockNumber from '../useBlockNumber'
 import Updater from './updater'
 

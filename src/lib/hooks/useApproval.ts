@@ -9,6 +9,7 @@ import { useTokenContract } from 'hooks/useContract'
 import { useTokenAllowance } from 'hooks/useTokenAllowance'
 import { useCallback, useMemo } from 'react'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+
 import { useMultipleContractSingleData } from './multicall'
 import { usePendingApprovals } from './transactions'
 

@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import * as M from '@muffinfi-ui'
+import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import HoverInlineText from 'components/HoverInlineText'
 import { useMemo } from 'react'
+
 import useTheme from '../../hooks/useTheme'
 import { warningSeverity } from '../../utils/prices'
 import { MouseoverTooltip } from '../Tooltip'

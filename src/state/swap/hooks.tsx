@@ -16,6 +16,7 @@ import { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { TradeState } from 'state/routing/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
+
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'

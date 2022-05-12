@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { Position } from '@muffinfi/muffin-v1-sdk'
+import * as M from '@muffinfi-ui'
 import { Currency } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'

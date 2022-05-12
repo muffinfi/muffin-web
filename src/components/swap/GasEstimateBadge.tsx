@@ -8,6 +8,7 @@ import { MouseoverTooltipContent } from 'components/Tooltip'
 import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+
 import { ReactComponent as GasIcon } from '../../assets/images/gas-icon.svg'
 import { ResponsiveTooltipContainer } from './styleds'
 import SwapRoute from './SwapRoute'

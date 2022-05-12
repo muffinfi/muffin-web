@@ -1,8 +1,9 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { Trade } from '@muffinfi/muffin-v1-sdk'
+import * as M from '@muffinfi-ui'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { ReactNode } from 'react'
+
 import { SwapCallbackError } from './styleds'
 
 export default function SwapModalFooter({

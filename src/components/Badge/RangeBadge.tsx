@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import Badge, { BadgeVariant } from 'components/Badge'
 import { AlertCircle } from 'react-feather'
 import styled from 'styled-components/macro'
+
 import { MouseoverTooltip } from '../../components/Tooltip'
 
 const StyledBadge = styled(Badge)`

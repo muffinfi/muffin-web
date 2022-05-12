@@ -14,6 +14,7 @@ import styled, { ThemedText } from 'lib/theme'
 import { useCallback, useMemo, useState } from 'react'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
+
 import Price from '../Price'
 import Details from './Details'
 import Summary from './Summary'

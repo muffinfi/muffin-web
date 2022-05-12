@@ -2,6 +2,7 @@ import { max, scaleLinear, stack, sum, ZoomTransform } from 'd3'
 import { darken } from 'polished'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
+
 import { Area } from './Area'
 import { AxisBottom } from './AxisBottom'
 import { Brush } from './Brush'

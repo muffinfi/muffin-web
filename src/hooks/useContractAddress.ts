@@ -1,4 +1,5 @@
 import { MUFFIN_HUB_ADDRESSES, MUFFIN_MANAGER_ADDRESSES } from '@muffinfi/constants/addresses'
+
 import useActiveWeb3React from './useActiveWeb3React'
 
 export default function useContractAddress(addressOrAddressMap: string | { [chainId: number]: string } | undefined) {

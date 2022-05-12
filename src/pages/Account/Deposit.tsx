@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { AccountManager } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
 import { LightCard } from 'components/Card'
@@ -37,6 +37,7 @@ import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+
 import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 

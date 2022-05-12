@@ -2,6 +2,7 @@ import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import useUSDCPrice from 'hooks/useUSDCPrice'
 import { useMemo } from 'react'
+
 import { MuffinPositionDetail } from './usePositions'
 
 type FiatValues = {

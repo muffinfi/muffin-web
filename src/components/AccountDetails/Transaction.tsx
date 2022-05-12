@@ -2,6 +2,7 @@ import * as M from '@muffinfi-ui'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { CheckCircle, Triangle } from 'react-feather'
 import styled from 'styled-components/macro'
+
 import { useAllTransactions } from '../../state/transactions/hooks'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import Loader from '../Loader'

@@ -2,6 +2,7 @@ import { transparentize } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import { Box, BoxProps } from 'rebass'
 import styled from 'styled-components/macro'
+
 import Popover, { PopoverProps } from '../Popover'
 
 export const TooltipContainer = styled.div`

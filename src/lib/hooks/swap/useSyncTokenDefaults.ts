@@ -5,6 +5,7 @@ import { useUpdateAtom } from 'jotai/utils'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { Field, Swap, swapAtom } from 'lib/state/swap'
 import { useCallback, useLayoutEffect, useState } from 'react'
+
 import { useLibOnlyToken } from '../useLibOnlyCurrency'
 import useOnSupportedNetwork from '../useOnSupportedNetwork'
 

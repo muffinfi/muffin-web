@@ -8,6 +8,7 @@ import { darken } from 'polished'
 import { useContext, useState } from 'react'
 import { useSetUserSlippageTolerance, useUserSlippageTolerance, useUserTransactionTTL } from 'state/user/hooks'
 import styled, { ThemeContext } from 'styled-components/macro'
+
 import { ThemedText } from '../../theme'
 import { AutoColumn } from '../Column'
 import QuestionHelper from '../QuestionHelper'

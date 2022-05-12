@@ -10,6 +10,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
 import { useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
+
 import { nativeOnChain } from '../../constants/tokens'
 import { useInterfaceMulticall } from '../../hooks/useContract'
 import { isAddress } from '../../utils'

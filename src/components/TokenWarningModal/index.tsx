@@ -1,6 +1,7 @@
 import { Token } from '@uniswap/sdk-core'
 import { ImportToken } from 'components/SearchModal/ImportToken'
 import { memo } from 'react'
+
 import Modal from '../Modal'
 
 export default memo(function TokenWarningModal({

@@ -7,6 +7,7 @@ import ms from 'ms.macro'
 import { useMemo } from 'react'
 import { usePositionTokenIdsQuery } from 'state/data/enhanced'
 import { PositionTokenIdsQuery } from 'state/data/generated'
+
 import { useLensContract } from './useContract'
 
 export interface MuffinPositionDetail {

@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import * as M from '@muffinfi-ui'
 import Badge, { BadgeVariant } from 'components/Badge'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'

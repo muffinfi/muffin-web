@@ -4,6 +4,7 @@ import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { memo, ReactNode, useCallback, useMemo } from 'react'
 import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
+
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,

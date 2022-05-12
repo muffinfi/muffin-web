@@ -1,7 +1,8 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
+import * as M from '@muffinfi-ui'
 import styled from 'styled-components/macro'
+
 import PositionListItem, { BasePositionRow } from './PositionListItem'
 
 const PositionListHeader = styled.div`

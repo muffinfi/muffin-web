@@ -2,6 +2,7 @@ import { Pool, Route } from '@muffinfi/muffin-v1-sdk'
 import { Currency } from '@uniswap/sdk-core'
 import { useAllCurrencyCombinations } from 'hooks/useAllCurrencyCombinations'
 import { useMemo } from 'react'
+
 import { PoolState, useMuffinPools } from '../usePools'
 
 const DEFAULT_TIER_CHOICES = 0b111111 // FIXME: support tier choice selection

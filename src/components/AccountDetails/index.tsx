@@ -6,6 +6,7 @@ import { memo, useCallback, useMemo } from 'react'
 import { CheckCircle, Copy as CopyIcon, ExternalLink as LinkIcon } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
 import styled from 'styled-components/macro'
+
 import { ReactComponent as Close } from '../../assets/images/x.svg'
 import { injected, portis, walletlink } from '../../connectors'
 import { SUPPORTED_WALLETS } from '../../constants/wallet'

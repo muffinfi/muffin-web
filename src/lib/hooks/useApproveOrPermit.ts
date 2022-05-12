@@ -4,6 +4,7 @@ import { useERC20Permit, UseERC20PermitState } from 'hooks/useERC20Permit'
 import { PermitInfo } from 'lib/utils/erc20Permit'
 import { useCallback, useMemo, useState } from 'react'
 import { useHasPendingApproval } from 'state/transactions/hooks'
+
 import { ApprovalState, useApproval } from './useApproval'
 
 export enum ApproveOrPermitState {

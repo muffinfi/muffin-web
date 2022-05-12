@@ -3,6 +3,7 @@ import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import useDebounce from 'hooks/useDebounce'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
+
 import { useClientSideMuffinTrade } from './useClientSideTrade'
 
 /**

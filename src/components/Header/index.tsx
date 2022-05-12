@@ -7,6 +7,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { match, NavLink } from 'react-router-dom'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled, { css } from 'styled-components/macro'
+
 import { ReactComponent as Logo } from '../../assets/svg/muffin_logo.svg'
 import { ReactComponent as LogoText } from '../../assets/svg/muffin_logo_text.svg'
 import Menu from '../Menu'

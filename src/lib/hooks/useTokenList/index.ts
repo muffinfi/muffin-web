@@ -6,6 +6,7 @@ import { useAtomValue } from 'jotai/utils'
 import resolveENSContentHash from 'lib/utils/resolveENSContentHash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { WrappedTokenInfo } from 'state/lists/wrappedTokenInfo'
+
 import fetchTokenList from './fetchTokenList'
 import { useQueryTokens } from './querying'
 import { ChainTokenMap, tokensToChainTokenMap } from './utils'

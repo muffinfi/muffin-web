@@ -3,6 +3,7 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import { Fragment } from 'react'
+
 import { nativeOnChain } from '../../constants/tokens'
 import useCurrency, { useToken } from '../../hooks/useCurrency'
 import useENSName from '../../hooks/useENSName'

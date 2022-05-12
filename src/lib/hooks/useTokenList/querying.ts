@@ -4,6 +4,7 @@ import useDebounce from 'hooks/useDebounce'
 import { useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import { useMemo } from 'react'
 import { WrappedTokenInfo } from 'state/lists/wrappedTokenInfo'
+
 import { getTokenFilter } from './filtering'
 import { tokenComparator, useSortTokensByQuery } from './sorting'
 

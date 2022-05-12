@@ -48,8 +48,8 @@
   ],
   "rules": {
     "unused-imports/no-unused-imports": "warn",
-    "simple-import-sort/imports": "off",
-    "simple-import-sort/exports": "off",
+    "simple-import-sort/imports": "warn",
+    "simple-import-sort/exports": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "prettier/prettier": "warn",
     "@typescript-eslint/no-explicit-any": "off",

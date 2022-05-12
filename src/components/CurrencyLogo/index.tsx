@@ -2,6 +2,7 @@ import { Currency } from '@uniswap/sdk-core'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
 import React from 'react'
 import styled from 'styled-components/macro'
+
 import Logo from '../Logo'
 
 // Used to remove prop name `native`

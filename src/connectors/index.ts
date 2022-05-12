@@ -6,6 +6,7 @@ import { InjectedConnector } from 'web3-react-injected-connector'
 import { PortisConnector } from 'web3-react-portis-connector'
 import { WalletConnectConnector } from 'web3-react-walletconnect-connector'
 import { WalletLinkConnector } from 'web3-react-walletlink-connector'
+
 import APP_LOGO_URL from '../assets/svg/logo.svg'
 import getLibrary from '../utils/getLibrary'
 import { FortmaticConnector } from './Fortmatic'

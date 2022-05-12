@@ -6,6 +6,7 @@ import { INFURA_NETWORK_URLS } from 'constants/infura'
 import { AUTO_ROUTER_SUPPORTED_CHAINS, getClientSideQuote } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
+
 import { GetQuoteResult } from './types'
 
 const routerProviders = new Map<ChainId, BaseProvider>()

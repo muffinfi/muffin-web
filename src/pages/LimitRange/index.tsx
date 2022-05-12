@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { useHubContract } from '@muffinfi/hooks/useContract'
 import { PoolState, useLimitOrderTickSpacingMultipliers, useMuffinPool } from '@muffinfi/hooks/usePools'
 import { useSettlement } from '@muffinfi/hooks/useSettlements'
@@ -17,6 +16,7 @@ import {
 } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent, Price, Rounding } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'

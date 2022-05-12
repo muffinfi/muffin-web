@@ -3,6 +3,7 @@ import * as M from '@muffinfi-ui'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Minus, Plus, RefreshCw } from 'react-feather'
 import styled, { css, keyframes } from 'styled-components/macro'
+
 import { Input as NumericalInput } from '../NumericalInput'
 
 const pulse = (color: string) => keyframes`

@@ -7,6 +7,7 @@ import { Field } from 'lib/state/swap'
 import styled, { ThemedText } from 'lib/theme'
 import { memo, useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
+
 import Row from '../../Row'
 import Rule from '../../Rule'
 import * as Caption from './Caption'

@@ -2,6 +2,7 @@ import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
+
 import { useTokenBalance } from './useCurrencyBalance'
 
 export default function useOutstandingAmountToApprove(account?: string, amount?: CurrencyAmount<Currency>) {

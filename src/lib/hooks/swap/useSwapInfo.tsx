@@ -8,6 +8,7 @@ import { Field, swapAtom } from 'lib/state/swap'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useEffect, useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
+
 import useActiveWeb3React from '../useActiveWeb3React'
 import useSlippage, { Slippage } from '../useSlippage'
 import useUSDCPriceImpact, { PriceImpact } from '../useUSDCPriceImpact'

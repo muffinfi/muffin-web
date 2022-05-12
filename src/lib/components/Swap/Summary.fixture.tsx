@@ -8,6 +8,7 @@ import { Field, swapAtom } from 'lib/state/swap'
 import { useEffect } from 'react'
 import { WrappedTokenInfo } from 'state/lists/wrappedTokenInfo'
 import invariant from 'tiny-invariant'
+
 import { Modal } from '../Dialog'
 import { SummaryDialog } from './Summary'
 

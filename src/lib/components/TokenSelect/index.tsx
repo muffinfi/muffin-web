@@ -7,6 +7,7 @@ import useTokenList, { useIsTokenListLoaded, useQueryCurrencies } from 'lib/hook
 import styled, { ThemedText } from 'lib/theme'
 import { ElementRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { currencyId } from 'utils/currencyId'
+
 import Column from '../Column'
 import Dialog, { Header } from '../Dialog'
 import { inputCss, StringInput } from '../Input'

@@ -1,13 +1,14 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { useTradeAdvancedDetails } from '@muffinfi/hooks/swap/useTradeAdvancedDetails'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
+import * as M from '@muffinfi-ui'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { LoadingRows } from 'components/Loader/styled'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { memo } from 'react'
 import styled from 'styled-components/macro'
+
 import FormattedPriceImpact from './FormattedPriceImpact'
 
 const Separator = styled.div`

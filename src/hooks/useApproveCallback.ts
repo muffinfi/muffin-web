@@ -3,6 +3,7 @@ import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useSwapApproval, { useSwapApprovalOptimizedTrade } from 'lib/hooks/swap/useSwapApproval'
 import { ApprovalState, useApproval } from 'lib/hooks/useApproval'
 import { useCallback } from 'react'
+
 import { TransactionType } from '../state/transactions/actions'
 import { useHasPendingApproval, useTransactionAdder } from '../state/transactions/hooks'
 

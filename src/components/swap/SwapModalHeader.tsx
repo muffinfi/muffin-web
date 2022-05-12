@@ -1,10 +1,11 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
+import * as M from '@muffinfi-ui'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useContext, useState } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import styled, { ThemeContext } from 'styled-components/macro'
+
 import { useUSDCValue } from '../../hooks/useUSDCPrice'
 import { isAddress, shortenAddress } from '../../utils'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'

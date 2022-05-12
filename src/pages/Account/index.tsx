@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
-import * as M from '@muffinfi-ui'
 import { useAccountTokens } from '@muffinfi/hooks/account/useAccountTokens'
 import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffinfi/state/user/hooks'
+import * as M from '@muffinfi-ui'
 import TokenRow from 'components/account/TokenRow'
 import { LoadingRows } from 'components/Loader/styled'
 import SubgraphIndexingNote from 'components/SubgraphIndexingNote'

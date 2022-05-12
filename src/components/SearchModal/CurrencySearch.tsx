@@ -19,6 +19,7 @@ import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import { useAllTokenBalances } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
+
 import { useAllTokens, useIsUserAddedToken, useSearchInactiveTokenLists } from '../../hooks/Tokens'
 import { ButtonText, CloseIcon, IconWrapper, ThemedText } from '../../theme'
 import { isAddress } from '../../utils'

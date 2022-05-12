@@ -3,6 +3,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { TokenList } from '@uniswap/token-lists'
 import usePrevious from 'hooks/usePrevious'
 import { useCallback, useEffect, useState } from 'react'
+
 import useLast from '../../hooks/useLast'
 import { WrappedTokenInfo } from '../../state/lists/wrappedTokenInfo'
 import Modal from '../Modal'

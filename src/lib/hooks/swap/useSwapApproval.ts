@@ -5,6 +5,7 @@ import { useManagerAddress } from 'hooks/useContractAddress'
 import { useERC20PermitFromTrade, UseERC20PermitState } from 'hooks/useERC20Permit'
 import useTransactionDeadline from 'lib/hooks/useTransactionDeadline'
 import { useCallback, useMemo, useState } from 'react'
+
 import { ApprovalState, useApproval, useApprovalStateForSpender } from '../useApproval'
 
 export { ApprovalState } from '../useApproval'

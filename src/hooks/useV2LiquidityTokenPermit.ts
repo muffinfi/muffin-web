@@ -1,5 +1,6 @@
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { PermitInfo, PermitType } from 'lib/utils/erc20Permit'
+
 import { useERC20Permit } from './useERC20Permit'
 import useTransactionDeadline from './useTransactionDeadline'
 

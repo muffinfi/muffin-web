@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+
 import {
   updateShowUntrustedTokens,
   updateShowZeroBalanceTokens,

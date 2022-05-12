@@ -4,6 +4,7 @@ import { sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
 import * as M from '@muffinfi-ui'
 import { ButtonRadioChecked } from 'components/Button'
 import { useCallback, useMemo } from 'react'
+
 import { TierPercentageBadge } from './TierPercentageBadge'
 
 export function TierOption({

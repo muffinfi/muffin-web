@@ -15,6 +15,7 @@ import ReactGA from 'react-ga'
 import { batch } from 'react-redux'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
+
 import { ThemedText } from '../../theme'
 import { Chart } from './Chart'
 import { useDensityChartData } from './hooks'

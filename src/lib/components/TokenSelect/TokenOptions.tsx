@@ -22,6 +22,7 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, FixedSizeList, FixedSizeListProps } from 'react-window'
 import { currencyId } from 'utils/currencyId'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+
 import { BaseButton } from '../Button'
 import Column from '../Column'
 import Row from '../Row'

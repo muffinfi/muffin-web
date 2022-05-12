@@ -1,6 +1,7 @@
 import { Currency, Token } from '@uniswap/sdk-core'
 import { useCallback, useMemo, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
+
 import { useAllTokens } from './Tokens'
 
 export default function useTokenWarningModalHooks<T>(

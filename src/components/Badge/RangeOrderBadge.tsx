@@ -3,6 +3,7 @@ import { LimitOrderType } from '@muffinfi/muffin-v1-sdk'
 import { Token } from '@uniswap/sdk-core'
 import Badge, { BadgeVariant } from 'components/Badge'
 import styled from 'styled-components/macro'
+
 import { MouseoverTooltip } from '../../components/Tooltip'
 
 const StyledBadge = styled(Badge)`

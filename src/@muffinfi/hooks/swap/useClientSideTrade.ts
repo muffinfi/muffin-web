@@ -7,6 +7,7 @@ import JSBI from 'jsbi'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
+
 import { useQuoterContract } from '../useContract'
 import { useAllMuffinRoutes } from './useAllRoutes'
 

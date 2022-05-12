@@ -11,6 +11,7 @@ import { useRemoveUserAddedToken, useUserAddedTokens } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ButtonText, ExternalLink, ExternalLinkIcon, ThemedText, TrashIcon } from 'theme'
 import { isAddress } from 'utils'
+
 import useTheme from '../../hooks/useTheme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { CurrencyModalView } from './CurrencySearchModal'

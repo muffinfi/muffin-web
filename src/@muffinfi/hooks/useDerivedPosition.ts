@@ -3,6 +3,7 @@ import { Position } from '@muffinfi/muffin-v1-sdk'
 import { Token } from '@uniswap/sdk-core'
 import useCurrency from 'hooks/useCurrency'
 import { useMemo } from 'react'
+
 import { PoolState, useMuffinPool } from './usePools'
 import { MuffinPositionDetail, useMuffinPositionDetailFromTokenId } from './usePositions'
 

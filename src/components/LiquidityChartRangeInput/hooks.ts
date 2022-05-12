@@ -1,6 +1,7 @@
 import { Currency } from '@uniswap/sdk-core'
 import { TickProcessed, usePoolActiveLiquidity } from 'hooks/usePoolTickData'
 import { useCallback, useMemo } from 'react'
+
 import { ChartEntry } from './types'
 
 export function useDensityChartData({

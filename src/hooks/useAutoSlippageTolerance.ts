@@ -6,6 +6,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useMemo } from 'react'
+
 import useGasPrice from './useGasPrice'
 import useUSDCPrice, { useUSDCValue } from './useUSDCPrice'
 

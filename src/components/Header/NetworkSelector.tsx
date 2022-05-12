@@ -15,6 +15,7 @@ import { useModalOpen, useToggleModal } from 'state/application/hooks'
 import { addPopup, ApplicationModal } from 'state/application/reducer'
 import styled from 'styled-components/macro'
 import { replaceURLParam } from 'utils/routes'
+
 import { useAppDispatch } from '../../state/hooks'
 import { switchToNetwork } from '../../utils/switchToNetwork'
 import HeaderButton from './HeaderButton'

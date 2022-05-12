@@ -10,6 +10,7 @@ import { useAppDispatch } from 'state/hooks'
 import { resetMintState as resetMintV3State } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+
 import Row, { RowBetween } from '../Row'
 import SettingsTab from '../Settings'
 
