@@ -23,8 +23,7 @@
   "orientation": "portrait",
   "name": "Muffin",
   "description": "Swap or provide liquidity on the Muffin Protocol",
-  "iconPath": "./images/256x256_App_Icon_Pink.svg",
+  "iconPath": "./images/128x128_App_Icon.svg",
   "short_name": "Muffin",
-  "start_url": ".",
-  "theme_color": "#ff007a"
+  "start_url": "."
 }
