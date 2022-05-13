@@ -5,7 +5,7 @@ import { Currency } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 import ms from 'ms.macro'
 import { useMemo } from 'react'
-import { AllV3TicksQueryResultKey, AllV3TicksQueryResultKeys, useAllV3TicksQuery } from 'state/data/enhanced'
+import { useAllV3TicksQuery } from 'state/data/enhanced'
 import { AllV3TicksQuery, Tick } from 'state/data/generated'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
@@ -142,24 +142,25 @@ function useTicksFromSubgraph(pool?: Pool | null) {
 // Fetches all ticks for a given pool
 function useAllV3Ticks(pool?: Pool | null): {
   isLoading: boolean
-  isUninitialized: boolean
+  isUninitialized?: boolean
   isError: boolean
   error: unknown
-  ticks: Omit<AllV3TicksQuery, '__typename'> | undefined
+  data: Omit<AllV3TicksQuery, '__typename'> | undefined
 } {
+  // TODO: may be we need get tick data from lens in future
   // const useSubgraph = currencyA ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(currencyA.chainId) : true
-  const useSubgraph = true
 
   // const tickLensTickData = useTicksFromTickLens(!useSubgraph ? currencyA : undefined, currencyB, feeAmount)
-  const tickLensTickData = useTicksFromSubgraph(!useSubgraph ? pool : undefined)
-  const subgraphTickData = useTicksFromSubgraph(useSubgraph ? pool : undefined)
+  // const subgraphTickData = useTicksFromSubgraph(useSubgraph ? pool : undefined)
 
-  return {
-    isLoading: useSubgraph ? subgraphTickData.isLoading : tickLensTickData.isLoading,
-    isUninitialized: useSubgraph ? subgraphTickData.isUninitialized : false,
-    isError: useSubgraph ? subgraphTickData.isError : tickLensTickData.isError,
-    error: useSubgraph ? subgraphTickData.error : tickLensTickData.isError,
-    ticks: useSubgraph ? subgraphTickData.data : tickLensTickData.data,
+  // return useSubgraph ? subgraphTickData : tickLensTickData
+
+  return useTicksFromSubgraph(pool) as {
+    isLoading: boolean
+    isUninitialized?: boolean
+    isError: boolean
+    error: unknown
+    data: Omit<AllV3TicksQuery, '__typename'> | undefined
   }
 }
 
@@ -184,7 +185,7 @@ export function usePoolActiveLiquidity(
     [tier?.computedTick, pool?.tickSpacing]
   )
 
-  const { isLoading, isUninitialized, isError, error, ticks } = useAllV3Ticks(pool)
+  const { isLoading, isUninitialized, isError, error, data: ticks } = useAllV3Ticks(pool)
 
   const data = useMemo(() => {
     if (!currencyA || !currencyB || poolState !== PoolState.EXISTS || !pool || !ticks) {
@@ -196,21 +197,24 @@ export function usePoolActiveLiquidity(
 
     // flat map and sort all the tick data
     const allTicks = (() => {
-      const tickMap = AllV3TicksQueryResultKeys.reduce((acc, key) => {
-        ticks[key].forEach((tick) => {
-          if (!acc[tick.tickIdx]) {
-            acc[tick.tickIdx] = {
-              tickIdx: tick.tickIdx,
-              price0: tickToPrice(token0, token1, tick.tickIdx).toFixed(PRICE_FIXED_DIGITS),
-              liquidityActive: {},
-              liquidityNet: {},
-            }
+      const allSortedTicks = ticks.tiers
+        .flatMap(({ ticks }) => ticks)
+        .sort((aTick, bTick) => aTick.tickIdx - bTick.tickIdx)
+
+      let lastProcessedTick: TickProcessed | undefined
+      return allSortedTicks.reduce((acc, tick) => {
+        if (lastProcessedTick?.tickIdx !== tick.tickIdx) {
+          lastProcessedTick = {
+            tickIdx: tick.tickIdx,
+            price0: tickToPrice(token0, token1, tick.tickIdx).toFixed(PRICE_FIXED_DIGITS),
+            liquidityActive: {},
+            liquidityNet: {},
           }
-          acc[tick.tickIdx].liquidityNet[tick.tierId] = JSBI.BigInt(tick.liquidityNet)
-        })
+          acc.push(lastProcessedTick)
+        }
+        lastProcessedTick.liquidityNet[tick.tierId] = JSBI.BigInt(tick.liquidityNet)
         return acc
-      }, {} as Record<number, TickProcessed>)
-      return Object.values(tickMap).sort((aTick, bTick) => aTick.tickIdx - bTick.tickIdx)
+      }, [] as TickProcessed[])
     })()
 
     let hasError = false
@@ -218,8 +222,8 @@ export function usePoolActiveLiquidity(
     // calculate active tick for each tier and add liquidity to "pivot" tick
     // missing "pivot" tick will be inserted
     const activeTicks = pool.tiers.map((tier, _tierId) => {
-      const selectedTicks = ticks[`tier${_tierId}` as AllV3TicksQueryResultKey]
-      if (selectedTicks.length === 0) {
+      const { ticks: selectedTicks } = ticks.tiers.find(({ ticks }) => _tierId === ticks[0]?.tierId) ?? {}
+      if (!selectedTicks || selectedTicks.length === 0) {
         hasError = true
         return 0
       }
@@ -273,7 +277,7 @@ export function usePoolActiveLiquidity(
     if (!currencyA || !currencyB || poolState !== PoolState.EXISTS || !data || isLoading || isUninitialized) {
       return {
         isLoading: isLoading || poolState === PoolState.LOADING,
-        isUninitialized,
+        isUninitialized: isUninitialized ?? false,
         isError,
         error,
         activeTick,
@@ -283,7 +287,7 @@ export function usePoolActiveLiquidity(
 
     return {
       isLoading,
-      isUninitialized,
+      isUninitialized: isUninitialized ?? false,
       isError,
       error,
       activeTick,

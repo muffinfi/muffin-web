@@ -39,47 +39,14 @@ export const api = createApi({
       query: ({ poolId, skip = 0 }) => ({
         document: gql`
           query allV3Ticks($poolId: String!, $skip: Int!) {
-            tier0: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 0 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
-            }
-            tier1: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 1 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
-            }
-            tier2: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 2 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
-            }
-            tier3: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 3 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
-            }
-            tier4: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 4 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
-            }
-            tier5: ticks(first: 1000, skip: $skip, where: { poolId: $poolId, tierId: 5 }, orderBy: tickIdx) {
-              tickIdx
-              tierId
-              liquidityNet
-              price0
-              price1
+            tiers(first: 1000, where: { poolId: $poolId }, orderBy: tierId) {
+              ticks(first: 1000, skip: $skip, orderBy: tickIdx) {
+                tickIdx
+                tierId
+                liquidityNet
+                price0
+                price1
+              }
             }
           }
         `,
