@@ -1,5 +1,5 @@
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
-import { Pool, tickToPrice } from '@muffinfi/muffin-v1-sdk'
+import { Pool, TickMath, tickToPrice, Tier } from '@muffinfi/muffin-v1-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { Currency } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
@@ -145,7 +145,7 @@ function useAllV3Ticks(pool?: Pool | null): {
   isUninitialized?: boolean
   isError: boolean
   error: unknown
-  data: Omit<AllV3TicksQuery, '__typename'> | undefined
+  data: AllV3TicksQuery | undefined
 } {
   // TODO: may be we need get tick data from lens in future
   // const useSubgraph = currencyA ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(currencyA.chainId) : true
@@ -160,7 +160,7 @@ function useAllV3Ticks(pool?: Pool | null): {
     isUninitialized?: boolean
     isError: boolean
     error: unknown
-    data: Omit<AllV3TicksQuery, '__typename'> | undefined
+    data: AllV3TicksQuery | undefined
   }
 }
 
@@ -177,18 +177,36 @@ export function usePoolActiveLiquidity(
   data: TickProcessed[] | undefined
 } {
   const [poolState, pool] = useMuffinPool(currencyA, currencyB)
-  const tier =
-    typeof tierId === 'number' && tierId >= 0 && tierId < (pool?.tiers.length || 0) ? pool?.tiers[tierId] : undefined
+  const { isLoading, isUninitialized, isError, error, data: rawData } = useAllV3Ticks(pool)
+
+  const tiers = useMemo(
+    () =>
+      !pool?.token0 || !pool?.token1
+        ? undefined
+        : rawData?.tiers.map(
+            (tier) =>
+              new Tier(
+                pool.token0,
+                pool.token1,
+                tier.liquidity,
+                TickMath.tickToSqrtPriceX72(parseInt(tier.tick)),
+                parseInt(tier.sqrtGamma),
+                parseInt(tier.nextTickBelow),
+                parseInt(tier.nextTickAbove)
+              )
+          ),
+    [pool?.token0, pool?.token1, rawData]
+  )
+
+  const tier = typeof tierId === 'number' && tierId >= 0 && tierId < (tiers?.length || 0) ? tiers?.[tierId] : undefined
 
   const activeTick = useMemo(
     () => getActiveTick(tier?.computedTick, pool?.tickSpacing),
     [tier?.computedTick, pool?.tickSpacing]
   )
 
-  const { isLoading, isUninitialized, isError, error, data: ticks } = useAllV3Ticks(pool)
-
   const data = useMemo(() => {
-    if (!currencyA || !currencyB || poolState !== PoolState.EXISTS || !pool || !ticks) {
+    if (!currencyA || !currencyB || poolState !== PoolState.EXISTS || !pool?.tickSpacing || !rawData || !tiers) {
       return undefined
     }
 
@@ -197,7 +215,7 @@ export function usePoolActiveLiquidity(
 
     // flat map and sort all the tick data
     const allTicks = (() => {
-      const allSortedTicks = ticks.tiers
+      const allSortedTicks = rawData.tiers
         .flatMap(({ ticks }) => ticks)
         .sort((aTick, bTick) => aTick.tickIdx - bTick.tickIdx)
 
@@ -221,13 +239,7 @@ export function usePoolActiveLiquidity(
 
     // calculate active tick for each tier and add liquidity to "pivot" tick
     // missing "pivot" tick will be inserted
-    const activeTicks = pool.tiers.map((tier, _tierId) => {
-      const { ticks: selectedTicks } = ticks.tiers.find(({ ticks }) => _tierId === ticks[0]?.tierId) ?? {}
-      if (!selectedTicks || selectedTicks.length === 0) {
-        hasError = true
-        return 0
-      }
-
+    const activeTicks = tiers.map((tier, _tierId) => {
       // Find nearest valid tick for pool in case tick is not initialized.
       const localActiveTick = getActiveTick(tier.computedTick, pool.tickSpacing)
       if (typeof localActiveTick === 'undefined') {
@@ -271,7 +283,7 @@ export function usePoolActiveLiquidity(
     })
 
     return allTicks
-  }, [currencyA, currencyB, poolState, pool, ticks])
+  }, [currencyA, currencyB, poolState, pool?.tickSpacing, tiers, rawData])
 
   return useMemo(() => {
     if (!currencyA || !currencyB || poolState !== PoolState.EXISTS || !data || isLoading || isUninitialized) {
