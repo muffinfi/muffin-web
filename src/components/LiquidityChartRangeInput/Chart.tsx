@@ -1,14 +1,13 @@
 import { max, scaleLinear, stack, sum, ZoomTransform } from 'd3'
 import { darken } from 'polished'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bound } from 'state/mint/v3/actions'
 
 import { Area } from './Area'
 import { AxisBottom } from './AxisBottom'
 import { Brush } from './Brush'
 import { Line } from './Line'
 import { ChartEntry, LiquidityChartRangeInputProps } from './types'
-import Zoom, { ZoomOverlay } from './Zoom'
+import Zoom, { ZoomOverlay, ZoomRef } from './Zoom'
 
 export const getYDomainAccessor = (hiddenKeyIndexes: number[]) => (d: ChartEntry) =>
   sum(
@@ -23,7 +22,6 @@ export function Chart({
   keys,
   hiddenKeyIndexes,
   selectedKeyIndex,
-  ticksAtLimit,
   styles,
   dimensions: { width, height },
   margins,
@@ -33,7 +31,7 @@ export function Chart({
   onBrushDomainChange,
   zoomLevels,
 }: LiquidityChartRangeInputProps) {
-  const zoomRef = useRef<SVGRectElement | null>(null)
+  const zoomTargetSvgRef = useRef<SVGRectElement | null>(null)
 
   const [zoom, setZoom] = useState<ZoomTransform | null>(null)
 
@@ -86,16 +84,20 @@ export function Chart({
     setZoom(null)
   }, [zoomLevels])
 
+  const zoomRef = useRef<ZoomRef>()
+
   useEffect(() => {
     if (!brushDomain) {
-      onBrushDomainChange(xScale.domain() as [number, number], undefined)
+      onBrushDomainChange([current * zoomLevels.initialMin, current * zoomLevels.initialMax], undefined)
+      zoomRef.current?.zoomReset()
     }
-  }, [brushDomain, onBrushDomainChange, xScale])
+  }, [current, brushDomain, onBrushDomainChange, zoomLevels])
 
   return (
     <>
       <Zoom
-        svg={zoomRef.current}
+        ref={zoomRef}
+        svg={zoomTargetSvgRef.current}
         xScale={xScale}
         setZoom={setZoom}
         width={innerWidth}
@@ -109,7 +111,7 @@ export function Chart({
             'reset'
           )
         }}
-        showResetButton={Boolean(ticksAtLimit[Bound.LOWER] || ticksAtLimit[Bound.UPPER])}
+        showResetButton
         zoomLevels={zoomLevels}
       />
       <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
@@ -162,7 +164,7 @@ export function Chart({
             <AxisBottom xScale={xScale} innerHeight={innerHeight} />
           </g>
 
-          <ZoomOverlay width={innerWidth} height={height} ref={zoomRef} />
+          <ZoomOverlay width={innerWidth} height={height} ref={zoomTargetSvgRef} />
 
           <Brush
             id={id}
