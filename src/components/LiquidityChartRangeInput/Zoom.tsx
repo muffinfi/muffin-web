@@ -1,7 +1,7 @@
 import { ButtonGray } from 'components/Button'
 import { ScaleLinear, select, zoom, ZoomBehavior, zoomIdentity, ZoomTransform } from 'd3'
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
-import { RefreshCcw, ZoomIn, ZoomOut } from 'react-feather'
+import { Minimize, RefreshCcw, ZoomIn, ZoomOut } from 'react-feather'
 import styled from 'styled-components/macro'
 
 import { ZoomLevels } from './types'
@@ -52,10 +52,48 @@ interface ZoomProps {
   resetBrush: () => void
   showResetButton: boolean
   zoomLevels: ZoomLevels
+  brushDomain: [number, number] | undefined
+  currentPrice: number
+}
+
+const fitZoomContent = ({
+  xScale,
+  brushDomain,
+  width,
+  currentPrice,
+  zoomLevels,
+  svg,
+  zoomBehavior,
+}: { brushDomain: [number, number]; zoomBehavior: ZoomBehavior<Element, unknown> } & Pick<
+  ZoomProps,
+  'xScale' | 'width' | 'currentPrice' | 'zoomLevels' | 'svg'
+>) => {
+  const start = xScale(brushDomain[0])
+  const end = xScale(brushDomain[1])
+  const diff = end - start
+  const translateSlope = -width / (currentPrice * (1 - zoomLevels.initialMin)) / 2
+  const translateConstant = -(translateSlope * currentPrice * zoomLevels.initialMin)
+  const center = (brushDomain[1] - brushDomain[0]) * 0.5 + brushDomain[0]
+  const to = -(center * translateSlope + translateConstant)
+  select(svg as Element)
+    .call(zoomBehavior.translateTo, to, 0)
+    .transition()
+    .call(zoomBehavior.scaleBy, (width * 0.5) / diff)
 }
 
 const Zoom = forwardRef<ZoomRef | undefined, ZoomProps>(function Zoom(
-  { svg, xScale, setZoom, width, height, resetBrush, showResetButton, zoomLevels }: ZoomProps,
+  {
+    svg,
+    xScale,
+    setZoom,
+    width,
+    height,
+    resetBrush,
+    showResetButton,
+    zoomLevels,
+    brushDomain,
+    currentPrice,
+  }: ZoomProps,
   ref
 ) {
   const zoomBehavior = useRef<ZoomBehavior<Element, unknown>>()
@@ -127,8 +165,8 @@ const Zoom = forwardRef<ZoomRef | undefined, ZoomProps>(function Zoom(
   }, [zoomInitial, zoomLevels])
 
   return (
-    <Wrapper count={showResetButton ? 3 : 2}>
-      {showResetButton && (
+    <Wrapper count={3}>
+      {showResetButton ? (
         <Button
           onClick={() => {
             resetBrush()
@@ -136,6 +174,25 @@ const Zoom = forwardRef<ZoomRef | undefined, ZoomProps>(function Zoom(
           }}
         >
           <RefreshCcw size={16} />
+        </Button>
+      ) : (
+        <Button
+          onClick={() => {
+            brushDomain &&
+              svg &&
+              zoomBehavior.current &&
+              fitZoomContent({
+                xScale,
+                brushDomain,
+                width,
+                currentPrice,
+                zoomLevels,
+                svg,
+                zoomBehavior: zoomBehavior.current,
+              })
+          }}
+        >
+          <Minimize size={16} />
         </Button>
       )}
       <Button onClick={zoomIn} disabled={false}>

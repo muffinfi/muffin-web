@@ -1,6 +1,7 @@
 import { max, scaleLinear, stack, sum, ZoomTransform } from 'd3'
 import { darken } from 'polished'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Bound } from 'state/mint/v3/actions'
 
 import { Area } from './Area'
 import { AxisBottom } from './AxisBottom'
@@ -22,6 +23,7 @@ export function Chart({
   keys,
   hiddenKeyIndexes,
   selectedKeyIndex,
+  ticksAtLimit,
   styles,
   dimensions: { width, height },
   margins,
@@ -111,8 +113,10 @@ export function Chart({
             'reset'
           )
         }}
-        showResetButton
+        showResetButton={Boolean(ticksAtLimit[Bound.LOWER] || ticksAtLimit[Bound.UPPER])}
         zoomLevels={zoomLevels}
+        brushDomain={brushDomain}
+        currentPrice={current}
       />
       <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
         <defs>

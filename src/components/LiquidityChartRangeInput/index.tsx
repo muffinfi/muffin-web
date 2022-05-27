@@ -235,6 +235,7 @@ export default function LiquidityChartRangeInput({
               brushDomain={brushDomain}
               onBrushDomainChange={onBrushDomainChangeEnded}
               zoomLevels={getZoomLevel(pool?.tickSpacing)}
+              ticksAtLimit={ticksAtLimit}
             />
           </ChartWrapper>
           {keys.length > 1 && (
