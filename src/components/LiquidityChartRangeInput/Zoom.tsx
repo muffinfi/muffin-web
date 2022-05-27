@@ -1,6 +1,6 @@
 import { ButtonGray } from 'components/Button'
 import { ScaleLinear, select, zoom, ZoomBehavior, zoomIdentity, ZoomTransform } from 'd3'
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Minimize, RefreshCcw, ZoomIn, ZoomOut } from 'react-feather'
 import styled from 'styled-components/macro'
 
@@ -56,7 +56,7 @@ interface ZoomProps {
   currentPrice: number
 }
 
-const fitZoomContent = ({
+const zoomToFitBrushDomain = ({
   xScale,
   brushDomain,
   width,
@@ -64,10 +64,10 @@ const fitZoomContent = ({
   zoomLevels,
   svg,
   zoomBehavior,
-}: { brushDomain: [number, number]; zoomBehavior: ZoomBehavior<Element, unknown> } & Pick<
-  ZoomProps,
-  'xScale' | 'width' | 'currentPrice' | 'zoomLevels' | 'svg'
->) => {
+}: Pick<ZoomProps, 'brushDomain' | 'xScale' | 'width' | 'currentPrice' | 'zoomLevels' | 'svg'> & {
+  zoomBehavior: RefObject<ZoomBehavior<Element, unknown> | undefined>
+}) => {
+  if (!brushDomain || !svg || !zoomBehavior.current) return
   const start = xScale(brushDomain[0])
   const end = xScale(brushDomain[1])
   const diff = end - start
@@ -78,9 +78,9 @@ const fitZoomContent = ({
   const center = (brushDomain[1] - brushDomain[0]) * 0.5 + brushDomain[0]
   const to = center * translateSlope + translateConstant
   select(svg as Element)
-    .call(zoomBehavior.translateTo, to, 0)
+    .call(zoomBehavior.current.translateTo, to, 0)
     .transition()
-    .call(zoomBehavior.scaleBy, (width * 0.5) / diff)
+    .call(zoomBehavior.current.scaleBy, (width * 0.5) / diff)
 }
 
 const Zoom = forwardRef<ZoomRef | undefined, ZoomProps>(function Zoom(
@@ -179,20 +179,17 @@ const Zoom = forwardRef<ZoomRef | undefined, ZoomProps>(function Zoom(
         </Button>
       ) : (
         <Button
-          onClick={() => {
-            brushDomain &&
-              svg &&
-              zoomBehavior.current &&
-              fitZoomContent({
-                xScale,
-                brushDomain,
-                width,
-                currentPrice,
-                zoomLevels,
-                svg,
-                zoomBehavior: zoomBehavior.current,
-              })
-          }}
+          onClick={() =>
+            zoomToFitBrushDomain({
+              xScale,
+              brushDomain,
+              width,
+              currentPrice,
+              zoomLevels,
+              svg,
+              zoomBehavior,
+            })
+          }
         >
           <Minimize size={16} />
         </Button>
