@@ -71,10 +71,12 @@ const fitZoomContent = ({
   const start = xScale(brushDomain[0])
   const end = xScale(brushDomain[1])
   const diff = end - start
-  const translateSlope = -width / (currentPrice * (1 - zoomLevels.initialMin)) / 2
-  const translateConstant = -(translateSlope * currentPrice * zoomLevels.initialMin)
+  const initialMin = currentPrice * zoomLevels.initialMin
+  const initialMax = currentPrice * zoomLevels.initialMax
+  const translateSlope = width / (initialMax - initialMin)
+  const translateConstant = -(translateSlope * initialMin)
   const center = (brushDomain[1] - brushDomain[0]) * 0.5 + brushDomain[0]
-  const to = -(center * translateSlope + translateConstant)
+  const to = center * translateSlope + translateConstant
   select(svg as Element)
     .call(zoomBehavior.translateTo, to, 0)
     .transition()
