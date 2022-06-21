@@ -23,21 +23,30 @@ import { ZoomLevels } from './types'
 import { VisiblilitySelector } from './VisibilitySelector'
 
 const SMALL_ZOOM_LEVEL: ZoomLevels = {
-  initialMin: 0.999,
+  initialMin: 1 / 1.001,
   initialMax: 1.001,
   min: 0.00001,
   max: 1.5,
 }
 
 const MEDIUM_ZOOM_LEVEL: ZoomLevels = {
-  initialMin: 0.5,
+  initialMin: 1 / 1.2,
+  initialMax: 1.2,
+  min: 0.00001,
+  max: 20,
+}
+
+const LARGE_ZOOM_LEVEL: ZoomLevels = {
+  initialMin: 1 / 2,
   initialMax: 2,
   min: 0.00001,
   max: 20,
 }
 
-const getZoomLevel = (tickSpacing?: number) =>
-  typeof tickSpacing === 'number' && tickSpacing < 60 ? SMALL_ZOOM_LEVEL : MEDIUM_ZOOM_LEVEL
+const getZoomLevel = (tickSpacing?: number) => {
+  if (tickSpacing == null) return LARGE_ZOOM_LEVEL
+  return tickSpacing < 15 ? SMALL_ZOOM_LEVEL : tickSpacing < 50 ? MEDIUM_ZOOM_LEVEL : LARGE_ZOOM_LEVEL
+}
 
 const ChartWrapper = styled.div`
   position: relative;

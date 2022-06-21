@@ -40,6 +40,11 @@ export const api = createApi({
         document: gql`
           query allV3Ticks($poolId: String!, $skip: Int!) {
             tiers(first: 1000, where: { poolId: $poolId }, orderBy: tierId) {
+              tick
+              liquidity
+              sqrtGamma
+              nextTickBelow
+              nextTickAbove
               ticks(first: 1000, skip: $skip, orderBy: tickIdx) {
                 tickIdx
                 tierId

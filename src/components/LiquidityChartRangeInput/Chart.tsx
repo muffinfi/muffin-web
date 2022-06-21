@@ -8,7 +8,7 @@ import { AxisBottom } from './AxisBottom'
 import { Brush } from './Brush'
 import { Line } from './Line'
 import { ChartEntry, LiquidityChartRangeInputProps } from './types'
-import Zoom, { ZoomOverlay } from './Zoom'
+import Zoom, { ZoomOverlay, ZoomRef } from './Zoom'
 
 export const getYDomainAccessor = (hiddenKeyIndexes: number[]) => (d: ChartEntry) =>
   sum(
@@ -33,7 +33,7 @@ export function Chart({
   onBrushDomainChange,
   zoomLevels,
 }: LiquidityChartRangeInputProps) {
-  const zoomRef = useRef<SVGRectElement | null>(null)
+  const zoomTargetSvgRef = useRef<SVGRectElement | null>(null)
 
   const [zoom, setZoom] = useState<ZoomTransform | null>(null)
 
@@ -86,16 +86,20 @@ export function Chart({
     setZoom(null)
   }, [zoomLevels])
 
+  const zoomRef = useRef<ZoomRef>()
+
   useEffect(() => {
     if (!brushDomain) {
-      onBrushDomainChange(xScale.domain() as [number, number], undefined)
+      onBrushDomainChange([current * zoomLevels.initialMin, current * zoomLevels.initialMax], undefined)
+      zoomRef.current?.zoomReset()
     }
-  }, [brushDomain, onBrushDomainChange, xScale])
+  }, [current, brushDomain, onBrushDomainChange, zoomLevels])
 
   return (
     <>
       <Zoom
-        svg={zoomRef.current}
+        ref={zoomRef}
+        svg={zoomTargetSvgRef.current}
         xScale={xScale}
         setZoom={setZoom}
         width={innerWidth}
@@ -111,6 +115,8 @@ export function Chart({
         }}
         showResetButton={Boolean(ticksAtLimit[Bound.LOWER] || ticksAtLimit[Bound.UPPER])}
         zoomLevels={zoomLevels}
+        brushDomain={brushDomain}
+        currentPrice={current}
       />
       <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
         <defs>
@@ -162,7 +168,7 @@ export function Chart({
             <AxisBottom xScale={xScale} innerHeight={innerHeight} />
           </g>
 
-          <ZoomOverlay width={innerWidth} height={height} ref={zoomRef} />
+          <ZoomOverlay width={innerWidth} height={height} ref={zoomTargetSvgRef} />
 
           <Brush
             id={id}
