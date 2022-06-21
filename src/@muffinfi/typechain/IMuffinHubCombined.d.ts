@@ -2,14 +2,22 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { EventFragment, FunctionFragment, Result } from "@ethersproject/abi";
+import {
+  ethers,
+  EventFilter,
+  Signer,
+  BigNumber,
+  BigNumberish,
+  PopulatedTransaction,
+  BaseContract,
+  ContractTransaction,
+  Overrides,
+  CallOverrides,
+} from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
-import {
-  BaseContract, BigNumber,
-  BigNumberish, CallOverrides, ContractTransaction, ethers, Overrides, PopulatedTransaction, Signer
-} from "ethers";
-import { TypedEvent, TypedEventFilter, TypedListener } from "./commons";
+import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
+import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
   functions: {
@@ -21,23 +29,26 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     "createPool(address,address,uint24,uint128,uint256)": FunctionFragment;
     "deposit(address,uint256,address,uint256,bytes)": FunctionFragment;
     "getAllTiers(bytes32)": FunctionFragment;
+    "getDefaultAllowedSqrtGammas()": FunctionFragment;
     "getDefaultParameters()": FunctionFragment;
     "getLimitOrderTickSpacingMultipliers(bytes32)": FunctionFragment;
+    "getPoolAllowedSqrtGammas(bytes32)": FunctionFragment;
     "getPoolParameters(bytes32)": FunctionFragment;
     "getPosition(bytes32,address,uint256,uint8,int24,int24)": FunctionFragment;
     "getPositionFeeGrowthInside(bytes32,address,uint256,uint8,int24,int24)": FunctionFragment;
-    "getPositionSecondsPerLiquidityInside(bytes32,address,uint256,uint8,int24,int24)": FunctionFragment;
     "getSettlement(bytes32,uint8,int24,bool)": FunctionFragment;
     "getSettlementSnapshot(bytes32,uint8,int24,bool,uint32)": FunctionFragment;
-    "getTWAP(bytes32)": FunctionFragment;
     "getTick(bytes32,uint8,int24)": FunctionFragment;
     "getTier(bytes32,uint8)": FunctionFragment;
     "getTiersCount(bytes32)": FunctionFragment;
     "governance()": FunctionFragment;
+    "isSqrtGammaAllowed(bytes32,uint24)": FunctionFragment;
     "mint(tuple)": FunctionFragment;
+    "setDefaultAllowedSqrtGammas(uint24[])": FunctionFragment;
     "setDefaultParameters(uint8,uint8)": FunctionFragment;
     "setGovernance(address)": FunctionFragment;
     "setLimitOrderType(address,address,uint8,int24,int24,uint256,uint8)": FunctionFragment;
+    "setPoolAllowedSqrtGammas(bytes32,uint24[])": FunctionFragment;
     "setPoolParameters(bytes32,uint8,uint8)": FunctionFragment;
     "setTierParameters(bytes32,uint8,uint24,uint8)": FunctionFragment;
     "swap(address,address,uint256,int256,address,uint256,uint256,bytes)": FunctionFragment;
@@ -104,11 +115,19 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getDefaultAllowedSqrtGammas",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getDefaultParameters",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getLimitOrderTickSpacingMultipliers",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPoolAllowedSqrtGammas",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
@@ -138,17 +157,6 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPositionSecondsPerLiquidityInside",
-    values: [
-      BytesLike,
-      string,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getSettlement",
     values: [BytesLike, BigNumberish, BigNumberish, boolean]
   ): string;
@@ -156,7 +164,6 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     functionFragment: "getSettlementSnapshot",
     values: [BytesLike, BigNumberish, BigNumberish, boolean, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getTWAP", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "getTick",
     values: [BytesLike, BigNumberish, BigNumberish]
@@ -174,6 +181,10 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "isSqrtGammaAllowed",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "mint",
     values: [
       {
@@ -189,6 +200,10 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
         data: BytesLike;
       }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDefaultAllowedSqrtGammas",
+    values: [BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "setDefaultParameters",
@@ -209,6 +224,10 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
       BigNumberish,
       BigNumberish
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPoolAllowedSqrtGammas",
+    values: [BytesLike, BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "setPoolParameters",
@@ -272,11 +291,19 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getDefaultAllowedSqrtGammas",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getDefaultParameters",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getLimitOrderTickSpacingMultipliers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPoolAllowedSqrtGammas",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -292,10 +319,6 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPositionSecondsPerLiquidityInside",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getSettlement",
     data: BytesLike
   ): Result;
@@ -303,7 +326,6 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     functionFragment: "getSettlementSnapshot",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getTWAP", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getTick", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getTier", data: BytesLike): Result;
   decodeFunctionResult(
@@ -311,7 +333,15 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "governance", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isSqrtGammaAllowed",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setDefaultAllowedSqrtGammas",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setDefaultParameters",
     data: BytesLike
@@ -322,6 +352,10 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setLimitOrderType",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPoolAllowedSqrtGammas",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -353,7 +387,7 @@ interface IMuffinHubCombinedInterface extends ethers.utils.Interface {
     "Mint(bytes32,address,uint256,uint8,int24,int24,address,uint256,uint96,uint256,uint256)": EventFragment;
     "PoolCreated(address,address,bytes32)": EventFragment;
     "SetLimitOrderType(bytes32,address,uint256,uint8,int24,int24,uint8)": EventFragment;
-    "Swap(bytes32,address,address,uint256,uint256,int256,int256,uint256,uint256[])": EventFragment;
+    "Swap(bytes32,address,address,uint256,uint256,int256,int256,uint256,uint256,uint256[])": EventFragment;
     "UpdateDefaultParameters(uint8,uint8)": EventFragment;
     "UpdatePool(bytes32,uint8,uint8)": EventFragment;
     "UpdateTier(bytes32,uint8,uint24,uint8)": EventFragment;
@@ -514,6 +548,8 @@ export class IMuffinHubCombined extends BaseContract {
       ]
     >;
 
+    getDefaultAllowedSqrtGammas(overrides?: CallOverrides): Promise<[number[]]>;
+
     getDefaultParameters(
       overrides?: CallOverrides
     ): Promise<[number, number] & { tickSpacing: number; protocolFee: number }>;
@@ -522,6 +558,11 @@ export class IMuffinHubCombined extends BaseContract {
       poolId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[[number, number, number, number, number, number]]>;
+
+    getPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[number[]]>;
 
     getPoolParameters(
       poolId: BytesLike,
@@ -563,16 +604,6 @@ export class IMuffinHubCombined extends BaseContract {
       }
     >;
 
-    getPositionSecondsPerLiquidityInside(
-      poolId: BytesLike,
-      owner: string,
-      positionRefId: BigNumberish,
-      tierId: BigNumberish,
-      tickLower: BigNumberish,
-      tickUpper: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { secondsPerLiquidityInside: BigNumber }>;
-
     getSettlement(
       poolId: BytesLike,
       tierId: BigNumberish,
@@ -596,25 +627,11 @@ export class IMuffinHubCombined extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [BigNumber, BigNumber, BigNumber] & {
+        [BigNumber, BigNumber] & {
           feeGrowthInside0: BigNumber;
           feeGrowthInside1: BigNumber;
-          secondsPerLiquidityInside: BigNumber;
         }
       ]
-    >;
-
-    getTWAP(
-      poolId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<
-      [number, BigNumber, number, number, BigNumber] & {
-        lastUpdate: number;
-        tickCumulative: BigNumber;
-        tickEma20: number;
-        tickEma40: number;
-        secondsPerLiquidityCumulative: BigNumber;
-      }
     >;
 
     getTick(
@@ -632,7 +649,6 @@ export class IMuffinHubCombined extends BaseContract {
           boolean,
           boolean,
           BigNumber,
-          BigNumber,
           BigNumber
         ] & {
           liquidityLowerD8: BigNumber;
@@ -643,7 +659,6 @@ export class IMuffinHubCombined extends BaseContract {
           needSettle1: boolean;
           feeGrowthOutside0: BigNumber;
           feeGrowthOutside1: BigNumber;
-          secondsPerLiquidityOutside: BigNumber;
         }
       ]
     >;
@@ -683,6 +698,12 @@ export class IMuffinHubCombined extends BaseContract {
 
     governance(overrides?: CallOverrides): Promise<[string]>;
 
+    isSqrtGammaAllowed(
+      poolId: BytesLike,
+      sqrtGamma: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     mint(
       params: {
         token0: string;
@@ -696,6 +717,11 @@ export class IMuffinHubCombined extends BaseContract {
         senderAccRefId: BigNumberish;
         data: BytesLike;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setDefaultAllowedSqrtGammas(
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -718,6 +744,12 @@ export class IMuffinHubCombined extends BaseContract {
       tickUpper: BigNumberish,
       positionRefId: BigNumberish,
       limitOrderType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -874,6 +906,8 @@ export class IMuffinHubCombined extends BaseContract {
     })[]
   >;
 
+  getDefaultAllowedSqrtGammas(overrides?: CallOverrides): Promise<number[]>;
+
   getDefaultParameters(
     overrides?: CallOverrides
   ): Promise<[number, number] & { tickSpacing: number; protocolFee: number }>;
@@ -882,6 +916,11 @@ export class IMuffinHubCombined extends BaseContract {
     poolId: BytesLike,
     overrides?: CallOverrides
   ): Promise<[number, number, number, number, number, number]>;
+
+  getPoolAllowedSqrtGammas(
+    poolId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<number[]>;
 
   getPoolParameters(
     poolId: BytesLike,
@@ -921,16 +960,6 @@ export class IMuffinHubCombined extends BaseContract {
     }
   >;
 
-  getPositionSecondsPerLiquidityInside(
-    poolId: BytesLike,
-    owner: string,
-    positionRefId: BigNumberish,
-    tierId: BigNumberish,
-    tickLower: BigNumberish,
-    tickUpper: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   getSettlement(
     poolId: BytesLike,
     tierId: BigNumberish,
@@ -953,23 +982,9 @@ export class IMuffinHubCombined extends BaseContract {
     snapshotId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber] & {
       feeGrowthInside0: BigNumber;
       feeGrowthInside1: BigNumber;
-      secondsPerLiquidityInside: BigNumber;
-    }
-  >;
-
-  getTWAP(
-    poolId: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<
-    [number, BigNumber, number, number, BigNumber] & {
-      lastUpdate: number;
-      tickCumulative: BigNumber;
-      tickEma20: number;
-      tickEma40: number;
-      secondsPerLiquidityCumulative: BigNumber;
     }
   >;
 
@@ -987,7 +1002,6 @@ export class IMuffinHubCombined extends BaseContract {
       boolean,
       boolean,
       BigNumber,
-      BigNumber,
       BigNumber
     ] & {
       liquidityLowerD8: BigNumber;
@@ -998,7 +1012,6 @@ export class IMuffinHubCombined extends BaseContract {
       needSettle1: boolean;
       feeGrowthOutside0: BigNumber;
       feeGrowthOutside1: BigNumber;
-      secondsPerLiquidityOutside: BigNumber;
     }
   >;
 
@@ -1035,6 +1048,12 @@ export class IMuffinHubCombined extends BaseContract {
 
   governance(overrides?: CallOverrides): Promise<string>;
 
+  isSqrtGammaAllowed(
+    poolId: BytesLike,
+    sqrtGamma: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   mint(
     params: {
       token0: string;
@@ -1048,6 +1067,11 @@ export class IMuffinHubCombined extends BaseContract {
       senderAccRefId: BigNumberish;
       data: BytesLike;
     },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setDefaultAllowedSqrtGammas(
+    sqrtGammas: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1070,6 +1094,12 @@ export class IMuffinHubCombined extends BaseContract {
     tickUpper: BigNumberish,
     positionRefId: BigNumberish,
     limitOrderType: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setPoolAllowedSqrtGammas(
+    poolId: BytesLike,
+    sqrtGammas: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1145,7 +1175,7 @@ export class IMuffinHubCombined extends BaseContract {
       sqrtGamma: BigNumberish,
       senderAccRefId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<number>;
 
     burn(
       params: {
@@ -1240,6 +1270,8 @@ export class IMuffinHubCombined extends BaseContract {
       })[]
     >;
 
+    getDefaultAllowedSqrtGammas(overrides?: CallOverrides): Promise<number[]>;
+
     getDefaultParameters(
       overrides?: CallOverrides
     ): Promise<[number, number] & { tickSpacing: number; protocolFee: number }>;
@@ -1248,6 +1280,11 @@ export class IMuffinHubCombined extends BaseContract {
       poolId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[number, number, number, number, number, number]>;
+
+    getPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<number[]>;
 
     getPoolParameters(
       poolId: BytesLike,
@@ -1287,16 +1324,6 @@ export class IMuffinHubCombined extends BaseContract {
       }
     >;
 
-    getPositionSecondsPerLiquidityInside(
-      poolId: BytesLike,
-      owner: string,
-      positionRefId: BigNumberish,
-      tierId: BigNumberish,
-      tickLower: BigNumberish,
-      tickUpper: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getSettlement(
       poolId: BytesLike,
       tierId: BigNumberish,
@@ -1319,23 +1346,9 @@ export class IMuffinHubCombined extends BaseContract {
       snapshotId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber] & {
         feeGrowthInside0: BigNumber;
         feeGrowthInside1: BigNumber;
-        secondsPerLiquidityInside: BigNumber;
-      }
-    >;
-
-    getTWAP(
-      poolId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<
-      [number, BigNumber, number, number, BigNumber] & {
-        lastUpdate: number;
-        tickCumulative: BigNumber;
-        tickEma20: number;
-        tickEma40: number;
-        secondsPerLiquidityCumulative: BigNumber;
       }
     >;
 
@@ -1353,7 +1366,6 @@ export class IMuffinHubCombined extends BaseContract {
         boolean,
         boolean,
         BigNumber,
-        BigNumber,
         BigNumber
       ] & {
         liquidityLowerD8: BigNumber;
@@ -1364,7 +1376,6 @@ export class IMuffinHubCombined extends BaseContract {
         needSettle1: boolean;
         feeGrowthOutside0: BigNumber;
         feeGrowthOutside1: BigNumber;
-        secondsPerLiquidityOutside: BigNumber;
       }
     >;
 
@@ -1401,6 +1412,12 @@ export class IMuffinHubCombined extends BaseContract {
 
     governance(overrides?: CallOverrides): Promise<string>;
 
+    isSqrtGammaAllowed(
+      poolId: BytesLike,
+      sqrtGamma: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     mint(
       params: {
         token0: string;
@@ -1418,6 +1435,11 @@ export class IMuffinHubCombined extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
     >;
+
+    setDefaultAllowedSqrtGammas(
+      sqrtGammas: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setDefaultParameters(
       tickSpacing: BigNumberish,
@@ -1438,6 +1460,12 @@ export class IMuffinHubCombined extends BaseContract {
       tickUpper: BigNumberish,
       positionRefId: BigNumberish,
       limitOrderType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      sqrtGammas: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1704,12 +1732,14 @@ export class IMuffinHubCombined extends BaseContract {
       amount0?: null,
       amount1?: null,
       amountInDistribution?: null,
+      amountOutDistribution?: null,
       tierData?: null
     ): TypedEventFilter<
       [
         string,
         string,
         string,
+        BigNumber,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1726,6 +1756,7 @@ export class IMuffinHubCombined extends BaseContract {
         amount0: BigNumber;
         amount1: BigNumber;
         amountInDistribution: BigNumber;
+        amountOutDistribution: BigNumber;
         tierData: BigNumber[];
       }
     >;
@@ -1854,9 +1885,16 @@ export class IMuffinHubCombined extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getDefaultAllowedSqrtGammas(overrides?: CallOverrides): Promise<BigNumber>;
+
     getDefaultParameters(overrides?: CallOverrides): Promise<BigNumber>;
 
     getLimitOrderTickSpacingMultipliers(
+      poolId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPoolAllowedSqrtGammas(
       poolId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1886,16 +1924,6 @@ export class IMuffinHubCombined extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPositionSecondsPerLiquidityInside(
-      poolId: BytesLike,
-      owner: string,
-      positionRefId: BigNumberish,
-      tierId: BigNumberish,
-      tickLower: BigNumberish,
-      tickUpper: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getSettlement(
       poolId: BytesLike,
       tierId: BigNumberish,
@@ -1912,8 +1940,6 @@ export class IMuffinHubCombined extends BaseContract {
       snapshotId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getTWAP(poolId: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     getTick(
       poolId: BytesLike,
@@ -1935,6 +1961,12 @@ export class IMuffinHubCombined extends BaseContract {
 
     governance(overrides?: CallOverrides): Promise<BigNumber>;
 
+    isSqrtGammaAllowed(
+      poolId: BytesLike,
+      sqrtGamma: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     mint(
       params: {
         token0: string;
@@ -1948,6 +1980,11 @@ export class IMuffinHubCombined extends BaseContract {
         senderAccRefId: BigNumberish;
         data: BytesLike;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setDefaultAllowedSqrtGammas(
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1970,6 +2007,12 @@ export class IMuffinHubCombined extends BaseContract {
       tickUpper: BigNumberish,
       positionRefId: BigNumberish,
       limitOrderType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2102,11 +2145,20 @@ export class IMuffinHubCombined extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getDefaultAllowedSqrtGammas(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getDefaultParameters(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getLimitOrderTickSpacingMultipliers(
+      poolId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getPoolAllowedSqrtGammas(
       poolId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2136,16 +2188,6 @@ export class IMuffinHubCombined extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPositionSecondsPerLiquidityInside(
-      poolId: BytesLike,
-      owner: string,
-      positionRefId: BigNumberish,
-      tierId: BigNumberish,
-      tickLower: BigNumberish,
-      tickUpper: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getSettlement(
       poolId: BytesLike,
       tierId: BigNumberish,
@@ -2160,11 +2202,6 @@ export class IMuffinHubCombined extends BaseContract {
       tick: BigNumberish,
       isToken0LimitOrder: boolean,
       snapshotId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTWAP(
-      poolId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2188,6 +2225,12 @@ export class IMuffinHubCombined extends BaseContract {
 
     governance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    isSqrtGammaAllowed(
+      poolId: BytesLike,
+      sqrtGamma: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     mint(
       params: {
         token0: string;
@@ -2201,6 +2244,11 @@ export class IMuffinHubCombined extends BaseContract {
         senderAccRefId: BigNumberish;
         data: BytesLike;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setDefaultAllowedSqrtGammas(
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2223,6 +2271,12 @@ export class IMuffinHubCombined extends BaseContract {
       tickUpper: BigNumberish,
       positionRefId: BigNumberish,
       limitOrderType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPoolAllowedSqrtGammas(
+      poolId: BytesLike,
+      sqrtGammas: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -26,10 +26,11 @@ interface ManagerInterface extends ethers.utils.Interface {
     "PERMIT_TYPEHASH()": FunctionFragment;
     "WETH9()": FunctionFragment;
     "addLiquidity(tuple)": FunctionFragment;
+    "addTier(address,address,uint24,bool,uint8)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256[])": FunctionFragment;
-    "createPool(address,address,uint24,uint128)": FunctionFragment;
+    "createPool(address,address,uint24,uint128,bool)": FunctionFragment;
     "deposit(address,address,uint256)": FunctionFragment;
     "depositCallback(address,uint256,bytes)": FunctionFragment;
     "depositToExternal(address,uint256,address,uint256)": FunctionFragment;
@@ -41,6 +42,7 @@ interface ManagerInterface extends ethers.utils.Interface {
     "getPosition(uint256)": FunctionFragment;
     "hub()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "latestTokenId()": FunctionFragment;
     "mint(tuple)": FunctionFragment;
     "mintCallback(address,address,uint256,uint256,bytes)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
@@ -95,6 +97,10 @@ interface ManagerInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "addTier",
+    values: [string, string, BigNumberish, boolean, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
   ): string;
@@ -105,7 +111,7 @@ interface ManagerInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createPool",
-    values: [string, string, BigNumberish, BigNumberish]
+    values: [string, string, BigNumberish, BigNumberish, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "deposit",
@@ -183,6 +189,10 @@ interface ManagerInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "latestTokenId",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
@@ -347,6 +357,7 @@ interface ManagerInterface extends ethers.utils.Interface {
     functionFragment: "addLiquidity",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addTier", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
@@ -381,6 +392,10 @@ interface ManagerInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "hub", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "latestTokenId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -536,6 +551,15 @@ export class Manager extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    addTier(
+      token0: string,
+      token1: string,
+      sqrtGamma: BigNumberish,
+      useAccount: boolean,
+      expectedTierId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -554,6 +578,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
+      useAccount: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -674,6 +699,10 @@ export class Manager extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    latestTokenId(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { tokenId: BigNumber }>;
 
     mint(
       params: {
@@ -829,9 +858,9 @@ export class Manager extends BaseContract {
 
     swapCallback(
       tokenIn: string,
-      tokenOut: string,
+      arg1: string,
       amountIn: BigNumberish,
-      amountOut: BigNumberish,
+      arg3: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -888,6 +917,15 @@ export class Manager extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  addTier(
+    token0: string,
+    token1: string,
+    sqrtGamma: BigNumberish,
+    useAccount: boolean,
+    expectedTierId: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   approve(
     to: string,
     tokenId: BigNumberish,
@@ -906,6 +944,7 @@ export class Manager extends BaseContract {
     token1: string,
     sqrtGamma: BigNumberish,
     sqrtPrice: BigNumberish,
+    useAccount: boolean,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1026,6 +1065,8 @@ export class Manager extends BaseContract {
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  latestTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     params: {
@@ -1175,9 +1216,9 @@ export class Manager extends BaseContract {
 
   swapCallback(
     tokenIn: string,
-    tokenOut: string,
+    arg1: string,
     amountIn: BigNumberish,
-    amountOut: BigNumberish,
+    arg3: BigNumberish,
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1237,6 +1278,15 @@ export class Manager extends BaseContract {
       }
     >;
 
+    addTier(
+      token0: string,
+      token1: string,
+      sqrtGamma: BigNumberish,
+      useAccount: boolean,
+      expectedTierId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1252,6 +1302,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
+      useAccount: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1372,6 +1423,8 @@ export class Manager extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    latestTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       params: {
@@ -1533,9 +1586,9 @@ export class Manager extends BaseContract {
 
     swapCallback(
       tokenIn: string,
-      tokenOut: string,
+      arg1: string,
       amountIn: BigNumberish,
-      amountOut: BigNumberish,
+      arg3: BigNumberish,
       data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1619,6 +1672,15 @@ export class Manager extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    addTier(
+      token0: string,
+      token1: string,
+      sqrtGamma: BigNumberish,
+      useAccount: boolean,
+      expectedTierId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1637,6 +1699,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
+      useAccount: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1727,6 +1790,8 @@ export class Manager extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    latestTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       params: {
@@ -1871,9 +1936,9 @@ export class Manager extends BaseContract {
 
     swapCallback(
       tokenIn: string,
-      tokenOut: string,
+      arg1: string,
       amountIn: BigNumberish,
-      amountOut: BigNumberish,
+      arg3: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1931,6 +1996,15 @@ export class Manager extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    addTier(
+      token0: string,
+      token1: string,
+      sqrtGamma: BigNumberish,
+      useAccount: boolean,
+      expectedTierId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1952,6 +2026,7 @@ export class Manager extends BaseContract {
       token1: string,
       sqrtGamma: BigNumberish,
       sqrtPrice: BigNumberish,
+      useAccount: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2042,6 +2117,8 @@ export class Manager extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    latestTokenId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       params: {
@@ -2192,9 +2269,9 @@ export class Manager extends BaseContract {
 
     swapCallback(
       tokenIn: string,
-      tokenOut: string,
+      arg1: string,
       amountIn: BigNumberish,
-      amountOut: BigNumberish,
+      arg3: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

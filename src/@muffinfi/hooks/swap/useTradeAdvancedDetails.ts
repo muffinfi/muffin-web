@@ -3,7 +3,7 @@ import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { CallStateResult, useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 
-import { useQuoterContract } from '../useContract'
+import { useLensContract } from '../useContract'
 
 const allResultsExist = (results: (CallStateResult | undefined)[]): results is CallStateResult[] => {
   return results.every((result) => result != null)
@@ -34,7 +34,7 @@ export function useTradeAdvancedDetails<TInput extends Currency>(
     })
   }, [trade])
 
-  const callstates = useSingleContractWithCallData(useQuoterContract(), calldatas)
+  const callstates = useSingleContractWithCallData(useLensContract(), calldatas)
 
   return useMemo(() => {
     if (trade == null) return {}

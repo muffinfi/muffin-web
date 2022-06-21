@@ -1,12 +1,12 @@
 import { Trans } from '@lingui/macro'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPositionByTokenId } from '@muffinfi/hooks/useDerivedPosition'
+import { useFeeTierOptions } from '@muffinfi/hooks/useFeeTierOptions'
+import { usePoolDefaultParameters } from '@muffinfi/hooks/usePoolDefaultParameters'
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
 import {
-  DEFAULT_TICK_SPACING,
   encodeSqrtPriceX72,
   isSqrtPriceSupported,
-  isValidFirstTierSqrtGamma,
   isValidSqrtGamma,
   MAX_TICK,
   MIN_TICK,
@@ -113,12 +113,14 @@ export default function AddLiquidity({
     [currencyA, currencyB]
   )
 
+  const [defaultTickSpacing] = usePoolDefaultParameters()
+
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
   const [tierId] = pool?.getTierBySqrtGamma(sqrtGamma) || []
   const isCreatingPool = poolState === PoolState.NOT_EXISTS
   const isInvalidPool = poolState === PoolState.INVALID
-  const tickSpacing = poolState === PoolState.NOT_EXISTS ? DEFAULT_TICK_SPACING : pool?.tickSpacing
+  const tickSpacing = poolState === PoolState.NOT_EXISTS ? defaultTickSpacing : pool?.tickSpacing
 
   // wrap native currencies to tokens and sort them
   const tokenA = currencyA?.wrapped
@@ -214,6 +216,9 @@ export default function AddLiquidity({
    *                        MOCK POOL AND TIER
    *====================================================================*/
 
+  const [, allowedSqrtGammas] = useFeeTierOptions(currencyA, currencyB)
+  const isValidSqrtGamma = allowedSqrtGammas?.indexOf(sqrtGamma ?? -1) !== -1
+
   /**
    * Return existing pool and tier if they exists
    * Mock one if pool does not exist
@@ -226,14 +231,14 @@ export default function AddLiquidity({
       return tierId !== -1 && tier ? { mockPool: pool, mockTier: tier, mockTierId: tierId } : {}
     }
     // if pool does not exist:
-    if (tokenA && tokenB && tickSpacing && isValidFirstTierSqrtGamma(sqrtGamma) && price && !isInvalidPrice) {
+    if (tokenA && tokenB && tickSpacing && sqrtGamma && isValidSqrtGamma && price && !isInvalidPrice) {
       const parsedSqrtPrice = TickMath.tickToSqrtPriceX72(priceToClosestTick(price))
       const mockTier = new Tier(tokenA, tokenB, 0, parsedSqrtPrice, sqrtGamma, MIN_TICK, MAX_TICK) // empty liquidity
       const mockPool = new Pool(tokenA, tokenB, tickSpacing, [mockTier])
       return { mockPool, mockTier, mockTierId: 0 }
     }
     return {}
-  }, [pool, poolState, tokenA, tokenB, sqrtGamma, tickSpacing, isInvalidPrice, price])
+  }, [pool, poolState, tokenA, tokenB, sqrtGamma, tickSpacing, isValidSqrtGamma, isInvalidPrice, price])
 
   /*=====================================================================
    *                       PARSED TOKEN AMOUNTS
@@ -732,6 +737,8 @@ export default function AddLiquidity({
             <TierSelector
               disabled={!quoteCurrency || !baseCurrency}
               pool={pool ?? undefined}
+              currencyA={currencyA}
+              currencyB={currencyB}
               sqrtGammaSelected={sqrtGamma}
               showNotCreated
               handleTierSelect={handleTierSelect}

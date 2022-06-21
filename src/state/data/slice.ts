@@ -5,16 +5,17 @@ import { DocumentNode } from 'graphql'
 import { ClientError, gql, GraphQLClient } from 'graphql-request'
 import { AppState } from 'state'
 
+// TODO:
 // List of supported subgraphs. Note that the app currently only support one active subgraph at a time
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
-  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
-  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/virtues-milkier/muffin-rinkeby',
+  // [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
+  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/dkenw/muffin-rinkeby',
 
-  [SupportedChainId.ARBITRUM_ONE]: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
+  // [SupportedChainId.ARBITRUM_ONE]: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
 
-  [SupportedChainId.OPTIMISM]: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-optimism-dev',
+  // [SupportedChainId.OPTIMISM]: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-optimism-dev',
 
-  [SupportedChainId.POLYGON]: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon',
+  // [SupportedChainId.POLYGON]: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon',
 }
 
 export const api = createApi({
