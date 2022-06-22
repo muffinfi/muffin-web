@@ -256,9 +256,9 @@ export default function CurrencyInputPanel({
                   </M.TextContents>
                 </LoadingOpacityContainer>
               </M.RowBetween>
-            ) : (
+            ) : !hideInput ? (
               <div style={{ height: 17 }} />
-            )}
+            ) : null}
           </M.Column>
         </Container>
 

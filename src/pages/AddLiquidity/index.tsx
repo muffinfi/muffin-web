@@ -22,6 +22,7 @@ import {
 } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
@@ -117,10 +118,12 @@ export default function AddLiquidity({
 
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
-  const [tierId] = pool?.getTierBySqrtGamma(sqrtGamma) || []
+  const [tierId, tier] = pool?.getTierBySqrtGamma(sqrtGamma) || []
+
   const isCreatingPool = poolState === PoolState.NOT_EXISTS
   const isInvalidPool = poolState === PoolState.INVALID
   const tickSpacing = poolState === PoolState.NOT_EXISTS ? defaultTickSpacing : pool?.tickSpacing
+  const isAddingTier = Boolean(pool && sqrtGamma && !tier)
 
   // wrap native currencies to tokens and sort them
   const tokenA = currencyA?.wrapped
@@ -138,12 +141,18 @@ export default function AddLiquidity({
 
   const { startPriceTypedValue } = useV3MintState()
 
-  // ger current pool price if pool exists, otherwise derive from input fields
+  // get tier's current price.
+  // - if pool exists but fee tier is not selected, return undefined
+  // - if tier exists, return tier's price
+  // - if first tier exists, return first tier's price
+  // - otherwise, derive price from input fields
   const price = useMemo(() => {
-    if (poolState !== PoolState.NOT_EXISTS && pool) {
-      // get the amount of quote currency, return undefined if tier is not found (i.e. wrong sqrt gamma)
-      const [, tier] = pool.getTierBySqrtGamma(sqrtGamma)
-      return tier && token0 ? tier.priceOf(token0) : undefined
+    if (!token0) return undefined
+
+    if (pool) {
+      if (!sqrtGamma) return undefined
+      if (tier) return tier.priceOf(token0)
+      if (pool.tiers[0]) return pool.tiers[0].priceOf(token0)
     }
 
     const quoteAmount = tryParseAmount(startPriceTypedValue, invertPrice ? token0 : token1)
@@ -152,7 +161,7 @@ export default function AddLiquidity({
 
     const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
     return invertPrice ? price?.invert() : price
-  }, [poolState, pool, sqrtGamma, token0, token1, invertPrice, startPriceTypedValue])
+  }, [pool, tier, sqrtGamma, token0, token1, invertPrice, startPriceTypedValue])
 
   // check for invalid price input (converts to invalid ratio)
   const isInvalidPrice = useMemo(
@@ -228,15 +237,27 @@ export default function AddLiquidity({
     // if pool exists:
     if (poolState !== PoolState.NOT_EXISTS && pool) {
       const [tierId, tier] = pool.getTierBySqrtGamma(sqrtGamma)
-      return tierId !== -1 && tier ? { mockPool: pool, mockTier: tier, mockTierId: tierId } : {}
+      // if tier exists:
+      if (tierId !== -1 && tier) {
+        return { mockPool: pool, mockTier: tier, mockTierId: tierId }
+      }
+      // if tier does not exists, create mock pool and mock tier:
+      if (sqrtGamma && isValidSqrtGamma) {
+        const firstTierSqrtPrice = pool.tiers[0].sqrtPriceX72
+        const mockTier = new Tier(pool.token0, pool.token1, 0, firstTierSqrtPrice, sqrtGamma, MIN_TICK, MAX_TICK) // empty liquidity
+        const mockPool = new Pool(pool.token0, pool.token1, pool.tickSpacing, [...pool.tiers, mockTier])
+        return { mockPool, mockTier, mockTierId: mockPool.tiers.length - 1 }
+      }
+    } else {
+      // if pool does not exist, create mock pool and mock tier:
+      if (tokenA && tokenB && tickSpacing && sqrtGamma && isValidSqrtGamma && price && !isInvalidPrice) {
+        const parsedSqrtPrice = TickMath.tickToSqrtPriceX72(priceToClosestTick(price))
+        const mockTier = new Tier(tokenA, tokenB, 0, parsedSqrtPrice, sqrtGamma, MIN_TICK, MAX_TICK) // empty liquidity
+        const mockPool = new Pool(tokenA, tokenB, tickSpacing, [mockTier])
+        return { mockPool, mockTier, mockTierId: 0 }
+      }
     }
-    // if pool does not exist:
-    if (tokenA && tokenB && tickSpacing && sqrtGamma && isValidSqrtGamma && price && !isInvalidPrice) {
-      const parsedSqrtPrice = TickMath.tickToSqrtPriceX72(priceToClosestTick(price))
-      const mockTier = new Tier(tokenA, tokenB, 0, parsedSqrtPrice, sqrtGamma, MIN_TICK, MAX_TICK) // empty liquidity
-      const mockPool = new Pool(tokenA, tokenB, tickSpacing, [mockTier])
-      return { mockPool, mockTier, mockTierId: 0 }
-    }
+    // otherwise, return null
     return {}
   }, [pool, poolState, tokenA, tokenB, sqrtGamma, tickSpacing, isValidSqrtGamma, isInvalidPrice, price])
 
@@ -449,10 +470,8 @@ export default function AddLiquidity({
    *                        FIELD STATE ACTIONS
    *====================================================================*/
 
-  const noLiquidity = isCreatingPool
-
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
-    useV3MintActionHandlers(noLiquidity)
+    useV3MintActionHandlers(isCreatingPool)
 
   // const clearAll = useCallback(() => {
   //   onFieldAInput('')
@@ -600,7 +619,9 @@ export default function AddLiquidity({
 
     const isTokenAt0 = position.amount0.currency.equals(currencyA)
     const { calldata, value } = PositionManager.addCallParameters(position, {
-      ...(hasExistingPosition && tokenId ? { tokenId } : { recipient: account, createPool: noLiquidity }),
+      ...(hasExistingPosition && tokenId
+        ? { tokenId }
+        : { recipient: account, createPool: isCreatingPool, createTier: isAddingTier }),
       useAccount,
       slippageTolerance,
       useNative,
@@ -630,7 +651,7 @@ export default function AddLiquidity({
 
       addTransaction(response, {
         type: TransactionType.ADD_LIQUIDITY_MUFFIN,
-        createPool: Boolean(noLiquidity),
+        createPool: Boolean(isCreatingPool),
         baseCurrencyId: currencyId(baseCurrency),
         quoteCurrencyId: currencyId(quoteCurrency),
         tierId: position.tierId,
@@ -648,6 +669,8 @@ export default function AddLiquidity({
     } catch (error) {
       setIsAttemptingTxn(false)
       console.error('Failed to send transaction', error)
+      // for debugging
+      console.log(decodeManagerFunctionData(calldata, value))
     }
   }, [
     chainId,
@@ -665,7 +688,8 @@ export default function AddLiquidity({
     currencyA,
     hasExistingPosition,
     tokenId,
-    noLiquidity,
+    isCreatingPool,
+    isAddingTier,
     slippageTolerance,
     permitSignatures,
     argentWalletContract,
@@ -695,7 +719,7 @@ export default function AddLiquidity({
     tokenId == null &&
     !hasExistingPosition && (
       <M.SectionCard greedyMargin>
-        <M.Column stretch gap="24px">
+        <M.Column stretch gap="32px">
           <M.Column stretch gap="8px">
             <M.Text weight="semibold">
               <Trans>Select Token Pair</Trans>
@@ -753,7 +777,7 @@ export default function AddLiquidity({
     !hasExistingPosition &&
     sqrtGamma != null &&
     !isInvalidPool &&
-    noLiquidity && (
+    isCreatingPool && (
       <M.SectionCard greedyMargin>
         <M.Column stretch gap="24px">
           <M.RowBetween>
@@ -828,12 +852,12 @@ export default function AddLiquidity({
               </M.Text>
             </M.Row>
 
-            {noLiquidity ? null : (
+            {isCreatingPool ? null : (
               <LiquidityChartRangeInput
                 currencyA={baseCurrency ?? undefined}
                 currencyB={quoteCurrency ?? undefined}
                 pool={pool || undefined}
-                tierId={tierId}
+                tierId={isAddingTier ? 0 : tierId}
                 ticksAtLimit={areTicksAtLimit}
                 price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
                 priceLower={priceLower}
