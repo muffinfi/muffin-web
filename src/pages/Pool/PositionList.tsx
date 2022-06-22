@@ -35,7 +35,7 @@ export default function PositionList({
             {positions && ` (${positions.length})`}
           </M.Text>
 
-          <M.TextDiv size="sm" color="text2">
+          <M.TextDiv size="xs" color="text2">
             <M.Row gap="0.5em" as="label">
               <input
                 type="checkbox"

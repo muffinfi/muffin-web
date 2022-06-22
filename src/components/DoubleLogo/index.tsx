@@ -18,7 +18,7 @@ const LogoBottom = styled(CurrencyLogo)``
  * Logo at the top and at the right side
  */
 const LogoTop = styled(CurrencyLogo)<{ $margin: boolean }>`
-  margin-left: ${({ $margin }) => ($margin ? '-0.35em' : '0')};
+  margin-left: ${({ $margin }) => ($margin ? '-0.25em' : '0')};
 `
 
 interface DoubleCurrencyLogoProps {
