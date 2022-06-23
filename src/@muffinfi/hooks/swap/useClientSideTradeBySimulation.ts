@@ -1,6 +1,7 @@
-import { Route, SwapQuoter } from '@muffinfi/muffin-v1-sdk'
+import { getTradeMarginalPrice, Hop, Route, SwapQuoter } from '@muffinfi/muffin-v1-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
-import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
+import { ILens } from '@muffinfi/typechain'
+import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
@@ -24,21 +25,20 @@ const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
  * @param amountSpecified the exact amount to swap in/out
  * @param otherCurrency the desired output/payment currency
  */
-export function useClientSideMuffinTrade<TTradeType extends TradeType>(
+export function useClientSideMuffinTradeBySimulation<TTradeType extends TradeType>(
   tradeType: TTradeType,
   amountSpecified: CurrencyAmount<Currency> | undefined,
   otherCurrency: Currency | undefined
 ): {
   state: TradeState
-  trade: InterfaceTrade<Currency, Currency, TTradeType> | undefined
+  trade?: InterfaceTrade<Currency, Currency, TTradeType>
+  hops?: Hop[]
+  marginalPrice?: Price<Currency, Currency>
 } {
-  const [currencyIn, currencyOut] = useMemo(
-    () =>
-      tradeType === TradeType.EXACT_INPUT
-        ? [amountSpecified?.currency, otherCurrency]
-        : [otherCurrency, amountSpecified?.currency],
-    [tradeType, amountSpecified, otherCurrency]
-  )
+  const [currencyIn, currencyOut] =
+    tradeType === TradeType.EXACT_INPUT
+      ? [amountSpecified?.currency, otherCurrency]
+      : [otherCurrency, amountSpecified?.currency]
 
   // make a list of swap routes for currencyIn and currencyOut
   const { routes, loading: routesLoading } = useAllMuffinRoutes(currencyIn, currencyOut)
@@ -46,7 +46,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
   // prepare quoter calldatas
   const calldatas = useMemo(() => {
     return routes && amountSpecified
-      ? routes.map((route) => SwapQuoter.quoteCallParameters(route, amountSpecified, tradeType).calldata)
+      ? routes.map((route) => SwapQuoter.simulateCallParameters(route, amountSpecified, tradeType).calldata)
       : []
   }, [routes, amountSpecified, tradeType])
 
@@ -69,30 +69,29 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
       callstates.some(({ valid }) => !valid) ||
       amountSpecified.currency.equals(tradeType === TradeType.EXACT_INPUT ? currencyOut : currencyIn) // skip when tokens are the same
     ) {
-      return {
-        state: TradeState.INVALID,
-        trade: undefined,
-      }
+      return { state: TradeState.INVALID }
     }
 
     if (!routes || routesLoading || callstates.some(({ loading }) => loading)) {
-      return {
-        state: TradeState.LOADING,
-        trade: undefined,
-      }
+      return { state: TradeState.LOADING }
     }
 
-    const { bestRoute, amountIn, amountOut } = callstates.reduce<{
+    const results = callstates.map(({ result }) => result) as (
+      | Awaited<ReturnType<ILens['functions']['simulate']>>
+      | undefined
+    )[]
+
+    const { bestRoute, amountIn, amountOut, hops } = results.reduce<{
       bestRoute?: Route<Currency, Currency>
       amountIn?: CurrencyAmount<Currency>
       amountOut?: CurrencyAmount<Currency>
-      // gasUsed: BigNumber | null
-    }>((currentBest, { result }, i) => {
+      hops?: Hop[]
+    }>((currentBest, result, i) => {
       if (!result) return currentBest
 
+      // TODO: consider gas cost
       const amountIn = CurrencyAmount.fromRawAmount(currencyIn, result.amountIn.toString())
       const amountOut = CurrencyAmount.fromRawAmount(currencyOut, result.amountOut.toString())
-      // const gasUsed = result.gasUsed // FIXME: consider gas cost. Check useSwapSlippageTolerance.ts
 
       if (tradeType === TradeType.EXACT_INPUT) {
         if (currentBest.amountOut == null || currentBest.amountOut.lessThan(amountOut)) {
@@ -100,7 +99,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
             bestRoute: routes[i],
             amountIn: amountSpecified,
             amountOut,
-            // gasUsed,
+            hops: result.hops,
           }
         }
       } else {
@@ -109,7 +108,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
             bestRoute: routes[i],
             amountIn,
             amountOut: amountSpecified,
-            // gasUsed,
+            hops: result.hops,
           }
         }
       }
@@ -117,11 +116,8 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
       return currentBest
     }, {})
 
-    if (!bestRoute || !amountIn || !amountOut) {
-      return {
-        state: TradeState.NO_ROUTE_FOUND,
-        trade: undefined,
-      }
+    if (!bestRoute || !amountIn || !amountOut || !hops) {
+      return { state: TradeState.NO_ROUTE_FOUND }
     }
 
     // const gasCost = gasPrice && gasUsed ? JSBI.multiply(gasPrice, JSBI.BigInt(gasUsed.toString())) : undefined
@@ -130,19 +126,18 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
     //     ? nativeCurrencyPrice.quote(CurrencyAmount.fromRawAmount(nativeCurrency, gasCost))
     //     : undefined
 
+    const trade = new InterfaceTrade({
+      gasUseEstimateUSD: undefined,
+      routes: [{ route: bestRoute, inputAmount: amountIn, outputAmount: amountOut }],
+      tradeType,
+    })
+    const marginalPrice = getTradeMarginalPrice(trade, [hops])
+
     return {
       state: TradeState.VALID,
-      trade: new InterfaceTrade({
-        gasUseEstimateUSD: undefined,
-        routes: [
-          {
-            route: bestRoute,
-            inputAmount: amountIn,
-            outputAmount: amountOut,
-          },
-        ],
-        tradeType,
-      }),
+      trade,
+      hops,
+      marginalPrice,
     }
   }, [amountSpecified, currencyIn, currencyOut, callstates, routes, routesLoading, tradeType])
 }

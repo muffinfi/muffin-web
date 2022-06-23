@@ -1,4 +1,4 @@
-import { useClientSideMuffinTrade } from '@muffinfi/hooks/swap/useClientSideTrade'
+import { useClientSideMuffinTradeBySimulation } from '@muffinfi/hooks/swap/useClientSideTradeBySimulation'
 import { Currency, CurrencyAmount, Price, Token, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -13,7 +13,7 @@ export const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> }
   [SupportedChainId.MAINNET]: CurrencyAmount.fromRawAmount(USDC_MAINNET, 100_000e6),
   [SupportedChainId.ARBITRUM_ONE]: CurrencyAmount.fromRawAmount(USDC_ARBITRUM, 10_000e6),
   [SupportedChainId.OPTIMISM]: CurrencyAmount.fromRawAmount(DAI_OPTIMISM, 10_000e18),
-  [SupportedChainId.RINKEBY]: CurrencyAmount.fromRawAmount(USDC_RINKEBY, 10_000e18),
+  [SupportedChainId.RINKEBY]: CurrencyAmount.fromRawAmount(USDC_RINKEBY, 1e6), // 10_000e6),
   [SupportedChainId.POLYGON]: CurrencyAmount.fromRawAmount(USDC_POLYGON, 10_000e6),
 }
 
@@ -29,7 +29,10 @@ export default function useUSDCPrice(currency?: Currency): Price<Currency, Token
   const amountOut = chainId ? STABLECOIN_AMOUNT_OUT[chainId] : undefined
   const stablecoin = amountOut?.currency
 
-  const { trade: usdcTrade } = useClientSideMuffinTrade(TradeType.EXACT_OUTPUT, amountOut, currency)
+  // const { trade: usdcTrade } = useClientSideMuffinTrade(TradeType.EXACT_OUTPUT, amountOut, currency)
+  // const { price } = useTradeMarginalPrice(usdcTrade)
+
+  const { marginalPrice: price } = useClientSideMuffinTradeBySimulation(TradeType.EXACT_OUTPUT, amountOut, currency)
 
   return useMemo(() => {
     if (!currency || !stablecoin) {
@@ -38,13 +41,11 @@ export default function useUSDCPrice(currency?: Currency): Price<Currency, Token
     if (currency?.wrapped.equals(stablecoin)) {
       return new Price(stablecoin, stablecoin, '1', '1')
     }
-    if (!usdcTrade) {
+    if (!price) {
       return undefined
     }
-
-    const price = usdcTrade.swaps[0].route.impreciseMidPrice
     return new Price(currency, stablecoin, price.denominator, price.numerator)
-  }, [currency, stablecoin, usdcTrade])
+  }, [currency, stablecoin, price])
 }
 
 export function useUSDCValue(currencyAmount: CurrencyAmount<Currency> | undefined | null) {
