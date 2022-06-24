@@ -248,7 +248,9 @@ export default function CurrencyInputPanel({
                       )
                     ) : null}
                   </>
-                ) : null}
+                ) : (
+                  <div /> // spacer
+                )}
 
                 <LoadingOpacityContainer $loading={loading}>
                   <M.TextContents size="sm">
