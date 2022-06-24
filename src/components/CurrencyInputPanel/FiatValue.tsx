@@ -11,20 +11,21 @@ import { MouseoverTooltip } from '../Tooltip'
 
 export function FiatValue({
   fiatValue,
-  priceImpact,
+  fiatValueDiscount,
 }: {
   fiatValue: CurrencyAmount<Currency> | null | undefined
-  priceImpact?: Percent
+  fiatValueDiscount?: Percent
 }) {
   const theme = useTheme()
-  const priceImpactColor = useMemo(() => {
-    if (!priceImpact) return undefined
-    if (priceImpact.lessThan('0')) return theme.green1
-    const severity = warningSeverity(priceImpact)
+
+  const discountColor = useMemo(() => {
+    if (!fiatValueDiscount) return undefined
+    if (fiatValueDiscount.lessThan('0')) return theme.green1
+    const severity = warningSeverity(fiatValueDiscount)
     if (severity < 1) return theme.text3
     if (severity < 3) return theme.yellow1
     return theme.red1
-  }, [priceImpact, theme.green1, theme.red1, theme.text3, theme.yellow1])
+  }, [fiatValueDiscount, theme.green1, theme.red1, theme.text3, theme.yellow1])
 
   return (
     <M.Text color="text2">
@@ -34,11 +35,12 @@ export function FiatValue({
           <HoverInlineText text={fiatValue?.toSignificant(6, { groupSeparator: ',' })} />
         </Trans>
       ) : null}
-      {priceImpact ? (
-        <M.Text size="xs" style={{ color: priceImpactColor }}>
+
+      {fiatValueDiscount ? (
+        <M.Text size="xs" style={{ color: discountColor }}>
           &nbsp;&nbsp;
           <MouseoverTooltip text={t`The estimated difference between the USD values of input and output amounts.`}>
-            (<Trans>{priceImpact?.multiply(-1).toSignificant(3)}%</Trans>)
+            (<Trans>{fiatValueDiscount?.multiply(-1).toSignificant(3)}%</Trans>)
           </MouseoverTooltip>
         </M.Text>
       ) : null}

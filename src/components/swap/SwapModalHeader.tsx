@@ -111,7 +111,7 @@ export default function SwapModalHeader({
             <M.TextContents size="sm">
               <FiatValue
                 fiatValue={fiatValueOutput}
-                priceImpact={computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)}
+                fiatValueDiscount={computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)}
               />
             </M.TextContents>
           </M.Column>
