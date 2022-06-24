@@ -21,12 +21,17 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface ILensInterface extends ethers.utils.Interface {
   functions: {
     "getDerivedPosition(uint256)": FunctionFragment;
-    "getFeeAmounts(tuple,tuple)": FunctionFragment;
+    "getFeeAmounts(uint256,tuple,tuple)": FunctionFragment;
+    "getPoolId(address,address)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
     "getUnderlyingAmounts(tuple,tuple,bool)": FunctionFragment;
     "hub()": FunctionFragment;
     "isSettled(tuple,tuple)": FunctionFragment;
     "manager()": FunctionFragment;
+    "quote(bytes,int256)": FunctionFragment;
+    "quoteSingle(address,address,uint256,int256)": FunctionFragment;
+    "simulate(bytes,int256)": FunctionFragment;
+    "simulateSingle(address,address,uint256,int256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -36,6 +41,7 @@ interface ILensInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getFeeAmounts",
     values: [
+      BigNumberish,
       {
         owner: string;
         token0: string;
@@ -52,6 +58,10 @@ interface ILensInterface extends ethers.utils.Interface {
         settlementSnapshotId: BigNumberish;
       }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPoolId",
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getPosition",
@@ -100,6 +110,22 @@ interface ILensInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "manager", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "quote",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "quoteSingle",
+    values: [string, string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "simulate",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "simulateSingle",
+    values: [string, string, BigNumberish, BigNumberish]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "getDerivedPosition",
@@ -109,6 +135,7 @@ interface ILensInterface extends ethers.utils.Interface {
     functionFragment: "getFeeAmounts",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getPoolId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPosition",
     data: BytesLike
@@ -120,6 +147,16 @@ interface ILensInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "hub", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isSettled", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "manager", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "quote", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "quoteSingle",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "simulate", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "simulateSingle",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -218,6 +255,7 @@ export class ILens extends BaseContract {
     >;
 
     getFeeAmounts(
+      tokenId: BigNumberish,
       info: {
         owner: string;
         token0: string;
@@ -237,6 +275,12 @@ export class ILens extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { feeAmount0: BigNumber; feeAmount1: BigNumber }
     >;
+
+    getPoolId(
+      token0: string,
+      token1: string,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     getPosition(
       tokenId: BigNumberish,
@@ -321,6 +365,86 @@ export class ILens extends BaseContract {
     ): Promise<[boolean] & { settled: boolean }>;
 
     manager(overrides?: CallOverrides): Promise<[string]>;
+
+    quote(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        gasUsed: BigNumber;
+      }
+    >;
+
+    quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        gasUsed: BigNumber;
+      }
+    >;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[]
+      ] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[];
+      }
+    >;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        }
+      ] & {
+        hop: [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        };
+      }
+    >;
   };
 
   getDerivedPosition(
@@ -373,6 +497,7 @@ export class ILens extends BaseContract {
   >;
 
   getFeeAmounts(
+    tokenId: BigNumberish,
     info: {
       owner: string;
       token0: string;
@@ -392,6 +517,12 @@ export class ILens extends BaseContract {
   ): Promise<
     [BigNumber, BigNumber] & { feeAmount0: BigNumber; feeAmount1: BigNumber }
   >;
+
+  getPoolId(
+    token0: string,
+    token1: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   getPosition(
     tokenId: BigNumberish,
@@ -477,6 +608,76 @@ export class ILens extends BaseContract {
 
   manager(overrides?: CallOverrides): Promise<string>;
 
+  quote(
+    path: BytesLike,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      gasUsed: BigNumber;
+    }
+  >;
+
+  quoteSingle(
+    tokenIn: string,
+    tokenOut: string,
+    tierChoices: BigNumberish,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      gasUsed: BigNumber;
+    }
+  >;
+
+  simulate(
+    path: BytesLike,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      BigNumber,
+      BigNumber,
+      ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      })[]
+    ] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      })[];
+    }
+  >;
+
+  simulateSingle(
+    tokenIn: string,
+    tokenOut: string,
+    tierChoices: BigNumberish,
+    amountDesired: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+      amountIn: BigNumber;
+      amountOut: BigNumber;
+      protocolFeeAmt: BigNumber;
+      tierAmountsIn: BigNumber[];
+      tierData: BigNumber[];
+    }
+  >;
+
   callStatic: {
     getDerivedPosition(
       tokenId: BigNumberish,
@@ -528,6 +729,7 @@ export class ILens extends BaseContract {
     >;
 
     getFeeAmounts(
+      tokenId: BigNumberish,
       info: {
         owner: string;
         token0: string;
@@ -547,6 +749,12 @@ export class ILens extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { feeAmount0: BigNumber; feeAmount1: BigNumber }
     >;
+
+    getPoolId(
+      token0: string,
+      token1: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     getPosition(
       tokenId: BigNumberish,
@@ -631,6 +839,76 @@ export class ILens extends BaseContract {
     ): Promise<boolean>;
 
     manager(overrides?: CallOverrides): Promise<string>;
+
+    quote(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        gasUsed: BigNumber;
+      }
+    >;
+
+    quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        gasUsed: BigNumber;
+      }
+    >;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[]
+      ] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        hops: ([BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+          amountIn: BigNumber;
+          amountOut: BigNumber;
+          protocolFeeAmt: BigNumber;
+          tierAmountsIn: BigNumber[];
+          tierData: BigNumber[];
+        })[];
+      }
+    >;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]] & {
+        amountIn: BigNumber;
+        amountOut: BigNumber;
+        protocolFeeAmt: BigNumber;
+        tierAmountsIn: BigNumber[];
+        tierData: BigNumber[];
+      }
+    >;
   };
 
   filters: {};
@@ -642,6 +920,7 @@ export class ILens extends BaseContract {
     ): Promise<BigNumber>;
 
     getFeeAmounts(
+      tokenId: BigNumberish,
       info: {
         owner: string;
         token0: string;
@@ -657,6 +936,12 @@ export class ILens extends BaseContract {
         limitOrderType: BigNumberish;
         settlementSnapshotId: BigNumberish;
       },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPoolId(
+      token0: string,
+      token1: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -707,6 +992,34 @@ export class ILens extends BaseContract {
     ): Promise<BigNumber>;
 
     manager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    quote(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -716,6 +1029,7 @@ export class ILens extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getFeeAmounts(
+      tokenId: BigNumberish,
       info: {
         owner: string;
         token0: string;
@@ -731,6 +1045,12 @@ export class ILens extends BaseContract {
         limitOrderType: BigNumberish;
         settlementSnapshotId: BigNumberish;
       },
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getPoolId(
+      token0: string,
+      token1: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -781,5 +1101,33 @@ export class ILens extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     manager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    quote(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    quoteSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    simulate(
+      path: BytesLike,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    simulateSingle(
+      tokenIn: string,
+      tokenOut: string,
+      tierChoices: BigNumberish,
+      amountDesired: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
   };
 }

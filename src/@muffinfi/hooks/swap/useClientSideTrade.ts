@@ -8,7 +8,7 @@ import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
 
-import { useQuoterContract } from '../useContract'
+import { useLensContract } from '../useContract'
 import { useAllMuffinRoutes } from './useAllRoutes'
 
 const DEFAULT_GAS_QUOTE = 2_000_000
@@ -56,7 +56,7 @@ export function useClientSideMuffinTrade<TTradeType extends TradeType>(
   // fetch quotes from quoter contract
   const { chainId } = useActiveWeb3React()
   const gasRequired = chainId ? QUOTE_GAS_OVERRIDES[chainId] ?? DEFAULT_GAS_QUOTE : undefined
-  const _quotesResults = useSingleContractWithCallData(useQuoterContract(), calldatas, { gasRequired })
+  const _quotesResults = useSingleContractWithCallData(useLensContract(), calldatas, { gasRequired })
   const quotesResults = _quotesResults.length > 0 ? _quotesResults : _EMPTY_CALLSTATES
 
   // const gasPrice = useGasPrice()

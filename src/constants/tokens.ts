@@ -19,7 +19,7 @@ import { SupportedChainId } from './chains'
 /**
  * Prepared by Muffin. Not an official rinkeby USDC
  */
-export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x4BAC7231bA2392c55e8190dE7D216d7Ed7B9BF5F', 18, 'USDC', 'USD//C')
+export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 6, 'USDC', 'USD//C')
 
 export { USDC_ARBITRUM, USDC_MAINNET, USDC_OPTIMISM, USDC_POLYGON }
 

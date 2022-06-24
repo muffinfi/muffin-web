@@ -1,7 +1,7 @@
 import { Pool } from '@muffinfi/muffin-v1-sdk'
 import { IMuffinHubCombined } from '@muffinfi/typechain'
 import { CallState } from '@uniswap/redux-multicall'
-import { Currency } from '@uniswap/sdk-core'
+import { Currency, Token } from '@uniswap/sdk-core'
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useMemoWithEqualCheck, { EQUALS_CHECK, useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
@@ -18,21 +18,39 @@ export enum PoolState {
   INVALID,
 }
 
+export const useMuffinPoolId = (
+  currencyA: Currency | undefined,
+  currencyB: Currency | undefined
+): {
+  poolId: string | undefined
+  token0: Token | undefined
+  token1: Token | undefined
+} => {
+  const { chainId } = useActiveWeb3React()
+
+  const [token0, token1] = useMemo(() => {
+    if (!chainId) return [undefined, undefined]
+    const tokenA = currencyA?.wrapped
+    const tokenB = currencyB?.wrapped
+    if (!tokenA || !tokenB) return [undefined, undefined]
+    return tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA]
+  }, [chainId, currencyA, currencyB])
+
+  const poolId = useMemo(() => {
+    return token0?.address && token1?.address
+      ? keccak256(defaultAbiCoder.encode(['address', 'address'], [token0.address, token1.address]))
+      : undefined
+  }, [token0?.address, token1?.address])
+
+  return { poolId, token0, token1 }
+}
+
 export const useMuffinPool = (
   currencyA: Currency | undefined,
   currencyB: Currency | undefined
 ): [PoolState, Pool | null] => {
-  const { chainId } = useActiveWeb3React()
-
   // sort tokens and compute pool id
-  const { token0, token1, poolId } = useMemo(() => {
-    const tokenA = currencyA?.wrapped
-    const tokenB = currencyB?.wrapped
-    if (!chainId || !tokenA || !tokenB) return {}
-    const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA]
-    const poolId = keccak256(defaultAbiCoder.encode(['address', 'address'], [token0.address, token1.address]))
-    return { token0, token1, poolId }
-  }, [chainId, currencyA, currencyB])
+  const { poolId, token0, token1 } = useMuffinPoolId(currencyA, currencyB)
 
   // compute calldata
   const hubContract = useHubContract()

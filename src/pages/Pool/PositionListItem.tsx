@@ -17,7 +17,7 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 export const BasePositionRow = css`
   display: grid;
   align-items: center;
-  grid-template-columns: 1.25rem 11rem 4rem 1fr max-content;
+  grid-template-columns: 1.25rem 10.5rem 4.5rem 1fr max-content;
   gap: 1.5rem;
   padding: 16px 24px;
 
@@ -111,32 +111,34 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
   const removed = liquidityD8?.eq(0)
 
   return (
-    <PositionRow to={positionSummaryLink}>
-      <M.Text color="text2" size="sm">
-        #{tokenId.toString()}
-      </M.Text>
-      {currencyBase && currencyQuote && priceLower && priceUpper && tier ? (
-        <>
-          <M.Row gap="0.5em">
-            <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin em={1.333} />
+    <M.TextContents size="sm">
+      <PositionRow to={positionSummaryLink}>
+        <M.Text color="text2" size="sm">
+          #{tokenId.toString()}
+        </M.Text>
+        {currencyBase && currencyQuote && priceLower && priceUpper && tier ? (
+          <>
+            <M.Row gap="0.5em">
+              <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin={true} em={1.333} />
+              <M.Text weight="semibold">
+                {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+              </M.Text>
+            </M.Row>
             <M.Text weight="semibold">
-              {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+              <Trans>{tier.feePercent.toFixed(2)}%</Trans>
             </M.Text>
-          </M.Row>
-          <M.Text weight="semibold">
-            <Trans>{tier.feePercent.toFixed(2)}%</Trans>
-          </M.Text>
-          <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
-          <LastColumn>
-            <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
-            <RangeBadge removed={removed} inRange={!outOfRange} settled={settled} />
-          </LastColumn>
-        </>
-      ) : (
-        <LoaderWrapper>
-          <Loader />
-        </LoaderWrapper>
-      )}
-    </PositionRow>
+            <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
+            <LastColumn>
+              <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
+              <RangeBadge removed={removed} inRange={!outOfRange} settled={settled} />
+            </LastColumn>
+          </>
+        ) : (
+          <LoaderWrapper>
+            <Loader />
+          </LoaderWrapper>
+        )}
+      </PositionRow>
+    </M.TextContents>
   )
 }
