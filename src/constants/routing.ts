@@ -22,6 +22,7 @@ import {
   USDC_MAINNET,
   USDC_OPTIMISM,
   USDC_POLYGON,
+  USDC_RINKEBY,
   USDT,
   USDT_ARBITRUM_ONE,
   USDT_OPTIMISM,
@@ -30,6 +31,7 @@ import {
   WBTC_ARBITRUM_ONE,
   WBTC_OPTIMISM,
   WBTC_POLYGON,
+  WBTC_RINKEBY,
   WETH_POLYGON,
   WETH_POLYGON_MUMBAI,
   WRAPPED_NATIVE_CURRENCY,
@@ -77,6 +79,13 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
     USDC_POLYGON,
     USDT_POLYGON,
     WETH_POLYGON,
+  ],
+
+  // eslint-disable-next-line prettier/prettier
+  [SupportedChainId.RINKEBY]: [
+    ...WRAPPED_NATIVE_CURRENCIES_ONLY[SupportedChainId.RINKEBY],
+    USDC_RINKEBY,
+    WBTC_RINKEBY,
   ],
 }
 export const ADDITIONAL_BASES: { [chainId: number]: { [tokenAddress: string]: Token[] } } = {

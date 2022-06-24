@@ -248,11 +248,13 @@ export default function CurrencyInputPanel({
                       )
                     ) : null}
                   </>
-                ) : null}
+                ) : (
+                  <div /> // spacer
+                )}
 
                 <LoadingOpacityContainer $loading={loading}>
                   <M.TextContents size="sm">
-                    <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                    <FiatValue fiatValue={fiatValue} fiatValueDiscount={priceImpact} />
                   </M.TextContents>
                 </LoadingOpacityContainer>
               </M.RowBetween>

@@ -143,20 +143,20 @@ export default function Swap({ history }: RouteComponentProps) {
    *====================================================================*/
 
   // compute price impact
-  const priceImpact = useFiatValuePriceImpact(trade?.inputAmount, trade?.outputAmount, routeIsSyncing)
-  const { priceImpact: executionPriceImpact } = useTradeAdvancedDetails(trade ?? undefined)
+  const fiatValueDiscount = useFiatValuePriceImpact(trade?.inputAmount, trade?.outputAmount, routeIsSyncing)
+  const { priceImpact } = useTradeAdvancedDetails(trade ?? undefined)
 
   // warnings on the greater of fiat value price impact and execution price impact
   const priceImpactSeverity = useMemo(
     () =>
       warningSeverity(
-        executionPriceImpact && priceImpact
-          ? executionPriceImpact.greaterThan(priceImpact)
-            ? executionPriceImpact
-            : priceImpact
-          : executionPriceImpact ?? priceImpact
+        priceImpact && fiatValueDiscount
+          ? priceImpact.greaterThan(fiatValueDiscount)
+            ? priceImpact
+            : fiatValueDiscount
+          : priceImpact ?? fiatValueDiscount
       ),
-    [priceImpact, executionPriceImpact]
+    [fiatValueDiscount, priceImpact]
   )
 
   // for expert mode
@@ -315,8 +315,8 @@ export default function Swap({ history }: RouteComponentProps) {
     if (!swapCallback) {
       return
     }
-    if (priceImpact && !confirmPriceImpactWithoutFee(priceImpact)) {
-      return
+    if (fiatValueDiscount && !confirmPriceImpactWithoutFee(fiatValueDiscount)) {
+      return // TODO: only check fiatValueDiscount?
     }
     setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
     swapCallback()
@@ -355,7 +355,7 @@ export default function Swap({ history }: RouteComponentProps) {
       })
   }, [
     swapCallback,
-    priceImpact,
+    fiatValueDiscount,
     tradeToConfirm,
     showConfirm,
     recipient,
@@ -412,7 +412,7 @@ export default function Swap({ history }: RouteComponentProps) {
         showMaxButton={false}
         hideBalance={false}
         fiatValue={fiatValues[Field.OUTPUT]}
-        priceImpact={priceImpact}
+        priceImpact={fiatValueDiscount}
         currency={currencies[Field.OUTPUT]}
         onCurrencySelect={handleOutputSelect}
         otherCurrency={currencies[Field.INPUT]}

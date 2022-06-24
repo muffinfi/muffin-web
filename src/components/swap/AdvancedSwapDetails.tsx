@@ -109,15 +109,6 @@ export default memo(function AdvancedSwapDetails({
             </TextWithLoadingPlaceholder>
           </M.RowBetween>
 
-          <M.RowBetween>
-            <M.Text>
-              <Trans>Network Fee</Trans>
-            </M.Text>
-            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-              <M.Text align="right">~$123</M.Text>
-            </TextWithLoadingPlaceholder>
-          </M.RowBetween>
-
           {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
             <M.RowBetween>
               <M.Text>

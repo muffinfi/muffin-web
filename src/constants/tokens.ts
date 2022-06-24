@@ -17,9 +17,10 @@ import { UNI_ADDRESS } from './addresses'
 import { SupportedChainId } from './chains'
 
 /**
- * Prepared by Muffin. Not an official rinkeby USDC
+ * Prepared by Muffin. Not an official rinkeby USDC and WTBC
  */
-export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 6, 'USDC', 'USD//C')
+export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 6, 'USDC', 'USD Coin')
+export const WBTC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x0C58e68883E8c6390255A83a73dfA42b56EC6400', 8, 'WBTC', 'Wrapped BTC')
 
 export { USDC_ARBITRUM, USDC_MAINNET, USDC_OPTIMISM, USDC_POLYGON }
 
