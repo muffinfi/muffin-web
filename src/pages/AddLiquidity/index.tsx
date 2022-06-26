@@ -358,7 +358,7 @@ export default function AddLiquidity({
    *====================================================================*/
 
   // restrict to single deposit if price is out of range
-  const tickCurrent = mockTier?.computedTick
+  const tickCurrent = mockTier?.tickCurrent
   const deposit0Disabled = tickCurrent != null && tickUpper != null && tickCurrent >= tickUpper
   const deposit1Disabled = tickCurrent != null && tickLower != null && tickCurrent <= tickLower
 

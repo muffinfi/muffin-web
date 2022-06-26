@@ -191,7 +191,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
    *====================================================================*/
 
   // compute whether position is out of range
-  const _tick = position?.poolTier.computedTick
+  const _tick = position?.poolTier.tickCurrent
   const outOfRange = position && _tick != null && (_tick < position.tickLower || _tick >= position.tickUpper)
 
   // whether the position is emptied

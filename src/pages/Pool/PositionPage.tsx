@@ -159,8 +159,8 @@ export function PositionPage({
    *====================================================================*/
 
   // flag of whether price is within range
-  const below = position ? position.poolTier.computedTick < position.tickLower : undefined
-  const above = position ? position.poolTier.computedTick >= position.tickUpper : undefined
+  const below = position ? position.poolTier.tickCurrent < position.tickLower : undefined
+  const above = position ? position.poolTier.tickCurrent >= position.tickUpper : undefined
   const inRange = typeof below === 'boolean' && typeof above === 'boolean' ? !below && !above : false
 
   // flag of whether user is the position's owner or an approved operator

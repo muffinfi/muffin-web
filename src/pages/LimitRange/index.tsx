@@ -253,7 +253,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     UPPER?: number // End tick limit upper
     END?: number // End tick limit base on zero for one
   } = useMemo(() => {
-    const currentTick = selectedTier?.computedTick
+    const currentTick = selectedTier?.tickCurrent
     if (!tickSpacing || currentTick == null || positionPriceRange == null) return {}
     const limits = zeroForOne
       ? {
@@ -269,7 +269,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     limits.END = zeroForOne ? limits.LOWER : limits.UPPER
 
     return limits
-  }, [tickSpacing, positionPriceRange, selectedTier?.computedTick, zeroForOne])
+  }, [tickSpacing, positionPriceRange, selectedTier?.tickCurrent, zeroForOne])
 
   const { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
@@ -440,9 +440,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
       amount1: zeroForOne ? tryParseCurrencyAmount('1', pool.token1)?.quotient ?? 1 : ZERO,
       limitOrderType,
     })
-    const { amount0: mintAmount0, amount1: mintAmount1 } = position.amountsAtPrice(
-      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1),
-      true
+    const { amount0: mintAmount0, amount1: mintAmount1 } = position.mintAmountsAtPrice(
+      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1)
     )
     const { amount0: settleAmount0, amount1: settleAmount1 } = position.settleAmounts
     const settleAmount = zeroForOne ? settleAmount1 : settleAmount0

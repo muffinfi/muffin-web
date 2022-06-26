@@ -104,7 +104,7 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
   const currencyBase = base && unwrappedToken(base)
 
   // check if price is within range
-  const outOfRange: boolean = tier ? tier.computedTick < tickLower || tier.computedTick >= tickUpper : false
+  const outOfRange: boolean = tier ? tier.tickCurrent < tickLower || tier.tickCurrent >= tickUpper : false
 
   const positionSummaryLink = `/positions/${tokenId}`
 

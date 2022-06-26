@@ -201,8 +201,8 @@ export function usePoolActiveLiquidity(
   const tier = typeof tierId === 'number' && tierId >= 0 && tierId < (tiers?.length || 0) ? tiers?.[tierId] : undefined
 
   const activeTick = useMemo(
-    () => getActiveTick(tier?.computedTick, pool?.tickSpacing),
-    [tier?.computedTick, pool?.tickSpacing]
+    () => getActiveTick(tier?.tickCurrent, pool?.tickSpacing),
+    [tier?.tickCurrent, pool?.tickSpacing]
   )
 
   const data = useMemo(() => {
@@ -241,7 +241,7 @@ export function usePoolActiveLiquidity(
     // missing "pivot" tick will be inserted
     const activeTicks = tiers.map((tier, _tierId) => {
       // Find nearest valid tick for pool in case tick is not initialized.
-      const localActiveTick = getActiveTick(tier.computedTick, pool.tickSpacing)
+      const localActiveTick = getActiveTick(tier.tickCurrent, pool.tickSpacing)
       if (typeof localActiveTick === 'undefined') {
         hasError = true
         return 0

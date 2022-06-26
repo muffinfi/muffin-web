@@ -492,8 +492,8 @@ export function useRangeHopCallbacks(
   const quoteToken = useMemo(() => quoteCurrency?.wrapped, [quoteCurrency])
 
   // use tier current tick as starting tick if we have tier but no tick input
-  const _tickLower = tickLower ?? tier?.computedTick
-  const _tickUpper = tickUpper ?? tier?.computedTick
+  const _tickLower = tickLower ?? tier?.tickCurrent
+  const _tickUpper = tickUpper ?? tier?.tickCurrent
 
   const getDecrementLower = useCallback(() => {
     if (baseToken && quoteToken && tickSpacing != null && _tickLower != null) {
