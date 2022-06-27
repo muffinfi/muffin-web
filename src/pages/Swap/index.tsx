@@ -553,14 +553,6 @@ export default function Swap({ history }: RouteComponentProps) {
                 </M.Column>
               ) : null}
 
-              <M.TextContents size="sm" weight="medium" color="text2">
-                <M.OutputDestinationToggle
-                  toInternalAccount={storeInInternalAccount}
-                  questionHelperContent={<Trans>Choose the destination of the swapped token.</Trans>}
-                  onToggle={toggleStoreInInternalAccount}
-                />
-              </M.TextContents>
-
               {!showWrap && userHasSpecifiedInputOutput && (trade || routeIsLoading || routeIsSyncing) && (
                 <SwapDetailsDropdown
                   trade={trade}
@@ -571,6 +563,14 @@ export default function Swap({ history }: RouteComponentProps) {
                   allowedSlippage={allowedSlippage}
                 />
               )}
+
+              <M.TextContents size="sm" weight="medium" color="text2">
+                <M.OutputDestinationToggle
+                  toInternalAccount={storeInInternalAccount}
+                  questionHelperContent={<Trans>Choose the destination of the swapped token.</Trans>}
+                  onToggle={toggleStoreInInternalAccount}
+                />
+              </M.TextContents>
 
               {makeButtonSection()}
             </M.Column>

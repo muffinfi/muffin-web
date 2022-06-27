@@ -17,6 +17,10 @@ const Separator = styled.div`
   background-color: var(--borderColor);
 `
 
+const Wrapper = styled(M.TextContents)`
+  font-size: 0.8125rem; // 13px
+`
+
 interface AdvancedSwapDetailsProps {
   trade?: InterfaceTrade<Currency, Currency, TradeType>
   allowedSlippage: Percent
@@ -62,7 +66,7 @@ export default memo(function AdvancedSwapDetails({
   // }, [trade])
 
   return !trade ? null : (
-    <M.TextContents color="text1" size="sm">
+    <Wrapper>
       <M.Column stretch gap="10px">
         <M.RowBetween>
           <M.Text>
@@ -121,6 +125,6 @@ export default memo(function AdvancedSwapDetails({
           )}
         </M.TextContents>
       </M.Column>
-    </M.TextContents>
+    </Wrapper>
   )
 })

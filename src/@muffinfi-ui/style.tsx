@@ -3,9 +3,9 @@ import { createGlobalStyle, css } from 'styled-components/macro'
 
 const lightThemeMixin = css`
   /* color */
-  --bg: #f8f8f8;
+  --bg: #f6f6f6;
   --layer1: #fff;
-  --layer2: #f8f8f8;
+  --layer2: #f6f6f6;
   --layer3: #ececec;
 
   /* border */

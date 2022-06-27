@@ -17,10 +17,12 @@ import { Separator } from 'theme'
 import { AutoRouterLabel, AutoRouterLogo } from './RouterLabel'
 
 const Wrapper = styled(M.Column).attrs({ stretch: true })<{ darkMode?: boolean; fixedOpen?: boolean }>`
-  padding: ${({ fixedOpen }) => (fixedOpen ? '14px' : '14px 14px 14px 14px')};
+  padding: ${({ fixedOpen }) => (fixedOpen ? '12px' : '12px 12px 12px 12px')};
   border-radius: 12px;
   border: 1px solid ${({ fixedOpen }) => (fixedOpen ? 'transparent' : 'var(--layer3)')};
   cursor: pointer;
+
+  font-size: 0.8125rem; // 13px
 `
 
 const OpenCloseIcon = styled(Plus)<{ open?: boolean }>`
@@ -59,52 +61,50 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
 
   return (
     <Wrapper {...rest} darkMode={darkMode} fixedOpen={fixedOpen}>
-      <M.TextContents size="sm">
-        <M.RowBetween onClick={() => setOpen(!open)}>
-          <M.Row gap="0.5em">
-            <AutoRouterLogo />
-            <AutoRouterLabel />
-          </M.Row>
-          {fixedOpen ? null : <OpenCloseIcon open={open} />}
-        </M.RowBetween>
+      <M.RowBetween onClick={() => setOpen(!open)}>
+        <M.Row gap="0.5em">
+          <AutoRouterLogo />
+          <AutoRouterLabel />
+        </M.Row>
+        {fixedOpen ? null : <OpenCloseIcon open={open} />}
+      </M.RowBetween>
 
-        <AnimatedDropdown open={open || fixedOpen}>
-          <M.Column stretch gap="8px" style={{ paddingTop: 10 }}>
-            {syncing ? (
-              <LoadingRows>
-                <div style={{ width: '100%', height: '30px' }} />
-              </LoadingRows>
-            ) : (
-              <RoutingDiagram
-                currencyIn={trade.inputAmount.currency}
-                currencyOut={trade.outputAmount.currency}
-                routes={routes}
-              />
-            )}
+      <AnimatedDropdown open={open || fixedOpen}>
+        <M.Column stretch gap="8px" style={{ paddingTop: 10 }}>
+          {syncing ? (
+            <LoadingRows>
+              <div style={{ width: '100%', height: '30px' }} />
+            </LoadingRows>
+          ) : (
+            <RoutingDiagram
+              currencyIn={trade.inputAmount.currency}
+              currencyOut={trade.outputAmount.currency}
+              routes={routes}
+            />
+          )}
 
-            {autoRouterSupported && (
-              <>
-                <Separator />
-                {syncing ? (
-                  <LoadingRows>
-                    <div style={{ width: '250px', height: '15px' }} />
-                  </LoadingRows>
-                ) : (
-                  <M.Text size="xs">
-                    {trade?.gasUseEstimateUSD && chainId && SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? (
-                      <Trans>Best price route costs ~{formattedGasPriceString} in gas. </Trans>
-                    ) : null}{' '}
-                    <Trans>
-                      This route optimizes your total output by considering split routes, multiple hops, and the gas
-                      cost of each step.
-                    </Trans>
-                  </M.Text>
-                )}
-              </>
-            )}
-          </M.Column>
-        </AnimatedDropdown>
-      </M.TextContents>
+          {autoRouterSupported && (
+            <>
+              <Separator />
+              {syncing ? (
+                <LoadingRows>
+                  <div style={{ width: '250px', height: '15px' }} />
+                </LoadingRows>
+              ) : (
+                <M.Text size="xs">
+                  {trade?.gasUseEstimateUSD && chainId && SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? (
+                    <Trans>Best price route costs ~{formattedGasPriceString} in gas. </Trans>
+                  ) : null}{' '}
+                  <Trans>
+                    This route optimizes your total output by considering split routes, multiple hops, and the gas cost
+                    of each step.
+                  </Trans>
+                </M.Text>
+              )}
+            </>
+          )}
+        </M.Column>
+      </AnimatedDropdown>
     </Wrapper>
   )
 })

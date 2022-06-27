@@ -1,7 +1,8 @@
 import { faBuildingColumns, faWallet } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useInternalAccountModeManager } from '@muffinfi/state/user/hooks'
-import { memo } from 'react'
+import Tooltip from 'components/Tooltip'
+import { memo, useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 
 import { Button } from '../buttons'
@@ -28,16 +29,23 @@ const StyledButton = styled(Button)<{ active: boolean }>`
 
 export default memo(function AccountWalletButton() {
   const [internalAccountMode, toggleInternalAccountMode] = useInternalAccountModeManager()
+
+  const [show, setShow] = useState(false)
+  const open = useCallback(() => setShow(true), [])
+  const close = useCallback(() => setShow(false), [])
+
   return (
-    <Row gap="0.5em">
-      {/* <Text size="xs" color="text2">
-        <Trans>Pay with</Trans>
-      </Text> */}
-      <StyledButton active={internalAccountMode} onClick={toggleInternalAccountMode}>
-        <FontAwesomeIcon icon={faBuildingColumns} />
-        <span>+</span>
-        <FontAwesomeIcon icon={faWallet} />
-      </StyledButton>
-    </Row>
+    <Tooltip show={show} text={`Choose whether to pay with Muffin account besides wallet.`}>
+      <Row gap="0.5em" onMouseEnter={open} onMouseLeave={close}>
+        {/* <Text size="xs" color="text2">
+          <Trans>Pay with</Trans>
+        </Text> */}
+        <StyledButton active={internalAccountMode} onClick={toggleInternalAccountMode}>
+          <FontAwesomeIcon icon={faBuildingColumns} />
+          <span>+</span>
+          <FontAwesomeIcon icon={faWallet} />
+        </StyledButton>
+      </Row>
+    </Tooltip>
   )
 })

@@ -20,7 +20,7 @@ import SwapRoute from './SwapRoute'
 import TradePrice from './TradePrice'
 
 const StyledCard = styled(OutlineCard)`
-  padding: 14px;
+  padding: 12px;
   border: 1px solid var(--borderColor);
 `
 

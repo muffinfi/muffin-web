@@ -12,7 +12,7 @@ export default function AnimatedDropdown({ open, children }: React.PropsWithChil
     height: open ? height ?? 0 : 0,
     config: {
       mass: 1.2,
-      tension: 300,
+      tension: 200,
       friction: 20,
       clamp: true,
       velocity: 0.01,

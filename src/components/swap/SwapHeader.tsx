@@ -12,8 +12,9 @@ const appendQuery = (base: string, search?: string) => {
 }
 
 const StyledNavLink = styled(M.NavLink).attrs({
-  color: 'text2',
-  weight: 'regular',
+  color: 'placeholder-text',
+  size: 'sm',
+  weight: 'semibold',
   $activeColor: 'text1',
   $activeWeight: 'semibold',
 })``
