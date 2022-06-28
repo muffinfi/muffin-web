@@ -4,7 +4,7 @@ import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffi
 import * as M from '@muffinfi-ui'
 import TokenRow from 'components/account/TokenRow'
 import { LoadingRows } from 'components/Loader/styled'
-import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
+import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -46,7 +46,7 @@ export default function Account(props: RouteComponentProps) {
 
   return (
     <>
-      <M.Container maxWidth="27rem">
+      <M.Container maxWidth="28rem">
         <M.Column stretch gap="32px">
           <M.RowBetween wrap="wrap" gap="2em">
             <M.Text size="xl" weight="bold">
@@ -116,12 +116,12 @@ export default function Account(props: RouteComponentProps) {
             </M.Column>
           </M.SectionCard>
 
-          <SubgraphIndexingNote blockNumber={subgraphBlockNumber}>
+          <SubgraphIndexingAlertCard blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly deposited tokens even if the transaction is confirmed, please wait for a
-              few minutes due to the subgraph indexing.
+              If you can&apos;t see your recent deposited tokens, please wait awhile due to the delay in subgraph
+              indexing.
             </Trans>
-          </SubgraphIndexingNote>
+          </SubgraphIndexingAlertCard>
         </M.Column>
       </M.Container>
 

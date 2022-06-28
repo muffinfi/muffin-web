@@ -1,9 +1,10 @@
 import { Trans } from '@lingui/macro'
 import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
+// import CTACards from './CTACards'
 import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
+import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
@@ -16,7 +17,6 @@ import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
 
 import PositionList from './PositionList'
-// import CTACards from './CTACards'
 import { LoadingRows } from './styleds'
 
 const NoLiquidity = styled(M.ColumnCenter)`
@@ -81,7 +81,7 @@ export default function Pool() {
 
   return (
     <>
-      <M.Container maxWidth="980px">
+      <M.Container maxWidth="950px">
         <M.Column stretch gap="32px">
           <M.RowBetween>
             <M.Text size="xl" weight="bold">
@@ -122,12 +122,13 @@ export default function Pool() {
               </NoLiquidity>
             )}
           </M.SectionCard>
-          <SubgraphIndexingNote padding="0 24px" blockNumber={subgraphBlockNumber}>
+
+          <SubgraphIndexingAlertCard blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly added positions even if the transaction is confirmed, please wait for a
-              few minutes due to the subgraph indexing.
+              If you can&apos;t see your new positions, please wait for a few minutes due to the delay in subgraph
+              indexing.
             </Trans>
-          </SubgraphIndexingNote>
+          </SubgraphIndexingAlertCard>
         </M.Column>
         <HideSmall>
           <NetworkAlert />

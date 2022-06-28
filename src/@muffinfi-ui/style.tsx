@@ -42,6 +42,8 @@ const lightThemeMixin = css`
   --error-bg: #da2d2b;
   --error-text: #fff;
 
+  --alert-text: #d39000;
+
   /* color */
   --green: #007d35;
   --success: #007d35;

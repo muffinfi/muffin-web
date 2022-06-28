@@ -60,7 +60,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-right {
-    left: -3px;
+    left: -4px;
     ::before {
       border-right: none;
       border-top: none;
