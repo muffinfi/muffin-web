@@ -1,4 +1,4 @@
-import { darken, lighten } from 'polished'
+import { darken, lighten, transparentize } from 'polished'
 import { createGlobalStyle, css } from 'styled-components/macro'
 
 const lightThemeMixin = css`
@@ -32,6 +32,8 @@ const lightThemeMixin = css`
   --tertiary1: ${darken(0.04, '#ececec')};
   --tertiary2: ${darken(0.08, '#ececec')};
   --tertiary-text: #111;
+  --tertiary-disabled: ${transparentize(0.5, darken(0.08, '#ececec'))};
+  --tertiary-disabled-text: ${transparentize(0.5, '#111')};
 
   --disabled: #ececec;
   --disabled-text: #aaa;
@@ -41,6 +43,8 @@ const lightThemeMixin = css`
 
   --error-bg: #da2d2b;
   --error-text: #fff;
+  --error-disabled: ${transparentize(0.5, '#da2d2b')};
+  --error-disabled-text: ${transparentize(0.5, '#fff')};
 
   --alert-text: #d39000;
 
