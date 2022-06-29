@@ -149,7 +149,11 @@ export const useLimitOrderTickSpacingMultipliers = (
   const calldata = useMemo(() => (pool ? [pool.poolId] : undefined), [pool])
 
   const state = useSingleCallResult(calldata ? hubContract : undefined, 'getLimitOrderTickSpacingMultipliers', calldata)
-  return useMemoArrayWithEqualCheck(
+  const tickSpacingMultipliers = useMemoArrayWithEqualCheck(
     state.result?.[0] as Awaited<ReturnType<IMuffinHubCombined['getLimitOrderTickSpacingMultipliers']>> | undefined
   )
+  return {
+    loading: state.loading,
+    result: tickSpacingMultipliers,
+  }
 }

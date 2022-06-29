@@ -38,6 +38,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
+import { useFirstTruthy } from 'hooks/useFirstTruthy'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useTheme from 'hooks/useTheme'
@@ -149,8 +150,10 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const hubContract = useHubContract()
   const [poolState, pool] = useMuffinPool(inputCurrency, outputCurrency)
   const previousPool = usePreviousExclude(pool, EXCLUDE_NULL_OR_UNDEFINED)
-  const isPoolChanged = Boolean(!pool || !previousPool?.equals(pool))
-  const tickSpacingMultipliers = useLimitOrderTickSpacingMultipliers(hubContract, pool)
+  const isPoolJustChanged = Boolean(!pool || !previousPool?.equals(pool))
+  const [hasPoolEverChanged, resetHasPoolEverChanged] = useFirstTruthy(() => isPoolJustChanged)
+  const { loading: isLoadingTickSpacingMultipliers, result: tickSpacingMultipliers } =
+    useLimitOrderTickSpacingMultipliers(hubContract, pool)
   const [sqrtGamma, setSqrtGamma] = useState<number | undefined>()
   const [isEditTierDropdownOpened, setEditTierDropdownOpened] = useState(false)
 
@@ -342,7 +345,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
   // set default price
   useEffect(() => {
     if (!pool || tickLimits.END == null || !baseToken || !quoteToken) return
-    if (!isPoolChanged && endTick != null) return // don't update on same pool and endTick exists
+    if (!hasPoolEverChanged && endTick != null) return // set default price if pool changes or end tick does not exists
+
     // set default end price direction
     if (typeof endPriceInverted === 'undefined') {
       const inverted = Boolean(
@@ -353,25 +357,29 @@ export default function LimitRange({ history }: RouteComponentProps) {
       )
       setEndPriceInverted(inverted)
     }
-    // reset to limit if changed pool but endTick exists or no url provided price
-    if (endTick != null || typeof urlEndPrice !== 'string' || tickSpacing == null) {
-      setEndTick(tickLimits.END)
-      return
-    }
-    // set to url defined price
-    const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
-    const baseAmount = tryParseAmount('1', baseToken)
-    if (!quoteAmount || !baseAmount) return
 
-    const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
-    if (!price) return
-    setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
+    if (endTick != null || typeof urlEndPrice !== 'string' || tickSpacing == null) {
+      // reset to limit if changed pool but endTick exists or no url provided price
+      setEndTick(tickLimits.END)
+    } else {
+      // set to url defined price
+      const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
+      const baseAmount = tryParseAmount('1', baseToken)
+      if (quoteAmount && baseAmount) {
+        const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
+        setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
+      }
+    }
+
+    // reset hasPoolEverChanged to false
+    if (hasPoolEverChanged) resetHasPoolEverChanged()
   }, [
     pool,
     baseToken,
     endPriceInverted,
     quoteToken,
-    isPoolChanged,
+    hasPoolEverChanged,
+    resetHasPoolEverChanged,
     endTick,
     tickLimits.END,
     urlEndPrice,
@@ -447,7 +455,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   }, [pool, parsedAmount, tierId, ticks.LOWER, ticks.UPPER, zeroForOne, isExactIn])
 
   const averagePrice0 = useMemo(() => {
-    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolChanged) {
+    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolJustChanged) {
       // when pool changed, set to undefined to wait for new valid endTick set up
       return undefined
     }
@@ -475,7 +483,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
       (zeroForOne ? mintAmount0 : settleAmount).toString(),
       (!zeroForOne ? mintAmount1 : settleAmount).toString()
     )
-  }, [pool, isPoolChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
+  }, [pool, isPoolJustChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
   const priceChangeRate = useMemo(() => {
     if (!selectedTier?.token0Price || !selectedTier?.token1Price || !tickPrices.LOWER || !tickPrices.UPPER) {
@@ -909,14 +917,16 @@ export default function LimitRange({ history }: RouteComponentProps) {
         </M.Row>
       </ErrorCard>
     ) : pool && defaultSqrtGamma == null ? (
-      <YellowCard>
-        <M.Row gap="12px">
-          <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
-          <ThemedText.Yellow fontSize="12px">
-            <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
-          </ThemedText.Yellow>
-        </M.Row>
-      </YellowCard>
+      isLoadingTickSpacingMultipliers ? null : (
+        <YellowCard>
+          <M.Row gap="12px">
+            <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
+            <ThemedText.Yellow fontSize="12px">
+              <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
+            </ThemedText.Yellow>
+          </M.Row>
+        </YellowCard>
+      )
     ) : (
       <M.TextContents size="sm">
         <CardColumn gap="10px">
