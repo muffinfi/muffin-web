@@ -248,6 +248,9 @@ export default function LimitRange({ history }: RouteComponentProps) {
     setEndPriceInverted((value) => !value)
   }, [])
 
+  /**
+   * Note that "limits" refer to the limit for making *single-sided position*, not min and max tick of the pool.
+   */
   const tickLimits: {
     LOWER?: number // End tick limit lower
     UPPER?: number // End tick limit upper
@@ -383,6 +386,26 @@ export default function LimitRange({ history }: RouteComponentProps) {
       return nearestUsableTick(oldValue, tickSpacing)
     })
   }, [tickSpacing])
+
+  /**
+   * Find whether ticks are across the supported min and max ticks in muffin. Used only in the confirmation modal.
+   */
+  const areTicksAtMinMaxTicks = useMemo(() => {
+    if (!tickSpacing) {
+      return {
+        LOWER: false,
+        UPPER: false,
+      }
+    }
+    const limits = {
+      LOWER: nearestUsableTick(MIN_TICK, tickSpacing),
+      UPPER: nearestUsableTick(MAX_TICK, tickSpacing),
+    }
+    return {
+      LOWER: ticks.LOWER != null && ticks.LOWER <= limits.LOWER,
+      UPPER: ticks.UPPER != null && ticks.UPPER >= limits.UPPER,
+    }
+  }, [tickSpacing, ticks.UPPER, ticks.LOWER])
 
   /*======================================================================
    *                              POSITION
@@ -1047,7 +1070,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
       hash={txHash}
       content={() => (
         <ConfirmationModalContent
-          title={<Trans>Limit Range Order</Trans>}
+          title={<Trans>Confirm Limit Range Order</Trans>}
           onDismiss={handleDismissConfirmation}
           topContent={() => (
             <Review
@@ -1059,7 +1082,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
               priceLower={tickPrices.LOWER}
               priceUpper={tickPrices.UPPER}
               outOfRange
-              ticksAtLimit={areEndPriceAtLimit}
+              ticksAtLimit={areTicksAtMinMaxTicks}
             />
           )}
           bottomContent={() => (
