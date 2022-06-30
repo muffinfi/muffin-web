@@ -109,6 +109,10 @@ export function CurrencySearch({
     return Object.values(allTokens).filter(getTokenFilter(debouncedQuery))
   }, [allTokens, debouncedQuery])
 
+  /**
+   * FIXME:
+   * CPU usage explodes when users are using lists of >1000 tokens
+   */
   const balances = useAllTokenBalances()
   const sortedTokens: Token[] = useMemo(() => {
     return filteredTokens.sort(tokenComparator.bind(null, balances))

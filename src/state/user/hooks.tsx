@@ -30,6 +30,7 @@ import {
   updateUserLocale,
   updateUserSlippageTolerance,
 } from './actions'
+import { deserializeToken, selectUserAddedTokens } from './selectors'
 
 function serializeToken(token: Token): SerializedToken {
   return {
@@ -39,16 +40,6 @@ function serializeToken(token: Token): SerializedToken {
     symbol: token.symbol,
     name: token.name,
   }
-}
-
-function deserializeToken(serializedToken: SerializedToken): Token {
-  return new Token(
-    serializedToken.chainId,
-    serializedToken.address,
-    serializedToken.decimals,
-    serializedToken.symbol,
-    serializedToken.name
-  )
 }
 
 export function useIsDarkMode(): boolean {
@@ -256,15 +247,8 @@ export function useRemoveUserAddedToken(): (chainId: number, address: string) =>
 
 export function useUserAddedTokens(): Token[] {
   const { chainId } = useActiveWeb3React()
-  const serializedTokensMap = useAppSelector(({ user: { tokens } }) => tokens)
-
-  return useMemo(() => {
-    if (!chainId) return []
-    const tokenMap: Token[] = serializedTokensMap?.[chainId]
-      ? Object.values(serializedTokensMap[chainId]).map(deserializeToken)
-      : []
-    return tokenMap
-  }, [serializedTokensMap, chainId])
+  const tokens = useAppSelector((state) => selectUserAddedTokens(state, chainId))
+  return tokens
 }
 
 function serializePair(pair: Pair): SerializedPair {
