@@ -6,8 +6,7 @@ import { AppState } from '../index'
 import { addPopup, ApplicationModal, PopupContent, removePopup, setOpenModal } from './reducer'
 
 export function useModalOpen(modal: ApplicationModal): boolean {
-  const openModal = useAppSelector((state: AppState) => state.application.openModal)
-  return openModal === modal
+  return useAppSelector((state: AppState) => state.application.openModal === modal)
 }
 
 export function useToggleModal(modal: ApplicationModal): () => void {
