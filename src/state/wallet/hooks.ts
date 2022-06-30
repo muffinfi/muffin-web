@@ -20,6 +20,10 @@ export {
 } from 'lib/hooks/useCurrencyBalance'
 
 // mimics useAllBalances
+/**
+ * NOTE: Be careful to use!
+ * CPU usage explodes when users are using token lists of >1000 tokens
+ */
 export function useAllTokenBalances(source?: BalanceSource): {
   [tokenAddress: string]: CurrencyAmount<Token> | undefined
 } {

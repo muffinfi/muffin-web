@@ -5,7 +5,7 @@ import { LightGreyCard } from 'components/Card'
 import QuestionHelper from 'components/QuestionHelper'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
-import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
+import { CSSProperties, memo, MutableRefObject, useCallback, useEffect, useMemo, useState } from 'react'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
@@ -100,6 +100,19 @@ function TokenTags({ currency }: { currency: Currency }) {
   )
 }
 
+const CurrencyBalance = memo(function CurrencyBalance({
+  account,
+  currency,
+  balanceSource,
+}: {
+  account: string | null | undefined
+  currency: Currency
+  balanceSource?: BalanceSource
+}) {
+  const balance = useCurrencyBalance(account ?? undefined, currency, balanceSource)
+  return balance ? <Balance balance={balance} /> : account ? <Loader /> : null
+})
+
 function CurrencyRow({
   currency,
   onSelect,
@@ -122,7 +135,13 @@ function CurrencyRow({
   const selectedTokenList = useCombinedActiveList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency.isToken ? currency : undefined)
   const customAdded = useIsUserAddedToken(currency)
-  const balance = useCurrencyBalance(account ?? undefined, currency, balanceSource)
+
+  // debounce loading currency balance
+  const [loadCurrencyBalance, setLoadCurrencyBalance] = useState(false)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setLoadCurrencyBalance(true), 200) // 200ms
+    return () => clearTimeout(timeoutId)
+  }, [])
 
   // only show add or remove buttons if not on selected list
   return (
@@ -149,7 +168,11 @@ function CurrencyRow({
       <TokenTags currency={currency} />
       {showCurrencyAmount && (
         <RowFixed style={{ justifySelf: 'flex-end' }}>
-          {balance ? <Balance balance={balance} /> : account ? <Loader /> : null}
+          {loadCurrencyBalance ? (
+            <CurrencyBalance account={account} currency={currency} balanceSource={balanceSource} />
+          ) : account ? (
+            <Loader />
+          ) : null}
         </RowFixed>
       )}
     </MenuItem>
