@@ -9,7 +9,7 @@ const PopoverContainer = styled.div<{ show: boolean }>`
   z-index: 9999;
   visibility: ${(props) => (props.show ? 'visible' : 'hidden')};
   opacity: ${(props) => (props.show ? 1 : 0)};
-  transition: visibility 150ms linear, opacity 150ms linear;
+  transition: visibility 120ms linear, opacity 120ms linear;
   color: var(--text1);
 `
 

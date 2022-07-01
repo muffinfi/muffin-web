@@ -8,8 +8,8 @@ const QuestionWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding: 0px;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border: none;
   background: none;
   outline: none;
@@ -26,7 +26,7 @@ const QuestionWrapper = styled.div`
 `
 
 const QuestionMark = styled.span`
-  font-size: 14px;
+  font-size: 13px;
 `
 
 export default function QuestionHelper({ text }: { text: ReactNode; size?: number }) {
@@ -77,7 +77,7 @@ export function QuestionHelperInline({ text }: { text: ReactNode }) {
   const close = useCallback(() => setShow(false), [setShow])
 
   return (
-    <span style={{ marginLeft: '0.4em' }}>
+    <span style={{ marginLeft: 4 }}>
       <Tooltip text={text} show={show}>
         <QuestionMarkInline onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <span>?</span>
