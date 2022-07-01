@@ -5,14 +5,14 @@ import styled from 'styled-components/macro'
 import Popover, { PopoverProps } from '../Popover'
 
 export const TooltipContainer = styled.div`
-  max-width: 256px;
+  max-width: 300px;
   padding: 0.6rem 0.8rem;
   word-break: break-word;
   font-weight: 400;
-  font-size: var(--text-sm);
+  font-size: 13px;
   line-height: 1.33;
 
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
   background: var(--layer1);
   border: 1px solid var(--borderColor);

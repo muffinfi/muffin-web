@@ -45,3 +45,44 @@ export default function QuestionHelper({ text }: { text: ReactNode; size?: numbe
     </span>
   )
 }
+
+const QuestionMarkInline = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.01em;
+  width: 1.01em;
+  border-radius: 1.01em;
+  cursor: default;
+  outline: none;
+  user-select: none;
+
+  background-color: ${({ theme }) => theme.bg2};
+  color: ${({ theme }) => theme.text2};
+
+  :hover,
+  :focus {
+    opacity: 0.7;
+  }
+
+  & > span {
+    font-size: 0.9em;
+    transform: scale(0.9);
+  }
+`
+
+export function QuestionHelperInline({ text }: { text: ReactNode }) {
+  const [show, setShow] = useState<boolean>(false)
+  const open = useCallback(() => setShow(true), [setShow])
+  const close = useCallback(() => setShow(false), [setShow])
+
+  return (
+    <span style={{ marginLeft: '0.4em' }}>
+      <Tooltip text={text} show={show}>
+        <QuestionMarkInline onClick={open} onMouseEnter={open} onMouseLeave={close}>
+          <span>?</span>
+        </QuestionMarkInline>
+      </Tooltip>
+    </span>
+  )
+}

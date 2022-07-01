@@ -3,19 +3,16 @@ import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import * as M from '@muffinfi-ui'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import Card, { OutlineCard } from 'components/Card'
+import { OutlineCard } from 'components/Card'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
-import { MouseoverTooltipContent } from 'components/Tooltip'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { memo, useState } from 'react'
-import { ChevronDown, Info as InfoIcon } from 'react-feather'
+import { ChevronDown } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'
-import { HideSmall } from 'theme'
 
 import AdvancedSwapDetails from './AdvancedSwapDetails'
 import GasEstimateBadge from './GasEstimateBadge'
-import { ResponsiveTooltipContainer } from './styleds'
 import SwapRoute from './SwapRoute'
 import TradePrice from './TradePrice'
 
@@ -26,7 +23,7 @@ const StyledCard = styled(OutlineCard)`
 
 const StyledHeaderRow = styled(M.RowBetween)<{ disabled: boolean; open: boolean }>`
   min-height: 44px;
-  padding: 4px 8px;
+  padding: 4px 8px 4px 12px;
   border-radius: 12px;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
 
@@ -121,32 +118,34 @@ export default memo(function SwapDetailsDropdown({
       <M.Column stretch gap="16px" style={{ marginBottom: -16 }}>
         <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={!trade} open={showDetails}>
           <M.Row gap="4px" style={{ position: 'relative' }}>
-            {loading || syncing ? (
-              <StyledPolling>
-                <StyledPollingDot>
-                  <Spinner />
-                </StyledPollingDot>
-              </StyledPolling>
-            ) : (
-              <HideSmall>
-                <MouseoverTooltipContent
-                  wrap={false}
-                  content={
-                    <ResponsiveTooltipContainer origin="top right" style={{ padding: '0' }}>
-                      <Card padding="12px">
-                        <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} syncing={syncing} />
-                      </Card>
-                    </ResponsiveTooltipContainer>
-                  }
-                  placement="bottom"
-                  disableHover={showDetails}
-                >
-                  <M.TextContents size="sm" color="text2">
-                    <InfoIcon size="1em" />
-                  </M.TextContents>
-                </MouseoverTooltipContent>
-              </HideSmall>
-            )}
+            {
+              loading || syncing ? (
+                <StyledPolling>
+                  <StyledPollingDot>
+                    <Spinner />
+                  </StyledPollingDot>
+                </StyledPolling>
+              ) : null
+              // <HideSmall>
+              //   <MouseoverTooltipContent
+              //     wrap={false}
+              //     content={
+              //       <ResponsiveTooltipContainer origin="top right" style={{ padding: '0' }}>
+              //         <Card padding="12px">
+              //           <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} syncing={syncing} />
+              //         </Card>
+              //       </ResponsiveTooltipContainer>
+              //     }
+              //     placement="bottom"
+              //     disableHover={showDetails}
+              //   >
+              //     <M.TextContents size="sm" color="text2">
+              //       <InfoIcon size="1em" />
+              //     </M.TextContents>
+              //   </MouseoverTooltipContent>
+              // </HideSmall>
+            }
+
             {trade ? (
               <LoadingOpacityContainer $loading={syncing}>
                 <TradePrice
