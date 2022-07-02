@@ -109,10 +109,13 @@ export default memo(function AdvancedSwapDetails({
                 <Trans>Minimum received</Trans>
               ) : (
                 <Trans>Maximum paid</Trans>
-              )}{' '}
-              <M.Text size="xs" color="text2">
-                <Trans>({allowedSlippageFormatted}% slippage)</Trans>
-              </M.Text>
+              )}
+              <HideSmall>
+                {' '}
+                <M.Text size="xs" color="text2">
+                  <Trans>({allowedSlippageFormatted}% slippage)</Trans>
+                </M.Text>
+              </HideSmall>
               <QuestionHelperInline
                 text={
                   trade.tradeType === TradeType.EXACT_INPUT ? (
@@ -131,17 +134,18 @@ export default memo(function AdvancedSwapDetails({
             </M.Text>
             <TextWithLoadingPlaceholder syncing={syncing} width={70}>
               <M.Text align="right">
-                {trade.tradeType === TradeType.EXACT_INPUT ? (
+                {/* {trade.tradeType === TradeType.EXACT_INPUT ? (
                   <Trans>
                     <HideSmall>At least </HideSmall>
-                    {amountAfterSlippageFormatted}
+                    <span style={{ display: 'inline-block' }}>{amountAfterSlippageFormatted}</span>
                   </Trans>
                 ) : (
                   <Trans>
                     <HideSmall>At most </HideSmall>
-                    {amountAfterSlippageFormatted}
+                    <span style={{ display: 'inline-block' }}>{amountAfterSlippageFormatted}</span>
                   </Trans>
-                )}
+                )} */}
+                {amountAfterSlippageFormatted}
               </M.Text>
             </TextWithLoadingPlaceholder>
           </M.RowBetween>

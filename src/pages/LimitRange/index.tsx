@@ -932,7 +932,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
           </M.Row>
         </YellowCard>
       )
-    ) : (
+    ) : pool ? (
       <CardColumn gap="12px">
         <M.RowBetween gap="1em">
           <M.Text>
@@ -980,7 +980,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
               />
             </M.Row>
             <M.Row gap="0.5em">
-              <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
+              <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : '-'}</M.Text>
               {showEditTierButton && (
                 <M.Anchor role="button" color="primary0" hoverColor="primary1" onClick={handleOpenEditTierDropdown}>
                   {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
@@ -1009,21 +1009,25 @@ export default function LimitRange({ history }: RouteComponentProps) {
           </AnimatedDropdown>
         </div>
 
-        <Separator />
-
-        <M.TextDiv color="text2" paragraphLineHeight>
-          You’re creating a position with the price range{' '}
-          <M.PriceRangeExprInline
-            priceLower={tickPrices.LOWER}
-            priceUpper={tickPrices.UPPER}
-            tickAtLimit={areTicksAtMinMaxTicks}
-            invert={endPriceInverted}
-          />{' '}
-          in the <M.PoolTierExprInline tier={selectedTier} />. Your position will stay as 100% {outputCurrency?.symbol}{' '}
-          once the price reaches <M.PriceExprInline price={endPrice0} invert={endPriceInverted} />.
-        </M.TextDiv>
+        {selectedTier ? (
+          <>
+            <Separator />
+            <M.TextDiv color="text2" paragraphLineHeight>
+              You’re creating a position with the price range{' '}
+              <M.PriceRangeExprInline
+                priceLower={tickPrices.LOWER}
+                priceUpper={tickPrices.UPPER}
+                tickAtLimit={areTicksAtMinMaxTicks}
+                invert={endPriceInverted}
+              />{' '}
+              in the <M.PoolTierExprInline tier={selectedTier} />. Your position will stay as 100%{' '}
+              {outputCurrency?.symbol} once the price reaches{' '}
+              <M.PriceExprInline price={endPrice0} invert={endPriceInverted} />.
+            </M.TextDiv>
+          </>
+        ) : null}
       </CardColumn>
-    )
+    ) : null
 
   const makeButton = () => (
     <M.Column stretch gap="12px">

@@ -7,8 +7,6 @@ import { ReactNode } from 'react'
 import { Row, RowBetween, Text, TextContents } from '../core'
 import { Toggle, ToggleElement } from './misc'
 
-// TODO: Put to components and replace old code
-
 export default function OutputDestinationToggle({
   toInternalAccount,
   questionHelperContent,
@@ -40,5 +38,27 @@ export default function OutputDestinationToggle({
         </Toggle>
       </TextContents>
     </RowBetween>
+  )
+}
+
+export function OutputDestinationWallet() {
+  return (
+    <Row gap="0.5em" style={{ alignItems: 'baseline' }}>
+      <span style={{ fontSize: '0.875em' }}>
+        <FontAwesomeIcon icon={faWallet} />
+      </span>
+      <Trans>Wallet</Trans>
+    </Row>
+  )
+}
+
+export function OutputDestinationAccount() {
+  return (
+    <Row gap="0.5em" style={{ alignItems: 'baseline' }}>
+      <span style={{ fontSize: '0.875em' }}>
+        <FontAwesomeIcon icon={faBuildingColumns} />
+      </span>
+      <Trans>Muffin Account</Trans>
+    </Row>
   )
 }
