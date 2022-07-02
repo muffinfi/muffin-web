@@ -1038,11 +1038,11 @@ export default function AddLiquidity({
           onDismiss={handleDismissConfirmation}
           topContent={() => (
             <Review
-              parsedAmounts={parsedAmounts}
+              // parsedAmounts={parsedAmounts}
+              // existingPosition={existingPosition}
+              // priceLower={priceLower}
+              // priceUpper={priceUpper}
               position={position}
-              existingPosition={existingPosition}
-              priceLower={priceLower}
-              priceUpper={priceUpper}
               outOfRange={isOutOfRange}
               ticksAtLimit={areTicksAtLimit}
             />

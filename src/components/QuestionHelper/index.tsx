@@ -50,9 +50,9 @@ const QuestionMarkInline = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 1.01em;
-  width: 1.01em;
-  border-radius: 1.01em;
+  height: 1.077em;
+  width: 1.077em;
+  border-radius: 1.077em;
   cursor: default;
   outline: none;
   user-select: none;
@@ -77,7 +77,7 @@ export function QuestionHelperInline({ text }: { text: ReactNode }) {
   const close = useCallback(() => setShow(false), [setShow])
 
   return (
-    <span style={{ marginLeft: 4 }}>
+    <span style={{ marginLeft: 6 }}>
       <Tooltip text={text} show={show}>
         <QuestionMarkInline onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <span>?</span>
