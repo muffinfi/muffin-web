@@ -871,6 +871,7 @@ export default function AddLiquidity({
 
           <M.Column stretch gap="16px">
             <RangeSelector
+              priceCurrent={price}
               priceLower={priceLower}
               priceUpper={priceUpper}
               getDecrementLower={getDecrementLower}
