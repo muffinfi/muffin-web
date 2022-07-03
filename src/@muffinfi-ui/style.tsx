@@ -44,7 +44,7 @@ const lightThemeMixin = css`
   --error-bg: #da2d2b;
   --error-text: #fff;
   --error-disabled: ${transparentize(0.5, '#da2d2b')};
-  --error-disabled-text: ${transparentize(0.5, '#fff')};
+  --error-disabled-text: ${transparentize(0.3, '#fff')};
 
   --alert: #e3a507;
   --alert-text: #d39000;
