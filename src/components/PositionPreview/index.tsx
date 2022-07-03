@@ -59,7 +59,7 @@ export const PositionPreview = ({
         <M.TextContents size="lg" weight="bold">
           <M.PoolTierExpr currencyBase={currency1} currencyQuote={currency0} tier={position.poolTier} />
         </M.TextContents>
-        <RangeBadge removed={removed} inRange={inRange} settled={position.settled} />
+        <RangeBadge removed={removed} inRange={inRange} settled={position.settled} isLimit={position.isLimitOrder} />
       </M.RowBetween>
 
       <LightCard>

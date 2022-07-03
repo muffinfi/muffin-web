@@ -402,7 +402,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     <SettingsTab placeholderSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE} noDeadline />
                   </M.RowBetween>
                   <span>
-                    <RangeBadge removed={removed} inRange={!outOfRange} settled={position.settled} />
+                    <RangeBadge
+                      removed={removed}
+                      inRange={!outOfRange}
+                      settled={position.settled}
+                      isLimit={position.isLimitOrder}
+                    />
                   </span>
                 </M.Column>
 

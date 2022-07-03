@@ -154,6 +154,10 @@ export function PositionPage({
   // flag of whether all position liquidity is removed
   const removed = positionDetail?.liquidityD8?.eq(0)
 
+  const isLimitOrder =
+    positionDetail?.limitOrderType === LimitOrderType.ZeroForOne ||
+    positionDetail?.limitOrderType === LimitOrderType.OneForZero
+
   /*=====================================================================
    *                              HEADER
    *====================================================================*/
@@ -352,7 +356,7 @@ export function PositionPage({
 
       <M.Row gap="8px">
         <RangeOrderBadge limitOrderType={positionDetail?.limitOrderType} token0={token0} token1={token1} />
-        <RangeBadge removed={removed} inRange={inRange} settled={settled} />
+        <RangeBadge removed={removed} inRange={inRange} settled={settled} isLimit={isLimitOrder} />
       </M.Row>
     </M.Column>
   )
@@ -512,7 +516,7 @@ export function PositionPage({
             <M.TextContents weight="semibold">
               <M.PriceExpr price={inverted ? tier?.token1Price : tier?.token0Price} />
             </M.TextContents>
-            <RangeBadge removed={removed} inRange={inRange} settled={settled} />
+            <RangeBadge removed={removed} inRange={inRange} settled={settled} isLimit={isLimitOrder} />
           </M.Column>
         </M.Column>
       </M.SectionCard>

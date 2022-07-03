@@ -46,6 +46,7 @@ const lightThemeMixin = css`
   --error-disabled: ${transparentize(0.5, '#da2d2b')};
   --error-disabled-text: ${transparentize(0.5, '#fff')};
 
+  --alert: #e3a507;
   --alert-text: #d39000;
 
   /* color */
@@ -85,6 +86,8 @@ const darkThemeMixin = css`
   --tertiary1: ${lighten(0.04, '#333')};
   --tertiary2: ${lighten(0.08, '#333')};
   --tertiary-text: #fff;
+  --tertiary-disabled: ${transparentize(0.5, darken(0.08, '#333'))};
+  --tertiary-disabled-text: ${transparentize(0.5, '#fff')};
 
   --disabled: #333;
   --disabled-text: #666;
@@ -94,6 +97,11 @@ const darkThemeMixin = css`
 
   --error-bg: #ff3333;
   --error-text: #fff;
+  --error-disabled: ${transparentize(0.5, '#ff3333')};
+  --error-disabled-text: ${transparentize(0.5, '#fff')};
+
+  --alert: #e3a507;
+  --alert-text: #d39000;
 
   /* color */
   --green: #27ae60;

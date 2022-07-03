@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
-import { Position } from '@muffinfi/muffin-v1-sdk'
+import { LimitOrderType, Position } from '@muffinfi/muffin-v1-sdk'
 import * as M from '@muffinfi-ui'
 import RangeBadge from 'components/Badge/RangeBadge'
 import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
@@ -54,7 +54,7 @@ const LoaderWrapper = styled(M.Row)`
 const LastColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   align-items: flex-end;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -108,7 +108,7 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
 
   const positionSummaryLink = `/positions/${tokenId}`
 
-  const removed = liquidityD8?.eq(0)
+  const removed = liquidityD8.eq(0)
 
   return (
     <M.TextContents size="sm">
@@ -127,10 +127,18 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
             <M.Text weight="semibold">
               <Trans>{tier.feePercent.toFixed(2)}%</Trans>
             </M.Text>
-            <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
+            <M.Row wrap="wrap" columnGap="0.7em" rowGap="0.33em">
+              <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
+              <M.Text size="xs">({tickUpper - tickLower} ticks)</M.Text>
+            </M.Row>
             <LastColumn>
               <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
-              <RangeBadge removed={removed} inRange={!outOfRange} settled={settled} />
+              <RangeBadge
+                removed={removed}
+                inRange={!outOfRange}
+                settled={settled}
+                isLimit={limitOrderType !== LimitOrderType.NotLimitOrder}
+              />
             </LastColumn>
           </>
         ) : (

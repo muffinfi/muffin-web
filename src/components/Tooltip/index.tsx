@@ -25,8 +25,7 @@ interface TooltipProps extends Omit<PopoverProps, 'content'> {
 interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
   content: ReactNode
   onOpen?: () => void
-  // whether to wrap the content in a `TooltipContainer`
-  wrap?: boolean
+  wrap?: boolean // whether to wrap the content in a `TooltipContainer`
   disableHover?: boolean // disable the hover and content display
 }
 
@@ -44,8 +43,8 @@ export function MouseoverTooltip({
   ...rest
 }: Omit<TooltipProps, 'show'> & { wrapperProps?: Omit<BoxProps, 'onMouseEnter' | 'onMouseLeave'> }) {
   const [show, setShow] = useState(false)
-  const open = useCallback(() => setShow(true), [setShow])
-  const close = useCallback(() => setShow(false), [setShow])
+  const open = useCallback(() => setShow(true), [])
+  const close = useCallback(() => setShow(false), [])
   return (
     <Tooltip {...rest} show={show}>
       <Box {...wrapperProps} onMouseEnter={open} onMouseLeave={close}>
@@ -67,7 +66,7 @@ export function MouseoverTooltipContent({
     setShow(true)
     openCallback?.()
   }, [openCallback])
-  const close = useCallback(() => setShow(false), [setShow])
+  const close = useCallback(() => setShow(false), [])
   return (
     <TooltipContent {...rest} show={show} content={disableHover ? null : content}>
       <div
