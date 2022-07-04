@@ -77,7 +77,6 @@ import { TransactionType } from '../../state/transactions/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
 import { ThemedText } from '../../theme'
-import { Review } from './Review'
 import { ColumnDisableable, CurrencyDropdown, LoadingRows, StyledInput } from './styled'
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
@@ -1170,17 +1169,17 @@ export default function AddLiquidity({
         <ConfirmationModalContent
           title={<Trans>Add Liquidity</Trans>}
           onDismiss={handleDismissConfirmation}
-          topContent={() => (
-            <Review
-              // parsedAmounts={parsedAmounts}
-              // existingPosition={existingPosition}
-              // priceLower={priceLower}
-              // priceUpper={priceUpper}
-              position={position}
-              outOfRange={isOutOfRange}
-              ticksAtLimit={areTicksAtLimit}
-            />
-          )}
+          topContent={() =>
+            position ? (
+              <PositionPreview
+                position={position}
+                title={<Trans>Selected Range</Trans>}
+                inRange={!isOutOfRange}
+                ticksAtLimit={areTicksAtLimit}
+                baseCurrencyDefault={baseCurrency}
+              />
+            ) : null
+          }
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
               <Trans>Add Liquidity</Trans>
