@@ -46,7 +46,7 @@ const StyledPolling = styled.div`
   height: 16px;
   width: 16px;
   margin-right: 2px;
-  margin-left: 10px;
+  margin-left: 5px;
   align-items: center;
   color: ${({ theme }) => theme.text1};
   transition: 250ms ease color;

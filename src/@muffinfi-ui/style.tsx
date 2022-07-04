@@ -57,14 +57,14 @@ const lightThemeMixin = css`
 
 const darkThemeMixin = css`
   /* color */
-  --bg: #181818;
+  --bg: #151515;
   --layer1: #242424;
-  --layer2: #1a1a1a;
+  --layer2: #181818;
   --layer3: #333;
 
   /* border */
-  --borderColor: #333;
-  --borderColor1: ${lighten(0.12, '#333')};
+  --borderColor: #404040;
+  --borderColor1: ${lighten(0.12, '#404040')};
 
   /* text color */
   --text1: #fff;

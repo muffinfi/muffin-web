@@ -11,7 +11,7 @@ import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useRef } from 'react'
 import { ArrowDownCircle, ChevronDown } from 'react-feather'
 import { useHistory } from 'react-router-dom'
-import { useModalOpen, useToggleModal } from 'state/application/hooks'
+import { useOpenCloseModal } from 'state/application/hooks'
 import { addPopup, ApplicationModal } from 'state/application/reducer'
 import styled from 'styled-components/macro'
 import { replaceURLParam } from 'utils/routes'
@@ -49,7 +49,7 @@ const FlyoutMenuWrapper = styled.div`
 `
 
 const FlyoutMenu = styled.div`
-  padding: 16px;
+  padding: 12px;
   border-radius: 16px;
   background-color: var(--layer1);
   /* prettier-ignore */
@@ -61,9 +61,9 @@ const FlyoutMenu = styled.div`
 `
 
 const FlyoutItem = styled(M.Column).attrs({ stretch: true, gap: '0.75rem' })<{ active?: boolean }>`
-  border-radius: 8px;
+  border-radius: 10px;
   background: ${({ active }) => (active ? 'var(--layer2)' : 'transparent')};
-  padding: ${({ active }) => (active ? '16px' : '8px 8px')};
+  padding: ${({ active }) => (active ? '12px' : '8px 12px')};
 `
 
 const GreenDot = styled.div`
@@ -192,10 +192,9 @@ export default function NetworkSelector() {
   const { urlChain, urlChainId } = getParsedChainId(parsedQs)
   const prevChainId = usePrevious(chainId)
   const node = useRef<HTMLDivElement>(null)
-  const open = useModalOpen(ApplicationModal.NETWORK_SELECTOR)
-  const toggle = useToggleModal(ApplicationModal.NETWORK_SELECTOR)
+  const [open, setOpen, setClose] = useOpenCloseModal(ApplicationModal.NETWORK_SELECTOR)
 
-  useOnClickOutside(node, open ? toggle : undefined)
+  useOnClickOutside(node, open ? setClose : undefined)
 
   const history = useHistory()
 
@@ -204,12 +203,12 @@ export default function NetworkSelector() {
   const dispatch = useAppDispatch()
 
   const handleChainSwitch = useCallback(
-    (targetChain: number, skipToggle?: boolean) => {
+    (targetChain: number, skipClose?: boolean) => {
       if (!library) return
       switchToNetwork({ library, chainId: targetChain })
         .then(() => {
-          if (!skipToggle) {
-            toggle()
+          if (!skipClose) {
+            setClose()
           }
           history.replace({
             search: replaceURLParam(history.location.search, 'chain', getChainNameFromId(targetChain)),
@@ -224,14 +223,14 @@ export default function NetworkSelector() {
             history.replace({ search: replaceURLParam(history.location.search, 'chain', getChainNameFromId(chainId)) })
           }
 
-          if (!skipToggle) {
-            toggle()
+          if (!skipClose) {
+            setClose()
           }
 
           dispatch(addPopup({ content: { failedSwitchNetwork: targetChain }, key: `failed-network-switch` }))
         })
     },
-    [dispatch, library, toggle, history, chainId]
+    [dispatch, library, setClose, history, chainId]
   )
 
   useEffect(() => {
@@ -258,7 +257,7 @@ export default function NetworkSelector() {
   }
 
   return (
-    <div ref={node} onMouseEnter={toggle} onMouseLeave={toggle} style={{ position: 'relative' }}>
+    <div ref={node} onMouseEnter={setOpen} onMouseLeave={setClose} style={{ position: 'relative' }}>
       <SelectorButton gap="0.5em">
         <Logo src={info.logoUrl} />
         <SelectorLabel>{info.label}</SelectorLabel>
@@ -268,9 +267,9 @@ export default function NetworkSelector() {
         <FlyoutMenuWrapper>
           <FlyoutMenu>
             <M.Column stretch gap="0.5rem">
-              <M.Text color="text2">
+              <M.TextDiv color="text2" style={{ padding: '4px 4px 0' }}>
                 <Trans>Select a network</Trans>
-              </M.Text>
+              </M.TextDiv>
               <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} />
               <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.RINKEBY} />
               {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.POLYGON} />

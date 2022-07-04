@@ -567,7 +567,15 @@ export default function Swap({ history }: RouteComponentProps) {
               <M.TextContents size="sm" weight="medium" color="text2">
                 <M.OutputDestinationToggle
                   toInternalAccount={storeInInternalAccount}
-                  questionHelperContent={<Trans>Choose the destination of the swapped token.</Trans>}
+                  questionHelperContent={
+                    <Trans>
+                      Choose the destination of the output token.
+                      <br />
+                      <br />
+                      &quot;Account&quot; refers to your internal account in Muffin. &quot;Wallet&quot; refers to your
+                      own external wallet.
+                    </Trans>
+                  }
                   onToggle={toggleStoreInInternalAccount}
                 />
               </M.TextContents>

@@ -112,9 +112,9 @@ export default memo(function TokenRow({
                 }
               >
                 <Badge variant={BadgeVariant.DEFAULT}>
-                  <AlertCircle width={14} height={14} />
+                  <AlertCircle width={12} height={12} />
                   &nbsp;
-                  <M.Text weight="medium" size="sm">
+                  <M.Text weight="medium" size="xs">
                     <Trans>Untrusted</Trans>
                   </M.Text>
                 </Badge>

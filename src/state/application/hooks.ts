@@ -15,6 +15,17 @@ export function useToggleModal(modal: ApplicationModal): () => void {
   return useCallback(() => dispatch(setOpenModal(open ? null : modal)), [dispatch, modal, open])
 }
 
+export function useOpenCloseModal(modal: ApplicationModal): [boolean, () => void, () => void] {
+  const isOpen = useModalOpen(modal)
+  const dispatch = useAppDispatch()
+
+  return useMemo(() => {
+    const setOpen = () => (!isOpen ? dispatch(setOpenModal(modal)) : undefined)
+    const setClose = () => (isOpen ? dispatch(setOpenModal(null)) : undefined)
+    return [isOpen, setOpen, setClose]
+  }, [dispatch, modal, isOpen])
+}
+
 export function useWalletModalToggle(): () => void {
   return useToggleModal(ApplicationModal.WALLET)
 }

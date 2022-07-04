@@ -101,7 +101,6 @@ export default function Account(props: RouteComponentProps) {
                   <div />
                   <div />
                   <div />
-                  <div />
                 </StyledLoadingRows>
               ) : hasTokens ? (
                 <M.Column stretch gap="0px">
@@ -116,7 +115,9 @@ export default function Account(props: RouteComponentProps) {
                   ))}
                 </M.Column>
               ) : (
-                <NoTokens>No tokens found</NoTokens>
+                <NoTokens>
+                  <Trans>No tokens found</Trans>
+                </NoTokens>
               )}
             </M.Column>
           </M.SectionCard>
