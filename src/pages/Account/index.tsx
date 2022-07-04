@@ -46,12 +46,17 @@ export default function Account(props: RouteComponentProps) {
 
   return (
     <>
-      <M.Container maxWidth="28rem">
+      <M.Container maxWidth="30rem">
         <M.Column stretch gap="32px">
-          <M.RowBetween wrap="wrap" gap="2em">
-            <M.Text size="xl" weight="bold">
-              <Trans>Account</Trans>
-            </M.Text>
+          <M.RowBetween wrap="wrap" gap="1em">
+            <M.Column gap="8px">
+              <M.Text size="xl" weight="bold">
+                <Trans>Account</Trans>
+              </M.Text>
+              <M.Text color="text2" size="sm" style={{ maxWidth: '16rem' }}>
+                <Trans>Your internal token balances in Muffin.</Trans>
+              </M.Text>
+            </M.Column>
 
             <M.Row wrap="wrap" gap="0.75em">
               <M.ButtonSecondary id="account-withdraw-button" as={Link} to="/account/withdraw">
@@ -63,7 +68,7 @@ export default function Account(props: RouteComponentProps) {
             </M.Row>
           </M.RowBetween>
 
-          <M.SectionCard greedyMargin>
+          <M.SectionCard>
             <M.Column stretch gap="24px">
               <M.RowBetween>
                 <M.Text size="sm" weight="semibold">
