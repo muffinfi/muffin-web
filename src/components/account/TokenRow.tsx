@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import Badge, { BadgeVariant } from 'components/Badge'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -8,9 +9,10 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCurrency from 'hooks/useCurrency'
 import { memo } from 'react'
-import { AlertCircle, Minus, Plus } from 'react-feather'
+import { AlertCircle, ExternalLink as LinkIcon, Minus, Plus } from 'react-feather'
 import { useTokenBalance } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
+import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 const MenuItem = styled.div`
   padding: 12px 5px;
@@ -61,7 +63,7 @@ export default memo(function TokenRow({
   showZeroBalance?: boolean
   showUntrusted?: boolean
 }) {
-  const { account } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const token = useCurrency(tokenId)
   const balance = useTokenBalance(
     account ?? undefined,
@@ -78,16 +80,27 @@ export default memo(function TokenRow({
     return null
   }
 
-  // only show add or remove buttons if not on selected list
   return (
     <MenuItem className={`token-item-${tokenId}`}>
       <CurrencyLogo currency={token} size={'28px'} />
 
       <M.Column stretch gap="4px">
         <M.Row gap="8px">
-          <M.Text title={token.name} weight="medium" nowrap ellipsis>
-            {token.symbol}
-          </M.Text>
+          <M.Row gap="8px" wrap="nowrap" style={{ alignItems: 'baseline' }}>
+            <M.Text title={token.name} weight="medium" nowrap ellipsis>
+              {token.symbol}
+            </M.Text>
+            {chainId ? (
+              <M.ExternalLink
+                href={getExplorerLink(chainId, token.address, ExplorerDataType.TOKEN)}
+                color="placeholder-text"
+                hoverColor="text2"
+                size="sm"
+              >
+                <LinkIcon size="1em" />
+              </M.ExternalLink>
+            ) : null}
+          </M.Row>
           {!trusted && (
             <M.Row gap="4px">
               <MouseoverTooltip
@@ -116,7 +129,7 @@ export default memo(function TokenRow({
 
       <M.Row style={{ justifySelf: 'flex-end' }}>
         {balance ? (
-          <StyledBalanceText title={balance.toExact()}>{balance.toSignificant(4)}</StyledBalanceText>
+          <StyledBalanceText title={balance.toExact()}>{formatTokenBalance(balance)}</StyledBalanceText>
         ) : account ? (
           <Loader />
         ) : null}
