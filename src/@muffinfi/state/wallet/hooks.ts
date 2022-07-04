@@ -11,7 +11,7 @@ import { useMemo } from 'react'
 import { isAddress } from 'utils'
 
 const ERC20Interface = new Interface(ERC20ABI) as Erc20Interface
-const tokenBalancesGasRequirement = { gasRequired: 125_000 }
+const tokenBalancesGasRequirement = { gasRequired: 185_000 }
 
 export enum BalanceSource {
   INTERNAL_ACCOUNT = 0b01,
