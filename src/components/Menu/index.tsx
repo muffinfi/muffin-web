@@ -197,13 +197,20 @@ export default function Menu() {
                         <Trans>Swap</Trans>
                       </MenuItemInternalLink>
                       <MenuItemInternalLink to="/positions" onClick={toggleMenu}>
-                        <Trans>Pool</Trans>
+                        <Trans>Positions</Trans>
                       </MenuItemInternalLink>
                       <MenuItemInternalLink to="/account" onClick={toggleMenu}>
                         <Trans>Account</Trans>
                       </MenuItemInternalLink>
                       <MenuSeperator />
                     </NavMenuItemList>
+
+                    <MenuItem onClick={() => toggleDarkMode()}>
+                      <div>{darkMode ? <Trans>Light Theme</Trans> : <Trans>Dark Theme</Trans>}</div>
+                      {darkMode ? <Moon opacity={0.6} size={16} /> : <Sun opacity={0.6} size={16} />}
+                    </MenuItem>
+
+                    <MenuSeperator />
 
                     <MenuItemExternalLink href="/">
                       <div>
@@ -235,10 +242,6 @@ export default function Menu() {
                       </div>
                       <Globe opacity={0.6} size={16} />
                     </MenuItem> */}
-                    <MenuItem onClick={() => toggleDarkMode()}>
-                      <div>{darkMode ? <Trans>Light Theme</Trans> : <Trans>Dark Theme</Trans>}</div>
-                      {darkMode ? <Moon opacity={0.6} size={16} /> : <Sun opacity={0.6} size={16} />}
-                    </MenuItem>
                     <MenuItemExternalLink href="/">
                       <div>
                         <Trans>Docs</Trans>
