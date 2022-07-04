@@ -83,10 +83,15 @@ export default function Pool() {
     <>
       <M.Container maxWidth="980px">
         <M.Column stretch gap="32px">
-          <M.RowBetween>
-            <M.Text size="xl" weight="bold">
-              <Trans>Positions</Trans>
-            </M.Text>
+          <M.RowBetween wrap="wrap" gap="1em">
+            <M.Column gap="8px">
+              <M.Text size="xl" weight="bold">
+                <Trans>Positions</Trans>
+              </M.Text>
+              <M.Text color="text2" size="sm">
+                <Trans>Provide liquidity and earn fees on Muffin.</Trans>
+              </M.Text>
+            </M.Column>
             <M.ButtonPrimary id="join-pool-button" as={Link} to="/add/ETH">
               + <Trans>New Position</Trans>
             </M.ButtonPrimary>
