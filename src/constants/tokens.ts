@@ -20,11 +20,11 @@ import { SupportedChainId } from './chains'
 /**
  * Prepared by Muffin for testing. Not offical tokens
  */
-export const TETH_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x15e4F1fc9a02e36039554531cDdF1C70F0B05364', 8, 'tETH', 'Test Ether')
+export const TETH_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x15e4F1fc9a02e36039554531cDdF1C70F0B05364', 18, 'tETH', 'Test Ether')
 export const WBTC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x0C58e68883E8c6390255A83a73dfA42b56EC6400', 8, 'WBTC', 'Wrapped BTC')
-export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 8, 'USDC', 'USD Coin')
-export const USDT_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xFD709452E12Df357f415D971eE12C7854285a072', 8, 'USDT', 'Tether USD')
-export const DAI_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x7C4e4edc8Cda71DfaB107a1A44f6858f36857cA8', 8, 'DAI', 'Dai Stablecoin')
+export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 6, 'USDC', 'USD Coin')
+export const USDT_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xFD709452E12Df357f415D971eE12C7854285a072', 6, 'USDT', 'Tether USD')
+export const DAI_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x7C4e4edc8Cda71DfaB107a1A44f6858f36857cA8', 18, 'DAI', 'Dai Stablecoin')
 /////////////////////////////////////////////
 
 export { USDC_ARBITRUM, USDC_MAINNET, USDC_OPTIMISM, USDC_POLYGON }
