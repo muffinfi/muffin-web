@@ -16,6 +16,7 @@ import {
 } from '@muffinfi/muffin-v1-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
@@ -980,7 +981,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
               />
             </M.Row>
             <M.Row gap="0.5em">
-              <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : '-'}</M.Text>
+              <M.Text>{selectedTier ? `${formatFeePercent(selectedTier.feePercent)}%` : '-'}</M.Text>
               {showEditTierButton && (
                 <M.Anchor role="button" color="primary0" hoverColor="primary1" onClick={handleOpenEditTierDropdown}>
                   {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}

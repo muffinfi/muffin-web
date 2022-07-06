@@ -7,6 +7,7 @@ import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
 import { LimitOrderType, Position } from '@muffinfi/muffin-v1-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Fraction, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
@@ -573,7 +574,7 @@ export function PositionPage({
           <M.DataLabel>
             <Trans>Fee tier</Trans>
           </M.DataLabel>
-          <M.DataValue>{tier?.feePercent.toFixed(2)}%</M.DataValue>
+          <M.DataValue>{tier ? formatFeePercent(tier.feePercent) : null}%</M.DataValue>
         </M.DataGroup>
 
         <M.DataGroup>

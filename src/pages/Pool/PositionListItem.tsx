@@ -3,6 +3,7 @@ import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import { LimitOrderType, Position } from '@muffinfi/muffin-v1-sdk'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import RangeBadge from 'components/Badge/RangeBadge'
 import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
@@ -125,7 +126,7 @@ export default function PositionListItem({ positionDetails }: { positionDetails:
               </M.Text>
             </M.Row>
             <M.Text weight="semibold">
-              <Trans>{tier.feePercent.toFixed(2)}%</Trans>
+              <Trans>{formatFeePercent(tier.feePercent)}%</Trans>
             </M.Text>
             <M.Row wrap="wrap" columnGap="0.7em" rowGap="0.33em">
               <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />

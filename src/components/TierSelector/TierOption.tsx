@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
 import { sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import { ButtonRadioChecked } from 'components/Button'
 import { useCallback, useMemo } from 'react'
@@ -29,7 +30,7 @@ export function TierOption({
     <ButtonRadioChecked active={active} onClick={onClick} activeColor={activeColor}>
       <M.Column gap="0.5em">
         <M.Text weight="semibold">
-          <Trans>{feePercent.toFixed(2)}%</Trans>
+          <Trans>{formatFeePercent(feePercent)}%</Trans>
         </M.Text>
         {distributions && tierId != null && <TierPercentageBadge distributions={distributions} tierId={tierId} />}
       </M.Column>

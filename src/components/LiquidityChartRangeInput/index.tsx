@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { Pool, sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
 import { AutoColumn, ColumnCenter } from 'components/Column'
 import Loader from 'components/Loader'
@@ -102,10 +103,7 @@ export default function LiquidityChartRangeInput({
 
   const tierColors = useTierColors()
 
-  const keys = useMemo(
-    () => pool?.tiers.map((tier) => `${sqrtGammaToFeePercent(tier.sqrtGamma).toFixed(2)}%`) ?? [],
-    [pool]
-  )
+  const keys = useMemo(() => pool?.tiers.map((tier) => `${formatFeePercent(tier.feePercent)}%`) ?? [], [pool])
   const [hiddenKeyIndexes, setHiddenKeyIndexes] = useState<number[]>([])
 
   const isSorted = currencyA && currencyB && currencyA?.wrapped.sortsBefore(currencyB?.wrapped)

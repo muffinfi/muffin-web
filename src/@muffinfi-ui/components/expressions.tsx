@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Tier } from '@muffinfi/muffin-v1-sdk'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import { Currency, Price, Rounding, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -166,7 +167,7 @@ export const PoolTierExpr = memo(function PoolTierExpr({
       </Text>
       {tier && !noFee && (
         <FeeBadge>
-          <Trans>{tier.feePercent.toFixed(2)}%</Trans>
+          <Trans>{formatFeePercent(tier.feePercent)}%</Trans>
         </FeeBadge>
       )}
     </Row>
@@ -179,7 +180,7 @@ export const PoolTierExprInline = memo(function PoolTierExprInline({ tier }: { t
   if (!currencyBase || !currencyQuote || !tier) return <span>-</span>
   return (
     <span>
-      {currencyQuote.symbol}/{currencyBase.symbol} pool ({tier.feePercent.toFixed(2)}% fee tier)
+      {currencyQuote.symbol}/{currencyBase.symbol} pool ({formatFeePercent(tier.feePercent)}% fee tier)
     </span>
   )
 })
