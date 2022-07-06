@@ -8,6 +8,7 @@ import {
   DAI_ARBITRUM_ONE,
   DAI_OPTIMISM,
   DAI_POLYGON,
+  DAI_RINKEBY,
   ETH2X_FLI,
   FEI,
   FRAX,
@@ -17,6 +18,7 @@ import {
   rETH2,
   sETH2,
   SWISE,
+  TETH_RINKEBY,
   TRIBE,
   USDC_ARBITRUM,
   USDC_MAINNET,
@@ -27,6 +29,7 @@ import {
   USDT_ARBITRUM_ONE,
   USDT_OPTIMISM,
   USDT_POLYGON,
+  USDT_RINKEBY,
   WBTC,
   WBTC_ARBITRUM_ONE,
   WBTC_OPTIMISM,
@@ -86,6 +89,9 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
     ...WRAPPED_NATIVE_CURRENCIES_ONLY[SupportedChainId.RINKEBY],
     USDC_RINKEBY,
     WBTC_RINKEBY,
+    USDT_RINKEBY,
+    DAI_RINKEBY,
+    TETH_RINKEBY,
   ],
 }
 export const ADDITIONAL_BASES: { [chainId: number]: { [tokenAddress: string]: Token[] } } = {
@@ -129,6 +135,11 @@ export const COMMON_BASES: ChainCurrencyList = {
   ],
   [SupportedChainId.RINKEBY]: [
     nativeOnChain(SupportedChainId.RINKEBY),
+    USDC_RINKEBY,
+    USDT_RINKEBY,
+    DAI_RINKEBY,
+    WBTC_RINKEBY,
+    TETH_RINKEBY,
     WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token,
   ],
   [SupportedChainId.GOERLI]: [
