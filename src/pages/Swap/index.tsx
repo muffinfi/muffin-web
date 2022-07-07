@@ -349,7 +349,7 @@ export default function Swap({ history }: RouteComponentProps) {
           attemptingTxn: false,
           tradeToConfirm,
           showConfirm,
-          swapErrorMessage: error.message,
+          swapErrorMessage: error.message != null ? `${error.message}` : undefined,
           txHash: undefined,
         })
       })
