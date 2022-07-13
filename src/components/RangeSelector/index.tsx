@@ -62,7 +62,7 @@ export default function RangeSelector({
         decrement={isSorted ? getDecrementLower : getIncrementUpper}
         increment={isSorted ? getIncrementLower : getDecrementUpper}
         decrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
-        incrementDisabled={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
+        incrementDisabled={false} // {ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER]}
         tokenA={currencyA?.symbol}
         tokenB={currencyB?.symbol}
         title={
@@ -76,8 +76,8 @@ export default function RangeSelector({
         onUserInput={onRightRangeInput}
         decrement={isSorted ? getDecrementUpper : getIncrementLower}
         increment={isSorted ? getIncrementUpper : getDecrementLower}
+        decrementDisabled={false} // {ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
         incrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
-        decrementDisabled={ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]}
         tokenA={currencyA?.symbol}
         tokenB={currencyB?.symbol}
         title={
