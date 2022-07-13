@@ -58,14 +58,21 @@ export const Chart = ({
   }, [size, zoomLevel, midPoint]) // NOTE: midPoint can change initial xScale
 
   const y = useMemo(() => {
-    const maxYs = dataList.map((data) => d3.max(data, (d) => d.vy) ?? 0)
+    /**
+     * we use the initial domain * / 3 to determine the y-axis scale
+     */
+    const domain = [(midPoint * zoomLevel.initialMin) / 3, midPoint * zoomLevel.initialMax * 3] as [number, number]
+    const stacked = stackDataList(dataList)
+    const clipped = stacked.map((data) => clipData(data, domain))
+
+    const maxYs = clipped.map((data) => d3.max(data, (d) => d.vy) ?? 0)
     const maxY = d3.max(maxYs) ?? 0
     return d3
       .scaleLinear()
       .domain([0, maxY])
       .nice(6)
       .range([size.height - size.margin.bottom, size.margin.top])
-  }, [size, dataList])
+  }, [size, zoomLevel, dataList, midPoint])
 
   const { xz, svgRef } = useZoom({
     size,
@@ -80,15 +87,15 @@ export const Chart = ({
   /**
    * Prepare data
    */
-  const fullStackedDataList = useMemo(() => {
+  const allStackedDataList = useMemo(() => {
     const nonHidden = dataList.map((data, j) => (hideData[j] ? data.map((datum) => ({ ...datum, vy: 0 })) : data))
     return stackDataList(nonHidden)
   }, [dataList, hideData])
 
   const [xzDomain0, xzDomain1] = xz.domain()
   const stackedDataList = useMemo(
-    () => fullStackedDataList.map((data) => clipData(data, [xzDomain0, xzDomain1])),
-    [fullStackedDataList, xzDomain0, xzDomain1]
+    () => allStackedDataList.map((data) => clipData(data, [xzDomain0, xzDomain1])),
+    [allStackedDataList, xzDomain0, xzDomain1]
   )
 
   const isHideDataChanging = useIsChanging(hideData)

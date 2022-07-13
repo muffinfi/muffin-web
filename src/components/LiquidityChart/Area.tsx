@@ -22,7 +22,7 @@ export const Area = ({
       .curve(d3.curveStepAfter)
       .x((d) => x(d.vx))
       .y0(y(0))
-      .y1((d) => y(d.vy * 0.85))
+      .y1((d) => y(d.vy * 0.9))
   }, [x, y])
 
   const d = useMemo(() => area(data), [area, data])
