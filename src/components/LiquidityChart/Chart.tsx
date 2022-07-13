@@ -70,7 +70,6 @@ export const Chart = ({
     return d3
       .scaleLinear()
       .domain([0, maxY])
-      .nice(6)
       .range([size.height - size.margin.bottom, size.margin.top])
   }, [size, zoomLevel, dataList, midPoint])
 

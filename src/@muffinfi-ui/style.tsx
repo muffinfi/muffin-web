@@ -58,7 +58,7 @@ const lightThemeMixin = css`
 const darkThemeMixin = css`
   /* color */
   --bg: #151515;
-  --layer1: #242424;
+  --layer1: #262626;
   --layer2: #181818;
   --layer3: #333;
 
@@ -69,7 +69,7 @@ const darkThemeMixin = css`
   /* text color */
   --text1: #fff;
   --text2: #888;
-  --placeholder-text: #444;
+  --placeholder-text: #484848;
 
   /* button color */
   --primary0: #d23a25;
