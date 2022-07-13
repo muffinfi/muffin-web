@@ -25,6 +25,7 @@ import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
+import { LiquidityChart } from 'components/LiquidityChart'
 import { QuestionHelperInline } from 'components/QuestionHelper'
 import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -59,7 +60,6 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { ErrorCard, OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import DowntimeWarning from '../../components/DowntimeWarning'
-import LiquidityChartRangeInput from '../../components/LiquidityChartRangeInput'
 import { PositionPreview } from '../../components/PositionPreview'
 import RangeSelector from '../../components/RangeSelector'
 import RateToggle from '../../components/RateToggle'
@@ -163,7 +163,7 @@ export default function AddLiquidity({
 
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
-  const [tierId, tier] = pool?.getTierBySqrtGamma(sqrtGamma) || []
+  const [, tier] = pool?.getTierBySqrtGamma(sqrtGamma) || []
 
   const isCreatingPool = poolState === PoolState.NOT_EXISTS
   const isInvalidPool = poolState === PoolState.INVALID
@@ -932,19 +932,31 @@ export default function AddLiquidity({
             </M.Row>
 
             {isCreatingPool ? null : (
-              <LiquidityChartRangeInput
-                currencyA={baseCurrency ?? undefined}
-                currencyB={quoteCurrency ?? undefined}
-                pool={pool || undefined}
-                tierId={isAddingTier ? 0 : tierId}
-                ticksAtLimit={areTicksAtLimit}
-                price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
-                priceLower={priceLower}
-                priceUpper={priceUpper}
-                onLeftRangeInput={onLeftRangeInput}
-                onRightRangeInput={onRightRangeInput}
-                interactive={!hasExistingPosition}
-              />
+              <>
+                <LiquidityChart
+                  currencyBase={baseCurrency}
+                  currencyQuote={quoteCurrency}
+                  tierId={mockTierId}
+                  priceLower={invertPrice ? priceUpper?.invert() : priceLower}
+                  priceUpper={invertPrice ? priceLower?.invert() : priceUpper}
+                  onLeftRangeInput={onLeftRangeInput}
+                  onRightRangeInput={onRightRangeInput}
+                  resetRangeNonce={sqrtGamma}
+                />
+                {/* <LiquidityChartRangeInput
+                  currencyA={baseCurrency ?? undefined}
+                  currencyB={quoteCurrency ?? undefined}
+                  pool={pool || undefined}
+                  tierId={isAddingTier ? 0 : tierId}
+                  ticksAtLimit={areTicksAtLimit}
+                  price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
+                  priceLower={priceLower}
+                  priceUpper={priceUpper}
+                  onLeftRangeInput={onLeftRangeInput}
+                  onRightRangeInput={onRightRangeInput}
+                  interactive={!hasExistingPosition}
+                /> */}
+              </>
             )}
           </M.Column>
 
