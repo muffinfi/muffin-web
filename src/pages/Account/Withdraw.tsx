@@ -243,7 +243,7 @@ export default function Withdraw({ history }: RouteComponentProps) {
   const makeAddRowButton = () => (
     <div style={{ alignSelf: 'flex-end' }}>
       <M.Anchor role="button" color="primary0" hoverColor="primary1" size="sm" weight="semibold" onClick={onAddRow}>
-        + <Trans>Add token</Trans>
+        + <Trans>Another token</Trans>
       </M.Anchor>
     </div>
   )

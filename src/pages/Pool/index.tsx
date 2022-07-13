@@ -111,7 +111,7 @@ export default function Pool() {
                 <div>
                   <Inbox size={48} strokeWidth={1} />
                   <div>
-                    <Trans>Your active V3 liquidity positions will appear here.</Trans>
+                    <Trans>Your active liquidity positions will appear here.</Trans>
                   </div>
                 </div>
                 {!showConnectAWallet && closedPositions.length > 0 && (

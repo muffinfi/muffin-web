@@ -139,7 +139,9 @@ export default function CollectConfirmModalContent({
         {position?.settled ? (
           <Trans>Collecting this position will also close the position.</Trans>
         ) : (
-          <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
+          <Trans>
+            Collecting fees will withdraw currently available fees for you. It does not affect your current position.
+          </Trans>
         )}
       </M.Text>
 

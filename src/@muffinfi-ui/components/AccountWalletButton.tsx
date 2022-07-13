@@ -35,7 +35,7 @@ export default memo(function AccountWalletButton() {
   const close = useCallback(() => setShow(false), [])
 
   return (
-    <Tooltip show={show} text={`Choose whether to pay with Muffin account besides wallet.`}>
+    <Tooltip show={show} text={`Choose whether to pay with your Muffin account besides your wallet.`}>
       <Row gap="0.5em" onMouseEnter={open} onMouseLeave={close}>
         {/* <Text size="xs" color="text2">
           <Trans>Pay with</Trans>
