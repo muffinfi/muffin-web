@@ -38,7 +38,10 @@ export function tryParseTick(
   const price = tryParsePrice(baseToken, quoteToken, value)
   if (!price) return undefined
 
-  const sqrtPriceX72 = encodeSqrtPriceX72(price.numerator, price.denominator)
+  const sqrtPriceX72 = baseToken.sortsBefore(quoteToken)
+    ? encodeSqrtPriceX72(price.numerator, price.denominator)
+    : encodeSqrtPriceX72(price.denominator, price.numerator)
+
   let tick: number
   if (JSBI.greaterThanOrEqual(sqrtPriceX72, MAX_SQRT_PRICE)) {
     tick = MAX_TICK
