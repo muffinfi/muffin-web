@@ -164,7 +164,7 @@
   "scripts": {
     "contracts:compile:abi": "typechain --target ethers-v5 --out-dir src/abis/types \"./src/abis/**/*.json\"",
     "contracts:compile:v3": "typechain --target ethers-v5 --out-dir src/types/v3 \"./node_modules/@uniswap/**/artifacts/contracts/**/*.json\"",
-    "contracts:compile:muffin": "typechain --target ethers-v5 --out-dir src/@muffinfi/types \"./node_modules/@muffinfi/muffin-contracts/artifacts/contracts/**/*.json\"",
+    "contracts:compile:muffin": "typechain --target ethers-v5 --out-dir src/@muffinfi/typechain \"./node_modules/@muffinfi/muffin-contracts/artifacts/contracts/**/*.json\"",
     "contracts:compile": "yarn contracts:compile:abi && yarn contracts:compile:v3 && yarn contracts:compile:muffin",
     "graphql:generate": "graphql-codegen --config codegen.yml",
     "prei18n:extract": "touch src/locales/en-US.po",
