@@ -1,4 +1,4 @@
-import { getTradeMarginalPrice, Hop, Route, SwapQuoter } from '@muffinfi/muffin-v1-sdk'
+import { getTradeMarginalPrice, Hop, Route, SwapQuoter } from '@muffinfi/muffin-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { ILens } from '@muffinfi/typechain'
 import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'

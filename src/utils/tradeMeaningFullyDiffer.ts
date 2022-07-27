@@ -1,4 +1,4 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 
 /**

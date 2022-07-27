@@ -1,5 +1,5 @@
 import { BigNumberish } from '@ethersproject/bignumber'
-import { Position } from '@muffinfi/muffin-v1-sdk'
+import { Position } from '@muffinfi/muffin-sdk'
 import { Token } from '@uniswap/sdk-core'
 import useCurrency from 'hooks/useCurrency'
 import { useMemo } from 'react'

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
 import { AutoColumn, ColumnCenter } from 'components/Column'

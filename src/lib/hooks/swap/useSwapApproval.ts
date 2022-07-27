@@ -1,4 +1,4 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { getTxOptimizedSwapRouter, SwapRouterVersion } from '@muffinfi/utils/getTxOptimizedSwapRouter'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { useManagerAddress } from 'hooks/useContractAddress'

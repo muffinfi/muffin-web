@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { useSwapCallback } from '@muffinfi/hooks/swap/useSwapCallback'
 import { useTradeAdvancedDetails } from '@muffinfi/hooks/swap/useTradeAdvancedDetails'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import * as M from '@muffinfi-ui'
 import { Currency, TradeType } from '@uniswap/sdk-core'

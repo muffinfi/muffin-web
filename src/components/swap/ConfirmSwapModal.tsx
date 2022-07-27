@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { memo, ReactNode, useCallback, useMemo } from 'react'

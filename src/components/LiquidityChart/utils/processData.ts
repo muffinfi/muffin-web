@@ -1,4 +1,4 @@
-import { tickToPrice } from '@muffinfi/muffin-v1-sdk'
+import { tickToPrice } from '@muffinfi/muffin-sdk'
 import { Token } from '@uniswap/sdk-core'
 import { AllV3TicksQuery } from 'state/data/generated'
 

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Tier } from '@muffinfi/muffin-v1-sdk'
+import { Tier } from '@muffinfi/muffin-sdk'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import { Currency, Price, Rounding, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'

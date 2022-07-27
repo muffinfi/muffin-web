@@ -19,7 +19,7 @@ import {
   tickToPrice,
   Tier,
   ZERO,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'

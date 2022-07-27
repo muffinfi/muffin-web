@@ -1,4 +1,4 @@
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { IMuffinHubCombined } from '@muffinfi/typechain'
 import { CallState } from '@uniswap/redux-multicall'
 import { Currency, Token } from '@uniswap/sdk-core'

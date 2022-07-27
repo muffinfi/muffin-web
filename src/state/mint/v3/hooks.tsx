@@ -1,4 +1,4 @@
-import { tickToPrice, Tier } from '@muffinfi/muffin-v1-sdk'
+import { tickToPrice, Tier } from '@muffinfi/muffin-sdk'
 import { Currency, Rounding } from '@uniswap/sdk-core'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'

@@ -1,4 +1,4 @@
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { IMuffinHubCombined } from '@muffinfi/typechain'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useMemo } from 'react'

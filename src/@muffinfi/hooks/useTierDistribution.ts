@@ -1,4 +1,4 @@
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { Fraction, Percent } from '@uniswap/sdk-core'
 import useBlockNumber from 'lib/hooks/useBlockNumber'

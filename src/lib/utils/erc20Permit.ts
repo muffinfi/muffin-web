@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/keccak256'
 import { toUtf8Bytes } from '@ethersproject/strings'
-import { MaxUint256, PermitOptions } from '@muffinfi/muffin-v1-sdk'
+import { MaxUint256, PermitOptions } from '@muffinfi/muffin-sdk'
 
 import { DAI, UNI, USDC_MAINNET } from '../../constants/tokens'
 

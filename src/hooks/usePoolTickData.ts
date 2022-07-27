@@ -1,5 +1,5 @@
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
-import { Pool, TickMath, tickToPrice, Tier } from '@muffinfi/muffin-v1-sdk'
+import { Pool, TickMath, tickToPrice, Tier } from '@muffinfi/muffin-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { Currency } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'

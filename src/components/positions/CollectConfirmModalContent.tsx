@@ -1,7 +1,7 @@
 import type { TransactionResponse } from '@ethersproject/abstract-provider'
 import type { BigNumberish } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { ADDRESS_ZERO, Position, PositionManager } from '@muffinfi/muffin-v1-sdk'
+import { ADDRESS_ZERO, Position, PositionManager } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import * as M from '@muffinfi-ui'

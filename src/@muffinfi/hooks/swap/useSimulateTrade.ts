@@ -1,4 +1,4 @@
-import { SwapQuoter, Trade } from '@muffinfi/muffin-v1-sdk'
+import { SwapQuoter, Trade } from '@muffinfi/muffin-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'

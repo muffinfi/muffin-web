@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
-import { abi as ManagerABI } from '@muffinfi/muffin-v1-sdk/src/artifacts/contracts/periphery/Manager.sol/Manager.json'
+import { abi as IManagerABI } from '@muffinfi/muffin-contracts/artifacts/contracts/interfaces/manager/IManager.sol/IManager.json'
 
 /**
  * Decode calldata. Solely for debugging
@@ -39,5 +39,5 @@ const _cleanArgs = (x: any): any => {
 }
 
 export const decodeManagerFunctionData = (calldata: string, value: string | number) => {
-  return decodeFunctionData(ManagerABI, calldata, value)
+  return decodeFunctionData(IManagerABI, calldata, value)
 }

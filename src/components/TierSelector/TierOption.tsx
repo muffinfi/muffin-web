@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { PercentagesByTierId } from '@muffinfi/hooks/useTierDistribution'
-import { sqrtGammaToFeePercent } from '@muffinfi/muffin-v1-sdk'
+import { sqrtGammaToFeePercent } from '@muffinfi/muffin-sdk'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import { ButtonRadioChecked } from 'components/Button'

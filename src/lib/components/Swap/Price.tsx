@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import Row from 'lib/components/Row'
 import { ThemedText } from 'lib/theme'

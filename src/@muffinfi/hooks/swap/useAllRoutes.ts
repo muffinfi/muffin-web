@@ -1,11 +1,11 @@
-import { MAX_TIER_CHOICES, Pool, Route } from '@muffinfi/muffin-v1-sdk'
+import { ALL_TIERS, Pool, Route } from '@muffinfi/muffin-sdk'
 import { Currency } from '@uniswap/sdk-core'
 import { useAllCurrencyCombinations } from 'hooks/useAllCurrencyCombinations'
 import { useMemo } from 'react'
 
 import { PoolState, useMuffinPools } from '../usePools'
 
-const DEFAULT_TIER_CHOICES = MAX_TIER_CHOICES // FIXME: support tier choice selection
+const DEFAULT_TIER_CHOICES = ALL_TIERS // FIXME: support tier choice selection
 
 /**
  * Returns true if poolA is equivalent to poolB

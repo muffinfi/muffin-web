@@ -13,7 +13,7 @@ import {
   TickMath,
   tickToPrice,
   ZERO,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'

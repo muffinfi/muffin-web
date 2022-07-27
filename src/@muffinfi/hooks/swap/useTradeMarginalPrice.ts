@@ -1,4 +1,4 @@
-import { getTradeMarginalPrice, Hop, Trade } from '@muffinfi/muffin-v1-sdk'
+import { getTradeMarginalPrice, Hop, Trade } from '@muffinfi/muffin-sdk'
 import { Currency, Price, TradeType } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
 

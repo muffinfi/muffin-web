@@ -6,7 +6,7 @@ import {
   MIN_TICK,
   nearestUsableTick,
   priceToClosestTick,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 

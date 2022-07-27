@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { AccountManager } from '@muffinfi/muffin-v1-sdk'
+import { AccountManager } from '@muffinfi/muffin-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'

@@ -1,4 +1,4 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { L2_CHAIN_IDS, SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'

@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import ActionButton, { Action } from 'lib/components/ActionButton'
 import Column from 'lib/components/Column'
