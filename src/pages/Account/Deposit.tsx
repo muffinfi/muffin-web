@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { AccountManager } from '@muffinfi/muffin-v1-sdk'
+import { AccountManager } from '@muffinfi/muffin-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
@@ -287,7 +287,7 @@ export default function Deposit({ history }: RouteComponentProps) {
   const makeAddRowButton = () => (
     <div style={{ alignSelf: 'flex-end' }}>
       <M.Anchor role="button" color="primary0" hoverColor="primary1" size="sm" weight="semibold" onClick={onAddRow}>
-        + <Trans>Add token</Trans>
+        + <Trans>Another token</Trans>
       </M.Anchor>
     </div>
   )

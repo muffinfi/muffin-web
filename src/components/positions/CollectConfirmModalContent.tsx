@@ -1,7 +1,7 @@
 import type { TransactionResponse } from '@ethersproject/abstract-provider'
 import type { BigNumberish } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { ADDRESS_ZERO, Position, PositionManager } from '@muffinfi/muffin-v1-sdk'
+import { ADDRESS_ZERO, Position, PositionManager } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import * as M from '@muffinfi-ui'
@@ -139,7 +139,9 @@ export default function CollectConfirmModalContent({
         {position?.settled ? (
           <Trans>Collecting this position will also close the position.</Trans>
         ) : (
-          <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
+          <Trans>
+            Collecting fees will withdraw currently available fees for you. It does not affect your current position.
+          </Trans>
         )}
       </M.Text>
 

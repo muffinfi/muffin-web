@@ -1,4 +1,4 @@
-import { Route, Trade } from '@muffinfi/muffin-v1-sdk'
+import { Route, Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 
 export class InterfaceTrade<

@@ -4,7 +4,7 @@ import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffi
 import * as M from '@muffinfi-ui'
 import TokenRow from 'components/account/TokenRow'
 import { LoadingRows } from 'components/Loader/styled'
-import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
+import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -46,12 +46,17 @@ export default function Account(props: RouteComponentProps) {
 
   return (
     <>
-      <M.Container maxWidth="27rem">
+      <M.Container maxWidth="30rem">
         <M.Column stretch gap="32px">
-          <M.RowBetween wrap="wrap" gap="2em">
-            <M.Text size="xl" weight="bold">
-              <Trans>Account</Trans>
-            </M.Text>
+          <M.RowBetween wrap="wrap" gap="1em">
+            <M.Column gap="8px">
+              <M.Text size="xl" weight="bold">
+                <Trans>Account</Trans>
+              </M.Text>
+              <M.Text color="text2" size="sm" style={{ maxWidth: '16rem' }}>
+                <Trans>Your internal token balances in Muffin.</Trans>
+              </M.Text>
+            </M.Column>
 
             <M.Row wrap="wrap" gap="0.75em">
               <M.ButtonSecondary id="account-withdraw-button" as={Link} to="/account/withdraw">
@@ -63,7 +68,7 @@ export default function Account(props: RouteComponentProps) {
             </M.Row>
           </M.RowBetween>
 
-          <M.SectionCard greedyMargin>
+          <M.SectionCard>
             <M.Column stretch gap="24px">
               <M.RowBetween>
                 <M.Text size="sm" weight="semibold">
@@ -96,7 +101,6 @@ export default function Account(props: RouteComponentProps) {
                   <div />
                   <div />
                   <div />
-                  <div />
                 </StyledLoadingRows>
               ) : hasTokens ? (
                 <M.Column stretch gap="0px">
@@ -111,17 +115,19 @@ export default function Account(props: RouteComponentProps) {
                   ))}
                 </M.Column>
               ) : (
-                <NoTokens>No tokens found</NoTokens>
+                <NoTokens>
+                  <Trans>No tokens found</Trans>
+                </NoTokens>
               )}
             </M.Column>
           </M.SectionCard>
 
-          <SubgraphIndexingNote blockNumber={subgraphBlockNumber}>
+          <SubgraphIndexingAlertCard blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly deposited tokens even if the transaction is confirmed, please wait for a
-              few minutes due to the subgraph indexing.
+              If you can&apos;t see your recent deposited tokens, please wait awhile due to the delay in subgraph
+              indexing.
             </Trans>
-          </SubgraphIndexingNote>
+          </SubgraphIndexingAlertCard>
         </M.Column>
       </M.Container>
 

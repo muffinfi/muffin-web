@@ -1,11 +1,11 @@
-import { darken, lighten } from 'polished'
+import { darken, lighten, transparentize } from 'polished'
 import { createGlobalStyle, css } from 'styled-components/macro'
 
 const lightThemeMixin = css`
   /* color */
-  --bg: #f8f8f8;
+  --bg: #f6f6f6;
   --layer1: #fff;
-  --layer2: #f8f8f8;
+  --layer2: #f6f6f6;
   --layer3: #ececec;
 
   /* border */
@@ -32,6 +32,8 @@ const lightThemeMixin = css`
   --tertiary1: ${darken(0.04, '#ececec')};
   --tertiary2: ${darken(0.08, '#ececec')};
   --tertiary-text: #111;
+  --tertiary-disabled: ${transparentize(0.5, darken(0.08, '#ececec'))};
+  --tertiary-disabled-text: ${transparentize(0.5, '#111')};
 
   --disabled: #ececec;
   --disabled-text: #aaa;
@@ -41,6 +43,11 @@ const lightThemeMixin = css`
 
   --error-bg: #da2d2b;
   --error-text: #fff;
+  --error-disabled: ${transparentize(0.5, '#da2d2b')};
+  --error-disabled-text: ${transparentize(0.3, '#fff')};
+
+  --alert: #e3a507;
+  --alert-text: #d39000;
 
   /* color */
   --green: #007d35;
@@ -50,19 +57,19 @@ const lightThemeMixin = css`
 
 const darkThemeMixin = css`
   /* color */
-  --bg: #181818;
-  --layer1: #242424;
-  --layer2: #1a1a1a;
+  --bg: #151515;
+  --layer1: #262626;
+  --layer2: #181818;
   --layer3: #333;
 
   /* border */
-  --borderColor: #333;
-  --borderColor1: ${lighten(0.12, '#333')};
+  --borderColor: #404040;
+  --borderColor1: ${lighten(0.12, '#404040')};
 
   /* text color */
   --text1: #fff;
   --text2: #888;
-  --placeholder-text: #444;
+  --placeholder-text: #484848;
 
   /* button color */
   --primary0: #d23a25;
@@ -79,6 +86,8 @@ const darkThemeMixin = css`
   --tertiary1: ${lighten(0.04, '#333')};
   --tertiary2: ${lighten(0.08, '#333')};
   --tertiary-text: #fff;
+  --tertiary-disabled: ${transparentize(0.5, darken(0.08, '#333'))};
+  --tertiary-disabled-text: ${transparentize(0.5, '#fff')};
 
   --disabled: #333;
   --disabled-text: #666;
@@ -88,6 +97,11 @@ const darkThemeMixin = css`
 
   --error-bg: #ff3333;
   --error-text: #fff;
+  --error-disabled: ${transparentize(0.5, '#ff3333')};
+  --error-disabled-text: ${transparentize(0.5, '#fff')};
+
+  --alert: #e3a507;
+  --alert-text: #d39000;
 
   /* color */
   --green: #27ae60;

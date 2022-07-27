@@ -52,9 +52,8 @@ export const buttonMixins = {
       --btn-bgActive: var(--tertiary2);
       --btn-text: var(--tertiary-text);
       &:disabled {
-        background: var(--tertiary2) !important;
-        color: var(--tertiary-text) !important;
-        opacity: 0.5;
+        background: var(--tertiary-disabled) !important;
+        color: var(--tertiary-disabled-text) !important;
       }
     `,
     error: css`
@@ -63,9 +62,8 @@ export const buttonMixins = {
       --btn-bgActive: var(--error-bg);
       --btn-text: var(--error-text);
       &:disabled {
-        background: var(--error-bg) !important;
-        color: var(--error-text) !important;
-        opacity: 0.5;
+        background: var(--error-disabled) !important;
+        color: var(--error-disabled-text) !important;
       }
     `,
     outline: css`

@@ -1,4 +1,4 @@
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { IMuffinHubCombined } from '@muffinfi/typechain'
 import { CallState } from '@uniswap/redux-multicall'
 import { Currency, Token } from '@uniswap/sdk-core'
@@ -149,7 +149,11 @@ export const useLimitOrderTickSpacingMultipliers = (
   const calldata = useMemo(() => (pool ? [pool.poolId] : undefined), [pool])
 
   const state = useSingleCallResult(calldata ? hubContract : undefined, 'getLimitOrderTickSpacingMultipliers', calldata)
-  return useMemoArrayWithEqualCheck(
+  const tickSpacingMultipliers = useMemoArrayWithEqualCheck(
     state.result?.[0] as Awaited<ReturnType<IMuffinHubCombined['getLimitOrderTickSpacingMultipliers']>> | undefined
   )
+  return {
+    loading: state.loading,
+    result: tickSpacingMultipliers,
+  }
 }

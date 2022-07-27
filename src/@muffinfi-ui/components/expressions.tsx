@@ -1,9 +1,11 @@
 import { Trans } from '@lingui/macro'
-import { Tier } from '@muffinfi/muffin-v1-sdk'
+import { Tier } from '@muffinfi/muffin-sdk'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import { Currency, Price, Rounding, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
+import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { memo } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
@@ -87,6 +89,56 @@ export const PriceRangeExpr = memo(function PriceRangeExpr({
 
 ////////////////////////////
 
+export const PriceExprInline = memo(function PriceExpr({
+  price,
+  invert,
+}: {
+  price: Price<Currency, Currency> | undefined
+  invert?: boolean
+} & RowParams) {
+  const _price = invert ? price?.invert() : price
+  const currencyBase = _price ? unwrappedToken(_price.baseCurrency) : undefined
+  const currencyQuote = _price ? unwrappedToken(_price.quoteCurrency) : undefined
+
+  const priceFormatted = _price ? formatLocaleNumber({ number: _price, sigFigs: 5, locale: undefined }) : ''
+  return (
+    <span>
+      {priceFormatted} <PriceUnit color="" weight="" currencyBase={currencyBase} currencyQuote={currencyQuote} />
+    </span>
+  )
+})
+
+export const PriceRangeExprInline = memo(function PriceRangeExprInline({
+  priceLower,
+  priceUpper,
+  tickAtLimit,
+  invert,
+}: {
+  priceLower: Price<Token, Token> | undefined
+  priceUpper: Price<Token, Token> | undefined
+  tickAtLimit: { [key in Bound]?: boolean | undefined }
+  invert?: boolean
+}) {
+  const _priceLower = invert ? priceUpper?.invert() : priceLower
+  const _priceUpper = invert ? priceLower?.invert() : priceUpper
+  const _ticksAtLimit = invert
+    ? { [Bound.LOWER]: tickAtLimit[Bound.UPPER], [Bound.UPPER]: tickAtLimit[Bound.LOWER] }
+    : tickAtLimit
+
+  const currencyBase = _priceLower ? unwrappedToken(_priceLower.baseCurrency) : undefined
+  const currencyQuote = _priceLower ? unwrappedToken(_priceLower.quoteCurrency) : undefined
+
+  return (
+    <span>
+      {formatTickPrice(_priceLower, _ticksAtLimit, Bound.LOWER)} <span style={{ fontSize: '0.8em' }}>↔</span>{' '}
+      {formatTickPrice(_priceUpper, _ticksAtLimit, Bound.UPPER)}{' '}
+      <PriceUnit color="" weight="" currencyBase={currencyBase} currencyQuote={currencyQuote} />
+    </span>
+  )
+})
+
+////////////////////////////
+
 // TODO: use new badge
 const FeeBadge = styled(Badge)`
   font-size: 0.875em;
@@ -115,9 +167,20 @@ export const PoolTierExpr = memo(function PoolTierExpr({
       </Text>
       {tier && !noFee && (
         <FeeBadge>
-          <Trans>{tier.feePercent.toFixed(2)}%</Trans>
+          <Trans>{formatFeePercent(tier.feePercent)}%</Trans>
         </FeeBadge>
       )}
     </Row>
+  )
+})
+
+export const PoolTierExprInline = memo(function PoolTierExprInline({ tier }: { tier: Tier | undefined }) {
+  const currencyBase = tier ? unwrappedToken(tier.token0) : undefined
+  const currencyQuote = tier ? unwrappedToken(tier.token1) : undefined
+  if (!currencyBase || !currencyQuote || !tier) return <span>-</span>
+  return (
+    <span>
+      {currencyQuote.symbol}/{currencyBase.symbol} pool ({formatFeePercent(tier.feePercent)}% fee tier)
+    </span>
   )
 })

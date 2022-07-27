@@ -1,6 +1,6 @@
-import { abi as IMuffinHubABI } from '@muffinfi/muffin-v1-sdk/src/artifacts/contracts/interfaces/hub/IMuffinHubCombined.sol/IMuffinHubCombined.json'
-import { abi as ILensABI } from '@muffinfi/muffin-v1-sdk/src/artifacts/contracts/periphery/lens/ILens.sol/ILens.json'
-import { abi as ManagerABI } from '@muffinfi/muffin-v1-sdk/src/artifacts/contracts/periphery/Manager.sol/Manager.json'
+import { abi as IMuffinHubABI } from '@muffinfi/muffin-contracts/artifacts/contracts/interfaces/hub/IMuffinHubCombined.sol/IMuffinHubCombined.json'
+import { abi as ILensABI } from '@muffinfi/muffin-contracts/artifacts/contracts/interfaces/lens/ILens.sol/ILens.json'
+import { abi as IManagerABI } from '@muffinfi/muffin-contracts/artifacts/contracts/interfaces/manager/IManager.sol/IManager.json'
 import { useContract } from 'hooks/useContract'
 
 import { MUFFIN_HUB_ADDRESSES, MUFFIN_LENS_ADDRESSES, MUFFIN_MANAGER_ADDRESSES } from '../constants/addresses'
@@ -15,5 +15,5 @@ export function useLensContract(): ILens | null {
 }
 
 export function useManagerContract(): Manager | null {
-  return useContract<Manager>(MUFFIN_MANAGER_ADDRESSES, ManagerABI)
+  return useContract<Manager>(MUFFIN_MANAGER_ADDRESSES, IManagerABI)
 }

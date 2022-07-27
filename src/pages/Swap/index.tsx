@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { useSwapCallback } from '@muffinfi/hooks/swap/useSwapCallback'
 import { useTradeAdvancedDetails } from '@muffinfi/hooks/swap/useTradeAdvancedDetails'
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import * as M from '@muffinfi-ui'
 import { Currency, TradeType } from '@uniswap/sdk-core'
@@ -349,7 +349,7 @@ export default function Swap({ history }: RouteComponentProps) {
           attemptingTxn: false,
           tradeToConfirm,
           showConfirm,
-          swapErrorMessage: error.message,
+          swapErrorMessage: error.message != null ? `${error.message}` : undefined,
           txHash: undefined,
         })
       })
@@ -553,14 +553,6 @@ export default function Swap({ history }: RouteComponentProps) {
                 </M.Column>
               ) : null}
 
-              <M.TextContents size="sm" weight="medium" color="text2">
-                <M.OutputDestinationToggle
-                  toInternalAccount={storeInInternalAccount}
-                  questionHelperContent={<Trans>Choose the destination of the swapped token.</Trans>}
-                  onToggle={toggleStoreInInternalAccount}
-                />
-              </M.TextContents>
-
               {!showWrap && userHasSpecifiedInputOutput && (trade || routeIsLoading || routeIsSyncing) && (
                 <SwapDetailsDropdown
                   trade={trade}
@@ -571,6 +563,22 @@ export default function Swap({ history }: RouteComponentProps) {
                   allowedSlippage={allowedSlippage}
                 />
               )}
+
+              <M.TextContents size="sm" weight="medium" color="text2">
+                <M.OutputDestinationToggle
+                  toInternalAccount={storeInInternalAccount}
+                  questionHelperContent={
+                    <Trans>
+                      Choose the destination of the output token.
+                      <br />
+                      <br />
+                      &quot;Account&quot; refers to your internal account in Muffin. &quot;Wallet&quot; refers to your
+                      own external wallet.
+                    </Trans>
+                  }
+                  onToggle={toggleStoreInInternalAccount}
+                />
+              </M.TextContents>
 
               {makeButtonSection()}
             </M.Column>

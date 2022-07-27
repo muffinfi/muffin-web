@@ -1,9 +1,10 @@
 import { Trans } from '@lingui/macro'
 import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
+// import CTACards from './CTACards'
 import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import SubgraphIndexingNote from 'components/SubgraphIndexingNote'
+import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
@@ -16,7 +17,6 @@ import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
 
 import PositionList from './PositionList'
-// import CTACards from './CTACards'
 import { LoadingRows } from './styleds'
 
 const NoLiquidity = styled(M.ColumnCenter)`
@@ -83,10 +83,15 @@ export default function Pool() {
     <>
       <M.Container maxWidth="980px">
         <M.Column stretch gap="32px">
-          <M.RowBetween>
-            <M.Text size="xl" weight="bold">
-              <Trans>Positions</Trans>
-            </M.Text>
+          <M.RowBetween wrap="wrap" gap="1em">
+            <M.Column gap="8px">
+              <M.Text size="xl" weight="bold">
+                <Trans>Positions</Trans>
+              </M.Text>
+              <M.Text color="text2" size="sm">
+                <Trans>Provide liquidity and earn fees on Muffin.</Trans>
+              </M.Text>
+            </M.Column>
             <M.ButtonPrimary id="join-pool-button" as={Link} to="/add/ETH">
               + <Trans>New Position</Trans>
             </M.ButtonPrimary>
@@ -106,7 +111,7 @@ export default function Pool() {
                 <div>
                   <Inbox size={48} strokeWidth={1} />
                   <div>
-                    <Trans>Your active V3 liquidity positions will appear here.</Trans>
+                    <Trans>Your active liquidity positions will appear here.</Trans>
                   </div>
                 </div>
                 {!showConnectAWallet && closedPositions.length > 0 && (
@@ -122,12 +127,13 @@ export default function Pool() {
               </NoLiquidity>
             )}
           </M.SectionCard>
-          <SubgraphIndexingNote padding="0 24px" blockNumber={subgraphBlockNumber}>
+
+          <SubgraphIndexingAlertCard blockNumber={subgraphBlockNumber}>
             <Trans>
-              If you can&apos;t see the newly added positions even if the transaction is confirmed, please wait for a
-              few minutes due to the subgraph indexing.
+              If you can&apos;t see your new positions, please wait for a few minutes due to the delay in subgraph
+              indexing.
             </Trans>
-          </SubgraphIndexingNote>
+          </SubgraphIndexingAlertCard>
         </M.Column>
         <HideSmall>
           <NetworkAlert />

@@ -72,6 +72,10 @@ const CurrencySelect = styled(M.Button)<{ $visible: boolean; $selected: boolean;
   ${({ $selected }) => ($selected ? M.buttonMixins.color.tertiary : M.buttonMixins.color.primary)}
 
   ${({ $selected }) => ($selected ? 'transition: none;' : null)}
+
+  ${({ $selected, theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: ${$selected ? undefined : 'var(--text-base)'};
+  `};
 `
 
 const StyledDropDown = styled(DropDown)`

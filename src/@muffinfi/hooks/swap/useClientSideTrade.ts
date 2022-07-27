@@ -1,4 +1,4 @@
-import { Route, SwapQuoter } from '@muffinfi/muffin-v1-sdk'
+import { Route, SwapQuoter } from '@muffinfi/muffin-sdk'
 import { InterfaceTrade } from '@muffinfi/state/routing/types'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { SupportedChainId } from 'constants/chains'

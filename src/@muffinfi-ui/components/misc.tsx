@@ -37,8 +37,8 @@ export const SectionCard = styled.div<{ greedyMargin?: boolean }>`
   padding: 1.1rem;
   margin: ${({ greedyMargin }) => greedyMargin && '0 -1.1rem'};
   background-color: var(--layer1);
-  /* border: 1px solid rgba(0, 0, 0, 0.06); */
-  /* box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04); */
+
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
 
   @media (max-width: 500px) {
     padding: 1rem;

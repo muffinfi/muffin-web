@@ -1,4 +1,3 @@
-import { transparentize } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import { Box, BoxProps } from 'rebass'
 import styled from 'styled-components/macro'
@@ -6,15 +5,17 @@ import styled from 'styled-components/macro'
 import Popover, { PopoverProps } from '../Popover'
 
 export const TooltipContainer = styled.div`
-  max-width: 256px;
-  padding: 0.6rem 1rem;
-  font-weight: 400;
+  max-width: 300px;
+  padding: 0.6rem 0.8rem;
   word-break: break-word;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.33;
 
-  background: ${({ theme }) => theme.bg0};
-  border-radius: 12px;
-  border: 1px solid ${({ theme }) => theme.bg2};
-  box-shadow: 0 4px 8px 0 ${({ theme }) => transparentize(0.9, theme.shadow1)};
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  background: var(--layer1);
+  border: 1px solid var(--borderColor);
 `
 
 interface TooltipProps extends Omit<PopoverProps, 'content'> {
@@ -24,8 +25,7 @@ interface TooltipProps extends Omit<PopoverProps, 'content'> {
 interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
   content: ReactNode
   onOpen?: () => void
-  // whether to wrap the content in a `TooltipContainer`
-  wrap?: boolean
+  wrap?: boolean // whether to wrap the content in a `TooltipContainer`
   disableHover?: boolean // disable the hover and content display
 }
 
@@ -43,8 +43,8 @@ export function MouseoverTooltip({
   ...rest
 }: Omit<TooltipProps, 'show'> & { wrapperProps?: Omit<BoxProps, 'onMouseEnter' | 'onMouseLeave'> }) {
   const [show, setShow] = useState(false)
-  const open = useCallback(() => setShow(true), [setShow])
-  const close = useCallback(() => setShow(false), [setShow])
+  const open = useCallback(() => setShow(true), [])
+  const close = useCallback(() => setShow(false), [])
   return (
     <Tooltip {...rest} show={show}>
       <Box {...wrapperProps} onMouseEnter={open} onMouseLeave={close}>
@@ -66,7 +66,7 @@ export function MouseoverTooltipContent({
     setShow(true)
     openCallback?.()
   }, [openCallback])
-  const close = useCallback(() => setShow(false), [setShow])
+  const close = useCallback(() => setShow(false), [])
   return (
     <TooltipContent {...rest} show={show} content={disableHover ? null : content}>
       <div

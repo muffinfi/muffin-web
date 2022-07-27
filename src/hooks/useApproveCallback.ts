@@ -1,4 +1,4 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useSwapApproval, { useSwapApprovalOptimizedTrade } from 'lib/hooks/swap/useSwapApproval'
 import { ApprovalState, useApproval } from 'lib/hooks/useApproval'

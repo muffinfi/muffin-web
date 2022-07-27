@@ -1,4 +1,4 @@
-import { Trade } from '@muffinfi/muffin-v1-sdk'
+import { Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { L2_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'

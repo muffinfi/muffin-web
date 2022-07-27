@@ -1,4 +1,4 @@
-import { MAX_TICK, MIN_TICK, nearestUsableTick } from '@muffinfi/muffin-v1-sdk'
+import { MAX_TICK, MIN_TICK, nearestUsableTick } from '@muffinfi/muffin-sdk'
 import { useMemo } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 

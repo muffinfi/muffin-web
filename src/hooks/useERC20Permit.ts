@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { splitSignature } from '@ethersproject/bytes'
-import { PermitOptions, SelfPermit, Trade } from '@muffinfi/muffin-v1-sdk'
+import { PermitOptions, SelfPermit, Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'

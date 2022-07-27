@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
-import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-v1-sdk'
+import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-sdk'
 import type { ILens } from '@muffinfi/typechain'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useSingleContractMultipleData } from 'lib/hooks/multicall'

@@ -50,7 +50,7 @@ export default function TradePrice({ price, showInverted, setShowInverted }: Tra
       </M.Text>
       {usdcPrice && (
         <M.Text size="sm" color="text2">
-          <Trans>(${usdcPrice.toSignificant(6, { groupSeparator: ',' })})</Trans>
+          <Trans>(≈${usdcPrice.toSignificant(6, { groupSeparator: ',' })})</Trans>
         </M.Text>
       )}
     </StyledRow>

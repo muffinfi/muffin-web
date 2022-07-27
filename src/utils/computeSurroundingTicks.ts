@@ -1,4 +1,4 @@
-import { ZERO } from '@muffinfi/muffin-v1-sdk'
+import { ZERO } from '@muffinfi/muffin-sdk'
 import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
 

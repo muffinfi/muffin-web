@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
-import { Currency, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useToken } from 'hooks/useCurrency'
 import useDebounce from 'hooks/useDebounce'
@@ -17,7 +17,6 @@ import ReactGA from 'react-ga'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
-import { useAllTokenBalances } from 'state/wallet/hooks'
 import styled from 'styled-components/macro'
 
 import { useAllTokens, useIsUserAddedToken, useSearchInactiveTokenLists } from '../../hooks/Tokens'
@@ -109,7 +108,14 @@ export function CurrencySearch({
     return Object.values(allTokens).filter(getTokenFilter(debouncedQuery))
   }, [allTokens, debouncedQuery])
 
-  const balances = useAllTokenBalances()
+  /**
+   * FIXME:
+   * CPU usage explodes when users are using lists of >1000 tokens.
+   * Temporarily disabled it. The purpose of loading all balances at once is to sort tokens.
+   */
+  // const balances = useAllTokenBalances()
+  const balances = useMemo(() => ({}), []) as { [address: string]: CurrencyAmount<Token> | undefined }
+
   const sortedTokens: Token[] = useMemo(() => {
     return filteredTokens.sort(tokenComparator.bind(null, balances))
   }, [balances, filteredTokens])

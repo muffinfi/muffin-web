@@ -9,7 +9,7 @@ import styled, { ThemeContext } from 'styled-components/macro'
 import { useUSDCValue } from '../../hooks/useUSDCPrice'
 import { isAddress, shortenAddress } from '../../utils'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
-import { LightCard } from '../Card'
+import { LightCard, OutlineCard } from '../Card'
 import { FiatValue } from '../CurrencyInputPanel/FiatValue'
 import CurrencyLogo from '../CurrencyLogo'
 import TradePrice from '../swap/TradePrice'
@@ -32,6 +32,11 @@ const ArrowWrapper = styled.div`
   border: 4px solid;
   border-color: var(--layer1);
   z-index: 2;
+`
+
+const StyledCard = styled(OutlineCard)`
+  padding: 12px;
+  border: 1px solid var(--borderColor);
 `
 
 export default function SwapModalHeader({
@@ -62,6 +67,12 @@ export default function SwapModalHeader({
         <LightCard padding="0.75rem 1rem">
           <M.Column stretch gap={'8px'}>
             <M.RowBetween>
+              <M.Row gap="12px">
+                <CurrencyLogo currency={trade.inputAmount.currency} size={'20px'} />
+                <M.Text size="lg" weight="medium">
+                  {trade.inputAmount.currency.symbol}
+                </M.Text>
+              </M.Row>
               <M.Text
                 size="xl"
                 weight="medium"
@@ -71,17 +82,13 @@ export default function SwapModalHeader({
               >
                 {trade.inputAmount.toSignificant(6)}
               </M.Text>
-
-              <M.Row gap="12px">
-                <CurrencyLogo currency={trade.inputAmount.currency} size={'20px'} />
-                <M.Text size="lg" weight="medium">
-                  {trade.inputAmount.currency.symbol}
-                </M.Text>
-              </M.Row>
             </M.RowBetween>
-            <M.TextContents size="sm">
-              <FiatValue fiatValue={fiatValueInput} />
-            </M.TextContents>
+            <M.RowBetween>
+              <div />
+              <M.Text size="sm">
+                <FiatValue fiatValue={fiatValueInput} />
+              </M.Text>
+            </M.RowBetween>
           </M.Column>
         </LightCard>
 
@@ -92,6 +99,12 @@ export default function SwapModalHeader({
         <LightCard padding="0.75rem 1rem">
           <M.Column stretch gap={'8px'}>
             <M.RowBetween>
+              <M.Row gap="12px">
+                <CurrencyLogo currency={trade.outputAmount.currency} size={'20px'} />
+                <M.Text size="lg" weight="medium">
+                  {trade.outputAmount.currency.symbol}
+                </M.Text>
+              </M.Row>
               <M.Text
                 size="xl"
                 weight="medium"
@@ -101,19 +114,16 @@ export default function SwapModalHeader({
               >
                 {trade.outputAmount.toSignificant(6)}
               </M.Text>
-              <M.Row gap="12px">
-                <CurrencyLogo currency={trade.outputAmount.currency} size={'20px'} />
-                <M.Text size="lg" weight="medium">
-                  {trade.outputAmount.currency.symbol}
-                </M.Text>
-              </M.Row>
             </M.RowBetween>
-            <M.TextContents size="sm">
-              <FiatValue
-                fiatValue={fiatValueOutput}
-                fiatValueDiscount={computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)}
-              />
-            </M.TextContents>
+            <M.RowBetween>
+              <div />
+              <M.Text size="sm">
+                <FiatValue
+                  fiatValue={fiatValueOutput}
+                  fiatValueDiscount={computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)}
+                />
+              </M.Text>
+            </M.RowBetween>
           </M.Column>
         </LightCard>
 
@@ -122,9 +132,9 @@ export default function SwapModalHeader({
         </M.RowBetween>
       </M.Column>
 
-      <LightCard padding="0.75rem">
+      <StyledCard>
         <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} />
-      </LightCard>
+      </StyledCard>
 
       {showAcceptChanges ? (
         <SwapShowAcceptChanges>
@@ -148,7 +158,7 @@ export default function SwapModalHeader({
         <M.Text size="sm" weight="semibold">
           <Trans>Output destination</Trans>
         </M.Text>
-        <M.Text size="sm">{toInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}</M.Text>
+        <M.Text size="sm">{toInternalAccount ? <M.OutputDestinationAccount /> : <M.OutputDestinationWallet />}</M.Text>
       </M.RowBetween>
 
       <div style={{ padding: '0 0.75rem' }}>

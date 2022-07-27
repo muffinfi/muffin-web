@@ -1,7 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { t, Trans } from '@lingui/macro' // eslint-disable-line no-restricted-imports
-import { SwapManager, Trade } from '@muffinfi/muffin-v1-sdk'
+import { SwapManager, Trade } from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'

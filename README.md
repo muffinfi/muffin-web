@@ -1,12 +1,14 @@
-# Uniswap Interface
+# Muffin Interface
 
-[![Unit Tests](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml)
+An open-source interface for the Muffin protocol. The code base is forked from Uniswap Interface.
+
+<!-- [![Unit Tests](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml)
 [![Integration Tests](https://github.com/Uniswap/uniswap-interface/actions/workflows/integration-tests.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/integration-tests.yaml)
 [![Lint](https://github.com/Uniswap/uniswap-interface/actions/workflows/lint.yml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/lint.yml)
 [![Release](https://github.com/Uniswap/uniswap-interface/actions/workflows/release.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/release.yaml)
-[![Crowdin](https://badges.crowdin.net/uniswap-interface/localized.svg)](https://crowdin.com/project/uniswap-interface)
+[![Crowdin](https://badges.crowdin.net/uniswap-interface/localized.svg)](https://crowdin.com/project/uniswap-interface) -->
 
-An open source interface for Uniswap -- a protocol for decentralized exchange of Ethereum tokens.
+<!-- An open source interface for Uniswap -- a protocol for decentralized exchange of Ethereum tokens.
 
 - Website: [uniswap.org](https://uniswap.org/)
 - Interface: [app.uniswap.org](https://app.uniswap.org)
@@ -18,13 +20,13 @@ An open source interface for Uniswap -- a protocol for decentralized exchange of
 - Whitepapers:
   - [V1](https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig)
   - [V2](https://uniswap.org/whitepaper.pdf)
-  - [V3](https://uniswap.org/whitepaper-v3.pdf)
+  - [V3](https://uniswap.org/whitepaper-v3.pdf) -->
 
-## Accessing the Uniswap Interface
+## Accessing the Muffin Interface
 
-To access the Uniswap Interface, use an IPFS gateway link from the
-[latest release](https://github.com/Uniswap/uniswap-interface/releases/latest),
-or visit [app.uniswap.org](https://app.uniswap.org).
+To access the Muffin Interface, use an IPFS gateway link from the
+[latest release](https://github.com/muffinfi/muffin-v1-web/releases/latest),
+or visit [muffin.fi](https://muffin.fi).
 
 ## Unsupported tokens
 
@@ -32,11 +34,11 @@ Check out `useUnsupportedTokenList()` in [src/state/lists/hooks.ts](./src/state/
 
 You can block an entire list of tokens by passing in a tokenlist like [here](./src/constants/lists.ts) or you can block specific tokens by adding them to [unsupported.tokenlist.json](./src/constants/tokenLists/unsupported.tokenlist.json).
 
-## Contributions
+<!-- ## Contributions
 
-For steps on local deployment, development, and code contribution, please see [CONTRIBUTING](./CONTRIBUTING.md).
+For steps on local deployment, development, and code contribution, please see [CONTRIBUTING](./CONTRIBUTING.md). -->
 
-## Accessing Uniswap V2
+<!-- ## Accessing Uniswap V2
 
 The Uniswap Interface supports swapping, adding liquidity, removing liquidity and migrating liquidity for Uniswap protocol V2.
 
@@ -48,4 +50,4 @@ The Uniswap Interface supports swapping, adding liquidity, removing liquidity an
 ## Accessing Uniswap V1
 
 The Uniswap V1 interface for mainnet and testnets is accessible via IPFS gateways
-linked from the [v1.0.0 release](https://github.com/Uniswap/uniswap-interface/releases/tag/v1.0.0).
+linked from the [v1.0.0 release](https://github.com/Uniswap/uniswap-interface/releases/tag/v1.0.0). -->

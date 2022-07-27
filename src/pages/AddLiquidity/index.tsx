@@ -19,12 +19,14 @@ import {
   tickToPrice,
   Tier,
   ZERO,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
 import * as M from '@muffinfi-ui'
-import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
+import { LiquidityChart } from 'components/LiquidityChart'
+import { QuestionHelperInline } from 'components/QuestionHelper'
 import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
@@ -49,6 +51,7 @@ import { useRangeHopCallbacks, useV3MintActionHandlers, useV3MintState } from 's
 import { tryParseTick } from 'state/mint/v3/utils'
 import { tryParseAmount } from 'state/swap/hooks'
 import { useCurrencyBalances } from 'state/wallet/hooks'
+import styled from 'styled-components/macro'
 import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
@@ -57,7 +60,6 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { ErrorCard, OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import DowntimeWarning from '../../components/DowntimeWarning'
-import LiquidityChartRangeInput from '../../components/LiquidityChartRangeInput'
 import { PositionPreview } from '../../components/PositionPreview'
 import RangeSelector from '../../components/RangeSelector'
 import RateToggle from '../../components/RateToggle'
@@ -75,13 +77,56 @@ import { TransactionType } from '../../state/transactions/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
 import { ThemedText } from '../../theme'
-import { Review } from './Review'
 import { ColumnDisableable, CurrencyDropdown, LoadingRows, StyledInput } from './styled'
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 const parseSqrtGamma = (sqrtGammaFromUrl: string | undefined) => {
   return sqrtGammaFromUrl && isValidSqrtGamma(parseFloat(sqrtGammaFromUrl)) ? parseFloat(sqrtGammaFromUrl) : undefined
+}
+
+const StyledCard = styled(OutlineCard)`
+  padding: 12px;
+  border: 1px solid var(--borderColor);
+  font-size: 13px;
+`
+
+const getTokenRatio = (
+  priceCurrent: Price<Token, Token>,
+  priceLower: Price<Token, Token>,
+  priceUpper: Price<Token, Token>
+): [number, number] => {
+  if (priceCurrent.greaterThan(priceUpper) || priceCurrent.equalTo(priceUpper)) return [0, 1]
+  if (priceCurrent.lessThan(priceLower) || priceCurrent.equalTo(priceLower)) return [1, 0]
+
+  const a = Number(priceLower.asFraction.multiply(priceUpper).toSignificant(18))
+  const b = Number(priceCurrent.asFraction.multiply(priceUpper).toSignificant(18))
+  const p = Number(priceCurrent.asFraction.toSignificant(18))
+
+  const w0 = 1 / ((Math.sqrt(a) - Math.sqrt(b)) / (p - Math.sqrt(b)) + 1)
+  const w1 = 1 - w0
+  return [w0, w1]
+}
+
+const getCapitalEfficiency = (
+  priceCurrent: Price<Token, Token>,
+  priceLower: Price<Token, Token>,
+  priceUpper: Price<Token, Token>
+): number => {
+  const price = priceCurrent.greaterThan(priceUpper)
+    ? priceUpper
+    : priceCurrent.lessThan(priceLower)
+    ? priceLower
+    : priceCurrent
+
+  const p = Number(price.toSignificant(18))
+  const sqrtP = Math.sqrt(Number(price.toSignificant(18)))
+  const sqrtPLower = Math.sqrt(Number(priceLower.toSignificant(18)))
+  const sqrtPUpper = Math.sqrt(Number(priceUpper.toSignificant(18)))
+
+  const denom = p * (1 / sqrtP - 1 / sqrtPUpper) + (sqrtP - sqrtPLower)
+  const num = p * (1 / sqrtP) + sqrtP
+  return num / denom
 }
 
 export default function AddLiquidity({
@@ -118,7 +163,7 @@ export default function AddLiquidity({
 
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
-  const [tierId, tier] = pool?.getTierBySqrtGamma(sqrtGamma) || []
+  const [, tier] = pool?.getTierBySqrtGamma(sqrtGamma) || []
 
   const isCreatingPool = poolState === PoolState.NOT_EXISTS
   const isInvalidPool = poolState === PoolState.INVALID
@@ -358,7 +403,7 @@ export default function AddLiquidity({
    *====================================================================*/
 
   // restrict to single deposit if price is out of range
-  const tickCurrent = mockTier?.computedTick
+  const tickCurrent = mockTier?.tickCurrent
   const deposit0Disabled = tickCurrent != null && tickUpper != null && tickCurrent >= tickUpper
   const deposit1Disabled = tickCurrent != null && tickLower != null && tickCurrent <= tickLower
 
@@ -710,6 +755,40 @@ export default function AddLiquidity({
     )
 
   /*=====================================================================
+   *                   UI: PRICE RANGE DERIVED INFO
+   *====================================================================*/
+
+  const [valueRatio, capitalEfficiency] = useMemo(() => {
+    if (!price || !priceLower || !priceUpper) return [undefined, undefined]
+
+    const capitalEfficiency = getCapitalEfficiency(price, priceLower, priceUpper)
+    const _ratio = getTokenRatio(price, priceLower, priceUpper)
+    const ratio: [number, number] = invertPrice ? [_ratio[1], _ratio[0]] : _ratio
+
+    return [ratio, capitalEfficiency]
+  }, [price, priceLower, priceUpper, invertPrice])
+
+  const setPriceRange = useCallback(
+    (multiplier: Fraction) => {
+      if (!price) return
+      const newPriceLower = price.asFraction.multiply(price.scalar).divide(multiplier)
+      const newPriceUpper = price.asFraction.multiply(price.scalar).multiply(multiplier)
+      if (invertPrice) {
+        onLeftRangeInput(newPriceUpper.invert().toFixed(6))
+        onRightRangeInput(newPriceLower.invert().toFixed(6))
+      } else {
+        onLeftRangeInput(newPriceLower.toFixed(6))
+        onRightRangeInput(newPriceUpper.toFixed(6))
+      }
+    },
+    [onLeftRangeInput, onRightRangeInput, price, invertPrice]
+  )
+
+  const handleSetPriceRange20000Bps = useCallback(() => setPriceRange(new Fraction(20000, 10000)), [setPriceRange])
+  const handleSetPriceRange12000Bps = useCallback(() => setPriceRange(new Fraction(12000, 10000)), [setPriceRange])
+  const handleSetPriceRange10100Bps = useCallback(() => setPriceRange(new Fraction(10100, 10000)), [setPriceRange])
+
+  /*=====================================================================
    *                          REACT COMPONENTS
    *====================================================================*/
 
@@ -853,24 +932,37 @@ export default function AddLiquidity({
             </M.Row>
 
             {isCreatingPool ? null : (
-              <LiquidityChartRangeInput
-                currencyA={baseCurrency ?? undefined}
-                currencyB={quoteCurrency ?? undefined}
-                pool={pool || undefined}
-                tierId={isAddingTier ? 0 : tierId}
-                ticksAtLimit={areTicksAtLimit}
-                price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
-                priceLower={priceLower}
-                priceUpper={priceUpper}
-                onLeftRangeInput={onLeftRangeInput}
-                onRightRangeInput={onRightRangeInput}
-                interactive={!hasExistingPosition}
-              />
+              <>
+                <LiquidityChart
+                  currencyBase={baseCurrency}
+                  currencyQuote={quoteCurrency}
+                  tierId={mockTierId}
+                  priceLower={invertPrice ? priceUpper?.invert() : priceLower}
+                  priceUpper={invertPrice ? priceLower?.invert() : priceUpper}
+                  onLeftRangeInput={onLeftRangeInput}
+                  onRightRangeInput={onRightRangeInput}
+                  resetRangeNonce={sqrtGamma}
+                />
+                {/* <LiquidityChartRangeInput
+                  currencyA={baseCurrency ?? undefined}
+                  currencyB={quoteCurrency ?? undefined}
+                  pool={pool || undefined}
+                  tierId={isAddingTier ? 0 : tierId}
+                  ticksAtLimit={areTicksAtLimit}
+                  price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
+                  priceLower={priceLower}
+                  priceUpper={priceUpper}
+                  onLeftRangeInput={onLeftRangeInput}
+                  onRightRangeInput={onRightRangeInput}
+                  interactive={!hasExistingPosition}
+                /> */}
+              </>
             )}
           </M.Column>
 
           <M.Column stretch gap="16px">
             <RangeSelector
+              priceCurrent={price}
               priceLower={priceLower}
               priceUpper={priceUpper}
               getDecrementLower={getDecrementLower}
@@ -888,32 +980,85 @@ export default function AddLiquidity({
               <M.Button color="outline" size="xs" onClick={getSetFullRange}>
                 Full range
               </M.Button>
+              <M.Button color="outline" size="xs" onClick={handleSetPriceRange20000Bps}>
+                ×÷2
+              </M.Button>
+              <M.Button color="outline" size="xs" onClick={handleSetPriceRange12000Bps}>
+                ×÷1.2
+              </M.Button>
+              <M.Button color="outline" size="xs" onClick={handleSetPriceRange10100Bps}>
+                ×÷1.01
+              </M.Button>
             </M.Row>
+
+            <StyledCard>
+              <M.Column stretch gap="12px">
+                <M.RowBetween>
+                  <M.Text>
+                    <Trans>Token Ratio</Trans> ({baseCurrency?.symbol} : {quoteCurrency?.symbol})
+                    <QuestionHelperInline
+                      text={
+                        <Trans>
+                          This is the ratio of the cash values of the two underlying tokens in this position.
+                        </Trans>
+                      }
+                    />
+                  </M.Text>
+                  <M.Text>
+                    {valueRatio ? `${(valueRatio[0] * 100).toFixed(0)}% : ${(valueRatio[1] * 100).toFixed(0)}%` : '-'}
+                  </M.Text>
+                </M.RowBetween>
+                <M.RowBetween>
+                  <M.Text>
+                    <Trans>Capitial Efficiency</Trans>
+                    <QuestionHelperInline
+                      text={
+                        <Trans>
+                          For example, 2x capital efficiency means one unit of liquidity in a concentrated liquidity
+                          position would require 2x capital in a full-range position.
+                          <br />
+                          <br />
+                          The narrower the price range, the higher the capitial efficiency.
+                        </Trans>
+                      }
+                    />
+                  </M.Text>
+                  <M.Text>
+                    {capitalEfficiency && Number.isFinite(capitalEfficiency) && capitalEfficiency >= 0 ? (
+                      <>{capitalEfficiency.toFixed(2)}x</>
+                    ) : (
+                      '-'
+                    )}
+                  </M.Text>
+                </M.RowBetween>
+              </M.Column>
+            </StyledCard>
+
+            {isInvalidRange ? (
+              <ErrorCard padding="12px" $borderRadius="12px">
+                <M.RowBetween gap="12px">
+                  <AlertTriangle stroke={theme.red3} size="16px" />
+                  <ThemedText.Main color="red3" fontSize="12px">
+                    <Trans>Invalid range selected. The min price must be lower than the max price.</Trans>
+                  </ThemedText.Main>
+                </M.RowBetween>
+              </ErrorCard>
+            ) : null}
+
+            {isOutOfRange ? (
+              <YellowCard padding="12px" $borderRadius="12px">
+                <M.RowBetween gap="12px">
+                  <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
+                  <M.Text color="alert-text" size="xs">
+                    <Trans>
+                      Your position will not earn fees or be used in trades until the market price moves into your
+                      range.
+                    </Trans>
+                  </M.Text>
+                </M.RowBetween>
+              </YellowCard>
+            ) : null}
           </M.Column>
-
-          {isOutOfRange ? (
-            <YellowCard padding="12px" $borderRadius="12px">
-              <M.RowBetween gap="12px">
-                <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
-                <ThemedText.Yellow fontSize="12px">
-                  <Trans>
-                    Your position will not earn fees or be used in trades until the market price moves into your range.
-                  </Trans>
-                </ThemedText.Yellow>
-              </M.RowBetween>
-            </YellowCard>
-          ) : null}
-
-          {isInvalidRange ? (
-            <YellowCard padding="12px" $borderRadius="12px">
-              <M.RowBetween gap="12px">
-                <AlertTriangle stroke={theme.yellow3} size="16px" />
-                <ThemedText.Yellow fontSize="12px">
-                  <Trans>Invalid range selected. The min price must be lower than the max price.</Trans>
-                </ThemedText.Yellow>
-              </M.RowBetween>
-            </YellowCard>
-          ) : null}
         </ColumnDisableable>
       </M.SectionCard>
     )
@@ -1036,17 +1181,17 @@ export default function AddLiquidity({
         <ConfirmationModalContent
           title={<Trans>Add Liquidity</Trans>}
           onDismiss={handleDismissConfirmation}
-          topContent={() => (
-            <Review
-              parsedAmounts={parsedAmounts}
-              position={position}
-              existingPosition={existingPosition}
-              priceLower={priceLower}
-              priceUpper={priceUpper}
-              outOfRange={isOutOfRange}
-              ticksAtLimit={areTicksAtLimit}
-            />
-          )}
+          topContent={() =>
+            position ? (
+              <PositionPreview
+                position={position}
+                title={<Trans>Selected Range</Trans>}
+                inRange={!isOutOfRange}
+                ticksAtLimit={areTicksAtLimit}
+                baseCurrencyDefault={baseCurrency}
+              />
+            ) : null
+          }
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
               <Trans>Add Liquidity</Trans>

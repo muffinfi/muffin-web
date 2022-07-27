@@ -8,19 +8,30 @@ import RoutingDiagram from 'components/RoutingDiagram/RoutingDiagram'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { getTokenPath } from 'lib/components/Swap/RoutingDiagram/utils'
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { Plus } from 'react-feather'
-import { useDarkModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { Separator } from 'theme'
 
 import { AutoRouterLabel, AutoRouterLogo } from './RouterLabel'
 
-const Wrapper = styled(M.Column).attrs({ stretch: true })<{ darkMode?: boolean; fixedOpen?: boolean }>`
-  padding: ${({ fixedOpen }) => (fixedOpen ? '14px' : '14px 14px 14px 14px')};
+const Wrapper = styled(M.Column).attrs({ stretch: true })<{ fixedOpen?: boolean; hover?: boolean }>`
+  font-size: 0.8125rem; // 13px
   border-radius: 12px;
-  border: 1px solid ${({ fixedOpen }) => (fixedOpen ? 'transparent' : 'var(--layer3)')};
+  border: 1px solid
+    ${({ fixedOpen, hover }) => (fixedOpen ? 'transparent' : hover ? 'var(--borderColor1)' : 'var(--borderColor)')};
+  transition: border-color 150ms;
+`
+
+const WrapperUpper = styled.div`
+  padding: 10px;
+  border-radius: 12px;
   cursor: pointer;
+`
+
+const WrapperLower = styled.div`
+  padding: 0 12px 12px;
+  border-radius: 12px;
 `
 
 const OpenCloseIcon = styled(Plus)<{ open?: boolean }>`
@@ -45,11 +56,9 @@ interface SwapRouteProps extends React.HTMLAttributes<HTMLDivElement> {
 export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...rest }: SwapRouteProps) {
   // const autoRouterSupported = useAutoRouterSupported()
   const autoRouterSupported = false
-  const routes = getTokenPath(trade)
+  const routes = useMemo(() => getTokenPath(trade), [trade])
   const [open, setOpen] = useState(false)
   const { chainId } = useActiveWeb3React()
-
-  const [darkMode] = useDarkModeManager()
 
   const formattedGasPriceString = trade?.gasUseEstimateUSD
     ? trade.gasUseEstimateUSD.toFixed(2) === '0.00'
@@ -57,19 +66,27 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
       : '$' + trade.gasUseEstimateUSD.toFixed(2)
     : undefined
 
+  const [hover, setHover] = useState(false)
+
   return (
-    <Wrapper {...rest} darkMode={darkMode} fixedOpen={fixedOpen}>
-      <M.TextContents size="sm">
-        <M.RowBetween onClick={() => setOpen(!open)}>
+    <Wrapper {...rest} fixedOpen={fixedOpen} hover={hover}>
+      <WrapperUpper
+        onClick={() => setOpen(!open)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        <M.RowBetween>
           <M.Row gap="0.5em">
             <AutoRouterLogo />
             <AutoRouterLabel />
           </M.Row>
           {fixedOpen ? null : <OpenCloseIcon open={open} />}
         </M.RowBetween>
+      </WrapperUpper>
 
-        <AnimatedDropdown open={open || fixedOpen}>
-          <M.Column stretch gap="8px" style={{ paddingTop: 10 }}>
+      <AnimatedDropdown open={open || fixedOpen}>
+        <WrapperLower>
+          <M.Column stretch gap="8px">
             {syncing ? (
               <LoadingRows>
                 <div style={{ width: '100%', height: '30px' }} />
@@ -103,8 +120,8 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
               </>
             )}
           </M.Column>
-        </AnimatedDropdown>
-      </M.TextContents>
+        </WrapperLower>
+      </AnimatedDropdown>
     </Wrapper>
   )
 })

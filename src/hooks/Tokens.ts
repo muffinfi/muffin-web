@@ -1,56 +1,73 @@
+import { createSelector } from '@reduxjs/toolkit'
 import { Currency, Token } from '@uniswap/sdk-core'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { L2_CHAIN_IDS, SupportedChainId, SupportedL2ChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
+import { useAppSelector } from 'state/hooks'
 
-import { useAllLists, useCombinedActiveList, useInactiveListUrls } from '../state/lists/hooks'
+import { useAllLists, useInactiveListUrls } from '../state/lists/hooks'
+import {
+  selectAllLists,
+  selectCombinedActiveListTokenMap,
+  selectUnsupportedListTokenMap,
+} from '../state/lists/selectors'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens } from '../state/user/hooks'
-import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
+import { selectUserAddedTokens } from '../state/user/selectors'
+import { TokenAddressMap } from './../state/lists/hooks'
 
 // reduce token map into standard address <-> Token mapping, optionally include user added tokens
-function useTokensFromMap(tokenMap: TokenAddressMap, includeUserAdded: boolean): { [address: string]: Token } {
-  const { chainId } = useActiveWeb3React()
-  const userAddedTokens = useUserAddedTokens()
+const reduceTokenAddressMap = (
+  tokenMap: TokenAddressMap,
+  chainId: number | undefined,
+  userAddedTokens: Token[] | undefined
+): { [address: string]: Token } => {
+  if (!chainId) return {}
 
-  return useMemo(() => {
-    if (!chainId) return {}
+  // reduce to just tokens
+  const mapWithoutUrls = Object.keys(tokenMap[chainId] ?? {}).reduce<{ [address: string]: Token }>(
+    (newMap, address) => {
+      newMap[address] = tokenMap[chainId][address].token
+      return newMap
+    },
+    {}
+  )
 
-    // reduce to just tokens
-    const mapWithoutUrls = Object.keys(tokenMap[chainId] ?? {}).reduce<{ [address: string]: Token }>(
-      (newMap, address) => {
-        newMap[address] = tokenMap[chainId][address].token
-        return newMap
-      },
-      {}
+  if (userAddedTokens) {
+    return (
+      userAddedTokens
+        // reduce into all ALL_TOKENS filtered by the current chain
+        .reduce<{ [address: string]: Token }>(
+          (tokenMap, token) => {
+            tokenMap[token.address] = token
+            return tokenMap
+          },
+          // must make a copy because reduce modifies the map, and we do not
+          // want to make a copy in every iteration
+          { ...mapWithoutUrls }
+        )
     )
+  }
 
-    if (includeUserAdded) {
-      return (
-        userAddedTokens
-          // reduce into all ALL_TOKENS filtered by the current chain
-          .reduce<{ [address: string]: Token }>(
-            (tokenMap, token) => {
-              tokenMap[token.address] = token
-              return tokenMap
-            },
-            // must make a copy because reduce modifies the map, and we do not
-            // want to make a copy in every iteration
-            { ...mapWithoutUrls }
-          )
-      )
-    }
-
-    return mapWithoutUrls
-  }, [chainId, userAddedTokens, tokenMap, includeUserAdded])
+  return mapWithoutUrls
 }
 
-export function useAllTokens(): { [address: string]: Token } {
-  const allTokens = useCombinedActiveList()
-  return useTokensFromMap(allTokens, true)
-}
+/**
+ * @param {AppState} state
+ * @param {number | undefined} chainId
+ * @return {{ [address: string]: Token }} a token map of all tokens
+ */
+const selectAllTokens = createSelector(
+  [
+    selectCombinedActiveListTokenMap,
+    selectUserAddedTokens,
+    (_: any, chainId: number | undefined) => chainId, //
+  ],
+  // reduce token map into standard address <-> Token mapping, optionally include user added tokens
+  (tokenMap, userAddedTokens, chainId) => reduceTokenAddressMap(tokenMap, chainId, userAddedTokens)
+)
 
 type BridgeInfo = Record<
   SupportedChainId,
@@ -61,47 +78,66 @@ type BridgeInfo = Record<
   }
 >
 
+/**
+ * @param {AppState} state
+ * @param {number | undefined} chainId
+ * @return {{ [address: string]: Token }} a token map of unsupported tokens
+ */
+const selectUnsupportedTokens = createSelector(
+  [
+    selectAllLists,
+    selectUnsupportedListTokenMap,
+    (_: any, chainId: number | undefined) => chainId, //
+  ],
+  (listsByUrl, tokenMap, chainId): { [address: string]: Token } => {
+    const unsupportedTokens = reduceTokenAddressMap(tokenMap, chainId, undefined)
+
+    // checks the default L2 lists to see if `bridgeInfo` has an L1 address value that is unsupported
+    const l2InferredBlockedTokens: typeof unsupportedTokens = (() => {
+      if (!chainId || !L2_CHAIN_IDS.includes(chainId)) {
+        return {}
+      }
+
+      if (!listsByUrl) {
+        return {}
+      }
+
+      const listUrl = CHAIN_INFO[chainId as SupportedL2ChainId].defaultListUrl
+      const { current: list } = listsByUrl[listUrl]
+      if (!list) {
+        return {}
+      }
+
+      const unsupportedSet = new Set(Object.keys(unsupportedTokens))
+
+      return list.tokens.reduce((acc, tokenInfo) => {
+        const bridgeInfo = tokenInfo.extensions?.bridgeInfo as unknown as BridgeInfo
+        if (
+          bridgeInfo &&
+          bridgeInfo[SupportedChainId.MAINNET] &&
+          bridgeInfo[SupportedChainId.MAINNET].tokenAddress &&
+          unsupportedSet.has(bridgeInfo[SupportedChainId.MAINNET].tokenAddress)
+        ) {
+          const address = bridgeInfo[SupportedChainId.MAINNET].tokenAddress
+          // don't rely on decimals--it's possible that a token could be bridged w/ different decimals on the L2
+          return { ...acc, [address]: new Token(SupportedChainId.MAINNET, address, tokenInfo.decimals) }
+        }
+        return acc
+      }, {})
+    })()
+
+    return { ...unsupportedTokens, ...l2InferredBlockedTokens }
+  }
+)
+
+export function useAllTokens(): { [address: string]: Token } {
+  const { chainId } = useActiveWeb3React()
+  return useAppSelector((state) => selectAllTokens(state, chainId))
+}
+
 export function useUnsupportedTokens(): { [address: string]: Token } {
   const { chainId } = useActiveWeb3React()
-  const listsByUrl = useAllLists()
-  const unsupportedTokensMap = useUnsupportedTokenList()
-  const unsupportedTokens = useTokensFromMap(unsupportedTokensMap, false)
-
-  // checks the default L2 lists to see if `bridgeInfo` has an L1 address value that is unsupported
-  const l2InferredBlockedTokens: typeof unsupportedTokens = useMemo(() => {
-    if (!chainId || !L2_CHAIN_IDS.includes(chainId)) {
-      return {}
-    }
-
-    if (!listsByUrl) {
-      return {}
-    }
-
-    const listUrl = CHAIN_INFO[chainId as SupportedL2ChainId].defaultListUrl
-    const { current: list } = listsByUrl[listUrl]
-    if (!list) {
-      return {}
-    }
-
-    const unsupportedSet = new Set(Object.keys(unsupportedTokens))
-
-    return list.tokens.reduce((acc, tokenInfo) => {
-      const bridgeInfo = tokenInfo.extensions?.bridgeInfo as unknown as BridgeInfo
-      if (
-        bridgeInfo &&
-        bridgeInfo[SupportedChainId.MAINNET] &&
-        bridgeInfo[SupportedChainId.MAINNET].tokenAddress &&
-        unsupportedSet.has(bridgeInfo[SupportedChainId.MAINNET].tokenAddress)
-      ) {
-        const address = bridgeInfo[SupportedChainId.MAINNET].tokenAddress
-        // don't rely on decimals--it's possible that a token could be bridged w/ different decimals on the L2
-        return { ...acc, [address]: new Token(SupportedChainId.MAINNET, address, tokenInfo.decimals) }
-      }
-      return acc
-    }, {})
-  }, [chainId, listsByUrl, unsupportedTokens])
-
-  return { ...unsupportedTokens, ...l2InferredBlockedTokens }
+  return useAppSelector((state) => selectUnsupportedTokens(state, chainId))
 }
 
 export function useSearchInactiveTokenLists(search: string | undefined, minResults = 10): WrappedTokenInfo[] {

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Position } from '@muffinfi/muffin-v1-sdk'
+import { Position } from '@muffinfi/muffin-sdk'
 import * as M from '@muffinfi-ui'
 import { Currency } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -59,7 +59,7 @@ export const PositionPreview = ({
         <M.TextContents size="lg" weight="bold">
           <M.PoolTierExpr currencyBase={currency1} currencyQuote={currency0} tier={position.poolTier} />
         </M.TextContents>
-        <RangeBadge removed={removed} inRange={inRange} settled={position.settled} />
+        <RangeBadge removed={removed} inRange={inRange} settled={position.settled} isLimit={position.isLimitOrder} />
       </M.RowBetween>
 
       <LightCard>
@@ -106,7 +106,7 @@ export const PositionPreview = ({
                 </Trans>
               </M.Text>
               <M.Text size="xs" color="text2" align="center">
-                <Trans>Your position will be 100% composed of {baseCurrency?.symbol} at this price</Trans>
+                <Trans>This position will be 100% {baseCurrency?.symbol} at or below this price</Trans>
               </M.Text>
             </M.ColumnCenter>
           </LightCard>
@@ -125,7 +125,7 @@ export const PositionPreview = ({
                 </Trans>
               </M.Text>
               <M.Text size="xs" color="text2" align="center">
-                <Trans>Your position will be 100% composed of {quoteCurrency?.symbol} at this price</Trans>
+                <Trans>This position will be 100% {quoteCurrency?.symbol} at or above this price</Trans>
               </M.Text>
             </M.ColumnCenter>
           </LightCard>

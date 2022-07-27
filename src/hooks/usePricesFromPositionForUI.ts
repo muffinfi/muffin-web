@@ -1,4 +1,4 @@
-import { Position } from '@muffinfi/muffin-v1-sdk'
+import { Position } from '@muffinfi/muffin-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
 

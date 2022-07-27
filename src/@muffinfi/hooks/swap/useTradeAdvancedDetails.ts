@@ -1,4 +1,4 @@
-import { getPriceImpact, getRealizedFee, Hop, Trade } from '@muffinfi/muffin-v1-sdk'
+import { getPriceImpact, getRealizedFee, Hop, Trade } from '@muffinfi/muffin-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { CallStateResult } from 'lib/hooks/multicall'
 import { useMemo } from 'react'

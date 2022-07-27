@@ -1,6 +1,6 @@
 import { FeeTierOptionsFetchState, useFeeTierOptions } from '@muffinfi/hooks/useFeeTierOptions'
 import { PercentagesByTierId, useMuffinTierDistribution } from '@muffinfi/hooks/useTierDistribution'
-import { Pool } from '@muffinfi/muffin-v1-sdk'
+import { Pool } from '@muffinfi/muffin-sdk'
 import { Currency } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTierColors from 'hooks/useTierColors'

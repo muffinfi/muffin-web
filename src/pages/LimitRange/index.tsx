@@ -13,18 +13,20 @@ import {
   TickMath,
   tickToPrice,
   ZERO,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
-import { Currency, CurrencyAmount, Percent, Price, Rounding } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { ErrorCard, YellowCard } from 'components/Card'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import QuestionHelper from 'components/QuestionHelper'
+import { PositionPreview } from 'components/PositionPreview'
+import { QuestionHelperInline } from 'components/QuestionHelper'
 import { ArrowWrapper, FieldsWrapper } from 'components/swap/styleds'
 import SwapHeader from 'components/swap/SwapHeader'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
@@ -38,6 +40,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
+import { useFirstTruthy } from 'hooks/useFirstTruthy'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import usePreviousExclude, { EXCLUDE_NULL_OR_UNDEFINED } from 'hooks/usePreviousExclude'
 import useTheme from 'hooks/useTheme'
@@ -51,7 +54,6 @@ import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { SignatureData, signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
-import { Review } from 'pages/AddLiquidity/Review'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -83,9 +85,6 @@ const StepCountersRow = styled(M.RowBetween)`
   & > :first-child {
     width: 100%;
   }
-  /* & > :last-child {
-    width: 100%;
-  } */
 `
 
 const Select = styled.div`
@@ -110,7 +109,15 @@ const StyledSectionCard = styled(M.SectionCard)`
 const CardColumn = styled(M.Column).attrs({ stretch: true })`
   border: 1px solid var(--borderColor);
   border-radius: 16px;
-  padding: 14px;
+  padding: 12px;
+
+  font-size: 13px;
+`
+
+const Separator = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: var(--borderColor);
 `
 
 const noopStepCounterButton = () => ''
@@ -149,8 +156,10 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const hubContract = useHubContract()
   const [poolState, pool] = useMuffinPool(inputCurrency, outputCurrency)
   const previousPool = usePreviousExclude(pool, EXCLUDE_NULL_OR_UNDEFINED)
-  const isPoolChanged = Boolean(!pool || !previousPool?.equals(pool))
-  const tickSpacingMultipliers = useLimitOrderTickSpacingMultipliers(hubContract, pool)
+  const isPoolJustChanged = Boolean(!pool || !previousPool?.equals(pool))
+  const [hasPoolEverChanged, resetHasPoolEverChanged] = useFirstTruthy(() => isPoolJustChanged)
+  const { loading: isLoadingTickSpacingMultipliers, result: tickSpacingMultipliers } =
+    useLimitOrderTickSpacingMultipliers(hubContract, pool)
   const [sqrtGamma, setSqrtGamma] = useState<number | undefined>()
   const [isEditTierDropdownOpened, setEditTierDropdownOpened] = useState(false)
 
@@ -248,12 +257,15 @@ export default function LimitRange({ history }: RouteComponentProps) {
     setEndPriceInverted((value) => !value)
   }, [])
 
+  /**
+   * Note that "limits" refer to the limit for making *single-sided position*, not min and max tick of the pool.
+   */
   const tickLimits: {
     LOWER?: number // End tick limit lower
     UPPER?: number // End tick limit upper
     END?: number // End tick limit base on zero for one
   } = useMemo(() => {
-    const currentTick = selectedTier?.computedTick
+    const currentTick = selectedTier?.tickCurrent
     if (!tickSpacing || currentTick == null || positionPriceRange == null) return {}
     const limits = zeroForOne
       ? {
@@ -269,7 +281,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
     limits.END = zeroForOne ? limits.LOWER : limits.UPPER
 
     return limits
-  }, [tickSpacing, positionPriceRange, selectedTier?.computedTick, zeroForOne])
+  }, [tickSpacing, positionPriceRange, selectedTier?.tickCurrent, zeroForOne])
 
   const { ticks, areEndPriceAtLimit, isInvalidPriceRange, tickPrices } = useMemo(() => {
     const ticks =
@@ -339,7 +351,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
   // set default price
   useEffect(() => {
     if (!pool || tickLimits.END == null || !baseToken || !quoteToken) return
-    if (!isPoolChanged && endTick != null) return // don't update on same pool and endTick exists
+    if (!hasPoolEverChanged && endTick != null) return // set default price if pool changes or end tick does not exists
+
     // set default end price direction
     if (typeof endPriceInverted === 'undefined') {
       const inverted = Boolean(
@@ -350,25 +363,29 @@ export default function LimitRange({ history }: RouteComponentProps) {
       )
       setEndPriceInverted(inverted)
     }
-    // reset to limit if changed pool but endTick exists or no url provided price
-    if (endTick != null || typeof urlEndPrice !== 'string' || tickSpacing == null) {
-      setEndTick(tickLimits.END)
-      return
-    }
-    // set to url defined price
-    const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
-    const baseAmount = tryParseAmount('1', baseToken)
-    if (!quoteAmount || !baseAmount) return
 
-    const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
-    if (!price) return
-    setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
+    if (endTick != null || typeof urlEndPrice !== 'string' || tickSpacing == null) {
+      // reset to limit if changed pool but endTick exists or no url provided price
+      setEndTick(tickLimits.END)
+    } else {
+      // set to url defined price
+      const quoteAmount = tryParseAmount(urlEndPrice, quoteToken)
+      const baseAmount = tryParseAmount('1', baseToken)
+      if (quoteAmount && baseAmount) {
+        const price = new Price(baseAmount.currency, quoteAmount.currency, baseAmount.quotient, quoteAmount.quotient)
+        setEndTick(nearestUsableTick(priceToClosestTick(endPriceInverted ? price.invert() : price), tickSpacing))
+      }
+    }
+
+    // reset hasPoolEverChanged to false
+    if (hasPoolEverChanged) resetHasPoolEverChanged()
   }, [
     pool,
     baseToken,
     endPriceInverted,
     quoteToken,
-    isPoolChanged,
+    hasPoolEverChanged,
+    resetHasPoolEverChanged,
     endTick,
     tickLimits.END,
     urlEndPrice,
@@ -383,6 +400,26 @@ export default function LimitRange({ history }: RouteComponentProps) {
       return nearestUsableTick(oldValue, tickSpacing)
     })
   }, [tickSpacing])
+
+  /**
+   * Find whether ticks are across the supported min and max ticks in muffin. Used only in the confirmation modal.
+   */
+  const areTicksAtMinMaxTicks = useMemo(() => {
+    if (!tickSpacing) {
+      return {
+        LOWER: false,
+        UPPER: false,
+      }
+    }
+    const limits = {
+      LOWER: nearestUsableTick(MIN_TICK, tickSpacing),
+      UPPER: nearestUsableTick(MAX_TICK, tickSpacing),
+    }
+    return {
+      LOWER: ticks.LOWER != null && ticks.LOWER <= limits.LOWER,
+      UPPER: ticks.UPPER != null && ticks.UPPER >= limits.UPPER,
+    }
+  }, [tickSpacing, ticks.UPPER, ticks.LOWER])
 
   /*======================================================================
    *                              POSITION
@@ -424,7 +461,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
   }, [pool, parsedAmount, tierId, ticks.LOWER, ticks.UPPER, zeroForOne, isExactIn])
 
   const averagePrice0 = useMemo(() => {
-    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolChanged) {
+    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolJustChanged) {
       // when pool changed, set to undefined to wait for new valid endTick set up
       return undefined
     }
@@ -440,9 +477,8 @@ export default function LimitRange({ history }: RouteComponentProps) {
       amount1: zeroForOne ? tryParseCurrencyAmount('1', pool.token1)?.quotient ?? 1 : ZERO,
       limitOrderType,
     })
-    const { amount0: mintAmount0, amount1: mintAmount1 } = position.amountsAtPrice(
-      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1),
-      true
+    const { amount0: mintAmount0, amount1: mintAmount1 } = position.mintAmountsAtPrice(
+      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1)
     )
     const { amount0: settleAmount0, amount1: settleAmount1 } = position.settleAmounts
     const settleAmount = zeroForOne ? settleAmount1 : settleAmount0
@@ -453,7 +489,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
       (zeroForOne ? mintAmount0 : settleAmount).toString(),
       (!zeroForOne ? mintAmount1 : settleAmount).toString()
     )
-  }, [pool, isPoolChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
+  }, [pool, isPoolJustChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
   const priceChangeRate = useMemo(() => {
     if (!selectedTier?.token0Price || !selectedTier?.token1Price || !tickPrices.LOWER || !tickPrices.UPPER) {
@@ -779,19 +815,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
   const leftStepCounterLabel = useMemo(
     () =>
       isBuying ? (
-        <>
-          <Trans>End buying {outputCurrency?.symbol} at</Trans>{' '}
+        <M.Text nowrap>
+          <Trans>Finish buying {outputCurrency?.symbol} at</Trans>{' '}
           <M.Text color={isInvalidPriceRange ? 'error' : 'green'}>
             {!priceChangeRate ? '' : `(${priceChangeRate.lessThan(0) ? '' : '+'}${priceChangeRate.toFixed(2)}%)`}
           </M.Text>
-        </>
+        </M.Text>
       ) : (
-        <>
-          <Trans>End selling {inputCurrency?.symbol} at</Trans>{' '}
+        <M.Text nowrap>
+          <Trans>Finish selling {inputCurrency?.symbol} at</Trans>{' '}
           <M.Text color={isInvalidPriceRange ? 'error' : 'green'}>
             {!priceChangeRate ? '' : `(${priceChangeRate.lessThan(0) ? '' : '+'}${priceChangeRate.toFixed(2)}%)`}
           </M.Text>
-        </>
+        </M.Text>
       ),
     [isBuying, outputCurrency?.symbol, inputCurrency?.symbol, priceChangeRate, isInvalidPriceRange]
   )
@@ -887,93 +923,112 @@ export default function LimitRange({ history }: RouteComponentProps) {
         </M.Row>
       </ErrorCard>
     ) : pool && defaultSqrtGamma == null ? (
-      <YellowCard>
-        <M.Row gap="12px">
-          <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
-          <ThemedText.Yellow fontSize="12px">
-            <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
-          </ThemedText.Yellow>
-        </M.Row>
-      </YellowCard>
-    ) : (
-      <M.TextContents size="sm">
-        <CardColumn gap="10px">
-          <div>
-            <M.RowBetween gap="1em">
-              <M.Row gap="0.5em">
-                <M.Text>
-                  <Trans>Position&apos;s fee tier</Trans>
-                </M.Text>
-                <QuestionHelper
-                  text={
-                    <Trans>
-                      This is the fee tier of your limit-range-order position. While your order is being filled, you
-                      also earn swap fees from the swaps that are executed in your selected price range
-                    </Trans>
-                  }
-                />
-              </M.Row>
-              <M.Row gap="0.5em">
-                <M.Text>{selectedTier ? `${selectedTier.feePercent.toFixed(2)}%` : null}</M.Text>
-                {showEditTierButton && (
-                  <M.Anchor role="button" color="primary0" hoverColor="primary1" onClick={handleOpenEditTierDropdown}>
-                    {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
-                  </M.Anchor>
-                )}
-              </M.Row>
-            </M.RowBetween>
+      isLoadingTickSpacingMultipliers ? null : (
+        <YellowCard>
+          <M.Row gap="12px">
+            <AlertTriangle stroke={theme.yellow3} size="16px" style={{ flexShrink: 0 }} />
+            <ThemedText.Yellow fontSize="12px">
+              <Trans>No fee tiers in this pool supports Limit Range Orders</Trans>
+            </ThemedText.Yellow>
+          </M.Row>
+        </YellowCard>
+      )
+    ) : pool ? (
+      <CardColumn gap="12px">
+        <M.RowBetween gap="1em">
+          <M.Text>
+            <Trans>Current price</Trans>
+          </M.Text>
+          {selectedTier ? (
+            <M.PriceExpr
+              price={endPriceInverted ? selectedTier.token0Price.invert() : selectedTier.token0Price}
+              justifyEnd
+            />
+          ) : (
+            <span>-</span>
+          )}
+        </M.RowBetween>
 
-            <AnimatedDropdown open={isEditTierDropdownOpened}>
-              <M.Column stretch gap="8px" style={{ padding: '12px 0 12px' }}>
-                <M.Text size="xs" color="text2">
-                  Fee tiers supporting Limit Range Orders
-                </M.Text>
-                <Select>
-                  {availableSqrtGammas.map((value) => (
-                    <TierOption
-                      key={value}
-                      active={value === sqrtGamma}
-                      activeColor="var(--primary1)"
-                      sqrtGamma={value}
-                      handleTierSelect={setSqrtGamma}
-                    />
-                  ))}
-                </Select>
-              </M.Column>
-            </AnimatedDropdown>
-          </div>
+        {/* NOTE: should we show this? */}
+        {/* <M.RowBetween gap="1em">
+          <M.Text>{isBuying ? <Trans>Average buying price</Trans> : <Trans>Average selling price</Trans>}</M.Text>
+          {averagePrice0 &&
+          !JSBI.equal(averagePrice0.denominator, ZERO) &&
+          !JSBI.equal(averagePrice0.numerator, ZERO) ? (
+            <M.PriceExpr
+              price={endPriceInverted ? averagePrice0.invert() : averagePrice0}
+              rounding={Rounding.ROUND_DOWN}
+              justifyEnd
+            />
+          ) : (
+            <span>-</span>
+          )}
+        </M.RowBetween> */}
 
+        <div>
           <M.RowBetween gap="1em">
-            <M.Text>
-              <Trans>Tier&apos;s current price</Trans>
-            </M.Text>
-            {selectedTier ? (
-              <M.PriceExpr
-                price={endPriceInverted ? selectedTier.token0Price.invert() : selectedTier.token0Price}
-                justifyEnd
+            <M.Row gap="0.0em">
+              <M.Text>
+                <Trans>Position&apos;s fee tier</Trans>
+              </M.Text>
+              <QuestionHelperInline
+                text={
+                  <Trans>
+                    While your order is being filled, you also <M.Text weight="semibold">earn</M.Text> this percetange
+                    swap fees from the swaps executed in your order’s price range.
+                  </Trans>
+                }
               />
-            ) : (
-              <span>-</span>
-            )}
+            </M.Row>
+            <M.Row gap="0.5em">
+              <M.Text>{selectedTier ? `${formatFeePercent(selectedTier.feePercent)}%` : '-'}</M.Text>
+              {showEditTierButton && (
+                <M.Anchor role="button" color="primary0" hoverColor="primary1" onClick={handleOpenEditTierDropdown}>
+                  {isEditTierDropdownOpened ? <Trans>Close</Trans> : <Trans>Edit</Trans>}
+                </M.Anchor>
+              )}
+            </M.Row>
           </M.RowBetween>
 
-          <M.RowBetween gap="1em">
-            <M.Text>{isBuying ? <Trans>Average buying price</Trans> : <Trans>Average selling price</Trans>}</M.Text>
-            {averagePrice0 &&
-            !JSBI.equal(averagePrice0.denominator, ZERO) &&
-            !JSBI.equal(averagePrice0.numerator, ZERO) ? (
-              <M.PriceExpr
-                price={endPriceInverted ? averagePrice0.invert() : averagePrice0}
-                rounding={Rounding.ROUND_DOWN}
-                justifyEnd
-              />
-            ) : (
-              <span>-</span>
-            )}
-          </M.RowBetween>
-        </CardColumn>
-      </M.TextContents>
-    )
+          <AnimatedDropdown open={isEditTierDropdownOpened}>
+            <M.Column stretch gap="8px" style={{ padding: '12px 0 0px' }}>
+              <M.Text size="xs" color="text2">
+                Fee tiers supporting Limit Range Orders
+              </M.Text>
+              <Select>
+                {availableSqrtGammas.map((value) => (
+                  <TierOption
+                    key={value}
+                    active={value === sqrtGamma}
+                    activeColor="var(--primary1)"
+                    sqrtGamma={value}
+                    handleTierSelect={setSqrtGamma}
+                  />
+                ))}
+              </Select>
+            </M.Column>
+          </AnimatedDropdown>
+        </div>
+
+        {selectedTier ? (
+          <>
+            <Separator />
+            <M.TextDiv color="text2" paragraphLineHeight>
+              You’re creating a position with the price range{' '}
+              <M.PriceRangeExprInline
+                priceLower={tickPrices.LOWER}
+                priceUpper={tickPrices.UPPER}
+                tickAtLimit={areTicksAtMinMaxTicks}
+                invert={endPriceInverted}
+              />{' '}
+              in the <M.PoolTierExprInline tier={selectedTier} />. Your position will stay as 100%{' '}
+              {outputCurrency?.symbol} once the price reaches{' '}
+              <M.PriceExprInline price={endPrice0} invert={endPriceInverted} />.
+            </M.TextDiv>
+          </>
+        ) : null}
+      </CardColumn>
+    ) : null
 
   const makeButton = () => (
     <M.Column stretch gap="12px">
@@ -1048,21 +1103,19 @@ export default function LimitRange({ history }: RouteComponentProps) {
       hash={txHash}
       content={() => (
         <ConfirmationModalContent
-          title={<Trans>Limit Range Order</Trans>}
+          title={<Trans>Confirm Limit Range Order</Trans>}
           onDismiss={handleDismissConfirmation}
-          topContent={() => (
-            <Review
-              parsedAmounts={{
-                CURRENCY_A: parsedAmounts[Field.INPUT],
-                CURRENCY_B: parsedAmounts[Field.OUTPUT],
-              }}
-              position={position}
-              priceLower={tickPrices.LOWER}
-              priceUpper={tickPrices.UPPER}
-              outOfRange
-              ticksAtLimit={areEndPriceAtLimit}
-            />
-          )}
+          topContent={() =>
+            position ? (
+              <PositionPreview
+                position={position}
+                inRange={false}
+                ticksAtLimit={areTicksAtMinMaxTicks}
+                title={<Trans>Selected Range</Trans>}
+                baseCurrencyDefault={baseCurrency}
+              />
+            ) : null
+          }
           bottomContent={() => (
             <M.ButtonRowPrimary style={{ marginTop: '1rem' }} onClick={onAdd}>
               <Trans>Create Position</Trans>

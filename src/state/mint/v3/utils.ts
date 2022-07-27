@@ -1,12 +1,12 @@
 import {
   encodeSqrtPriceX72,
-  MAX_SQRT_P,
+  MAX_SQRT_PRICE,
   MAX_TICK,
-  MIN_SQRT_P,
+  MIN_SQRT_PRICE,
   MIN_TICK,
   nearestUsableTick,
   priceToClosestTick,
-} from '@muffinfi/muffin-v1-sdk'
+} from '@muffinfi/muffin-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 
@@ -38,11 +38,14 @@ export function tryParseTick(
   const price = tryParsePrice(baseToken, quoteToken, value)
   if (!price) return undefined
 
-  const sqrtPriceX72 = encodeSqrtPriceX72(price.numerator, price.denominator)
+  const sqrtPriceX72 = baseToken.sortsBefore(quoteToken)
+    ? encodeSqrtPriceX72(price.numerator, price.denominator)
+    : encodeSqrtPriceX72(price.denominator, price.numerator)
+
   let tick: number
-  if (JSBI.greaterThanOrEqual(sqrtPriceX72, MAX_SQRT_P)) {
+  if (JSBI.greaterThanOrEqual(sqrtPriceX72, MAX_SQRT_PRICE)) {
     tick = MAX_TICK
-  } else if (JSBI.lessThanOrEqual(sqrtPriceX72, MIN_SQRT_P)) {
+  } else if (JSBI.lessThanOrEqual(sqrtPriceX72, MIN_SQRT_PRICE)) {
     tick = MIN_TICK
   } else {
     tick = priceToClosestTick(price) // this function is agnostic to the base, will always return the correct tick

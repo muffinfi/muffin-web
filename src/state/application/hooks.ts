@@ -6,14 +6,24 @@ import { AppState } from '../index'
 import { addPopup, ApplicationModal, PopupContent, removePopup, setOpenModal } from './reducer'
 
 export function useModalOpen(modal: ApplicationModal): boolean {
-  const openModal = useAppSelector((state: AppState) => state.application.openModal)
-  return openModal === modal
+  return useAppSelector((state: AppState) => state.application.openModal === modal)
 }
 
 export function useToggleModal(modal: ApplicationModal): () => void {
   const open = useModalOpen(modal)
   const dispatch = useAppDispatch()
   return useCallback(() => dispatch(setOpenModal(open ? null : modal)), [dispatch, modal, open])
+}
+
+export function useOpenCloseModal(modal: ApplicationModal): [boolean, () => void, () => void] {
+  const isOpen = useModalOpen(modal)
+  const dispatch = useAppDispatch()
+
+  return useMemo(() => {
+    const setOpen = () => (!isOpen ? dispatch(setOpenModal(modal)) : undefined)
+    const setClose = () => (isOpen ? dispatch(setOpenModal(null)) : undefined)
+    return [isOpen, setOpen, setClose]
+  }, [dispatch, modal, isOpen])
 }
 
 export function useWalletModalToggle(): () => void {

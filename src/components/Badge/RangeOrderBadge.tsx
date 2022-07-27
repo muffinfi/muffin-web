@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { LimitOrderType } from '@muffinfi/muffin-v1-sdk'
+import { LimitOrderType } from '@muffinfi/muffin-sdk'
 import { Token } from '@uniswap/sdk-core'
 import Badge, { BadgeVariant } from 'components/Badge'
 import styled from 'styled-components/macro'

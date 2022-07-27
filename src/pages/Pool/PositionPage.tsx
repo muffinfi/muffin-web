@@ -5,8 +5,9 @@ import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useIsTickAtLimit } from '@muffinfi/hooks/useIsTickAtLimit'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
 import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
-import { LimitOrderType, Position } from '@muffinfi/muffin-v1-sdk'
+import { LimitOrderType, Position } from '@muffinfi/muffin-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Fraction, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
@@ -154,13 +155,17 @@ export function PositionPage({
   // flag of whether all position liquidity is removed
   const removed = positionDetail?.liquidityD8?.eq(0)
 
+  const isLimitOrder =
+    positionDetail?.limitOrderType === LimitOrderType.ZeroForOne ||
+    positionDetail?.limitOrderType === LimitOrderType.OneForZero
+
   /*=====================================================================
    *                              HEADER
    *====================================================================*/
 
   // flag of whether price is within range
-  const below = position ? position.poolTier.computedTick < position.tickLower : undefined
-  const above = position ? position.poolTier.computedTick >= position.tickUpper : undefined
+  const below = position ? position.poolTier.tickCurrent < position.tickLower : undefined
+  const above = position ? position.poolTier.tickCurrent >= position.tickUpper : undefined
   const inRange = typeof below === 'boolean' && typeof above === 'boolean' ? !below && !above : false
 
   // flag of whether user is the position's owner or an approved operator
@@ -352,7 +357,7 @@ export function PositionPage({
 
       <M.Row gap="8px">
         <RangeOrderBadge limitOrderType={positionDetail?.limitOrderType} token0={token0} token1={token1} />
-        <RangeBadge removed={removed} inRange={inRange} settled={settled} />
+        <RangeBadge removed={removed} inRange={inRange} settled={settled} isLimit={isLimitOrder} />
       </M.Row>
     </M.Column>
   )
@@ -499,21 +504,34 @@ export function PositionPage({
         <M.Column stretch gap="32px">
           <M.Column gap="8px">
             <M.Text size="sm" color="text2">
-              <Trans>Price range</Trans>
+              <Trans>Price Range</Trans>
             </M.Text>
-            <M.TextContents weight="semibold">
-              <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
-            </M.TextContents>
+            <M.Row wrap="wrap" columnGap="0.7em" rowGap="0.33em">
+              <M.TextContents weight="semibold">
+                <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
+              </M.TextContents>
+              <M.Text size="xs">({position.tickUpper - position.tickLower} ticks)</M.Text>
+            </M.Row>
           </M.Column>
+
           <M.Column gap="8px">
             <M.Text size="sm" color="text2">
-              <Trans>Current price</Trans>
+              <Trans>Current Price</Trans>
             </M.Text>
             <M.TextContents weight="semibold">
               <M.PriceExpr price={inverted ? tier?.token1Price : tier?.token0Price} />
             </M.TextContents>
-            <RangeBadge removed={removed} inRange={inRange} settled={settled} />
+            <RangeBadge removed={removed} inRange={inRange} settled={settled} isLimit={isLimitOrder} />
           </M.Column>
+
+          {position.isLimitOrder ? (
+            <M.Column gap="8px">
+              <M.Text size="sm" color="text2">
+                <Trans>Limit Range Order Direction</Trans>
+              </M.Text>
+              <RangeOrderBadge limitOrderType={positionDetail?.limitOrderType} token0={token0} token1={token1} />
+            </M.Column>
+          ) : null}
         </M.Column>
       </M.SectionCard>
     </M.Column>
@@ -556,12 +574,12 @@ export function PositionPage({
           <M.DataLabel>
             <Trans>Fee tier</Trans>
           </M.DataLabel>
-          <M.DataValue>{tier?.feePercent.toFixed(2)}%</M.DataValue>
+          <M.DataValue>{tier ? formatFeePercent(tier.feePercent) : null}%</M.DataValue>
         </M.DataGroup>
 
         <M.DataGroup>
           <M.DataLabel>
-            <Trans>Pool token0</Trans>
+            <Trans>Token0</Trans>
           </M.DataLabel>
           <div>
             <M.DataValue>{token0?.name}</M.DataValue>{' '}
@@ -579,7 +597,7 @@ export function PositionPage({
 
         <M.DataGroup>
           <M.DataLabel>
-            <Trans>Pool token1</Trans>
+            <Trans>Token1</Trans>
           </M.DataLabel>
           <div>
             <M.DataValue>{token1?.name}</M.DataValue>{' '}

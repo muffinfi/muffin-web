@@ -3,7 +3,7 @@ import { Trans } from '@lingui/macro'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPosition } from '@muffinfi/hooks/useDerivedPosition'
 import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions'
-import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-v1-sdk'
+import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import * as M from '@muffinfi-ui'
@@ -191,7 +191,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
    *====================================================================*/
 
   // compute whether position is out of range
-  const _tick = position?.poolTier.computedTick
+  const _tick = position?.poolTier.tickCurrent
   const outOfRange = position && _tick != null && (_tick < position.tickLower || _tick >= position.tickUpper)
 
   // whether the position is emptied
@@ -402,7 +402,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     <SettingsTab placeholderSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE} noDeadline />
                   </M.RowBetween>
                   <span>
-                    <RangeBadge removed={removed} inRange={!outOfRange} settled={position.settled} />
+                    <RangeBadge
+                      removed={removed}
+                      inRange={!outOfRange}
+                      settled={position.settled}
+                      isLimit={position.isLimitOrder}
+                    />
                   </span>
                 </M.Column>
 

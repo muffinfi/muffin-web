@@ -72,10 +72,6 @@ const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
   ${({ theme }) => theme.mediaWidth.upToSmall`
     font-size: 16px;
   `};
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 12px;
-  `};
 `
 
 interface StepCounterProps {
@@ -192,11 +188,11 @@ const StepCounter = ({
 
   const makePriceUnit = () => (
     <M.Row gap="0.5em" style={{ display: 'inline-flex' }}>
-      <span>
+      <M.Text nowrap>
         <Trans>
           {tokenB ?? '-'} per {tokenA ?? '-'}
         </Trans>
-      </span>
+      </M.Text>
       {toggleRate && (
         <M.TextContents color="primary1">
           <RefreshCw size="1em" />
