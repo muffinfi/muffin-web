@@ -1,6 +1,12 @@
-import { constructSameAddressMap } from 'utils/constructSameAddressMap'
+import { SupportedChainId } from 'constants/chains'
 
 // FIXME: these are Rinkeby
-export const MUFFIN_HUB_ADDRESSES = constructSameAddressMap('0x7B0Eeae0Dc28a688E95221d8069189e02f1aF3ed')
-export const MUFFIN_MANAGER_ADDRESSES = constructSameAddressMap('0xfF0be3a9c421701233CD5a022a17Dd4b7D198664')
-export const MUFFIN_LENS_ADDRESSES = constructSameAddressMap('0x552e037FbBa1cdFE25fCa977F055fbc38468057D')
+export const MUFFIN_HUB_ADDRESSES = {
+  [SupportedChainId.RINKEBY]: '0xb74842648CaA2841E1e20f03d318118343fd4c03',
+}
+export const MUFFIN_MANAGER_ADDRESSES = {
+  [SupportedChainId.RINKEBY]: '0x7069713cDfDA0829111ECcEdcF24C2e3f99Cd467',
+}
+export const MUFFIN_LENS_ADDRESSES = {
+  [SupportedChainId.RINKEBY]: '0x81BBb49E7Fb8C20784A52699008d0bE0Bc8baACB',
+}
