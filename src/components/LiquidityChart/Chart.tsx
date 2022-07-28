@@ -67,10 +67,12 @@ export const Chart = ({
 
     const maxYs = clipped.map((data) => d3.max(data, (d) => d.vy) ?? 0)
     const maxY = d3.max(maxYs) ?? 0
+
     return d3
       .scaleLinear()
       .domain([0, maxY])
       .range([size.height - size.margin.bottom, size.margin.top])
+      .clamp(true)
   }, [size, zoomLevel, dataList, midPoint])
 
   const { xz, svgRef } = useZoom({

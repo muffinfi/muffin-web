@@ -125,10 +125,19 @@ export const stackDataList = (dataList: Datum[][]) => {
 }
 
 /**
- * Clip data, and patch zero to the end if the original data ends before the clip ends.
- * Before:  ────●───●────●────────────●─────▶
- * Clip           │               │
- * After:   ──────●─●────●────────●─────────▶
+ * Clip data into a range
+ * Before:  ───1────2────3────────────4─────▶
+ * Clip:         │                │
+ * After:   ─────1──2────3────────3─────────▶
+ *
+ * Data are clipped for step-after area chart.
+ * The chart will be like this:
+ *               │                │
+ *               │       3────────┼───┐
+ *               │  2────┘        │   4─────
+ *          ───1─┼──┘             │
+ *          ─────┼────────────────┼─────────▶
+ *             start             end
  */
 export const clipData = (originalData: Datum[], domain: [number, number]) => {
   let iStart: number | undefined
@@ -143,12 +152,9 @@ export const clipData = (originalData: Datum[], domain: [number, number]) => {
   let data = [...originalData]
 
   // patch end datum
-  if (iEnd != null) {
-    data = data.slice(0, iEnd)
-    data.push({ vx: domain[1], vy: originalData[iEnd].vy })
-  } else {
-    data.push({ vx: domain[1], vy: 0 }) // patch zero, required since we're drawing a step-after chart
-  }
+  if (iEnd == null) iEnd = originalData.length
+  data = data.slice(0, iEnd)
+  data.push({ vx: domain[1], vy: originalData[iEnd - 1].vy })
 
   // patch start datum
   if (iStart != null && iStart !== -1) {
