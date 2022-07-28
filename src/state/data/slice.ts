@@ -9,7 +9,7 @@ import { AppState } from 'state'
 // List of supported subgraphs. Note that the app currently only support one active subgraph at a time
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
   // [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
-  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/virtues-milkier/muffin-rinkeby',
+  [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/dkenw/muffin-rinkeby',
 
   // [SupportedChainId.ARBITRUM_ONE]: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
 
@@ -73,6 +73,7 @@ export const api = createApi({
             }
             tiers(orderBy: tierId, orderDirection: asc, where: { poolId: $poolId }) {
               tierId
+              token0Price
               totalValueLockedToken0
               totalValueLockedToken1
             }

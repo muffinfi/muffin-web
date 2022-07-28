@@ -24,9 +24,7 @@ export function useMuffinTierDistribution(pool: Pool | undefined) {
 
   const { isLoading, isFetching, isUninitialized, isError, data } = useFeeTierDistributionQuery(
     pool ? { poolId: pool.poolId } : skipToken,
-    {
-      pollingInterval: ms`30s`,
-    }
+    { pollingInterval: ms`30s` }
   )
 
   const { tiers, _meta } = (data as FeeTierDistributionQuery) ?? {}
@@ -55,7 +53,9 @@ export function useMuffinTierDistribution(pool: Pool | undefined) {
     // sum total tvl for token0 and token1
     const tvls = tiers.map((value) => ({
       tierId: value.tierId,
-      tvl: toFraction(value.totalValueLockedToken0 ?? 0).add(toFraction(value.totalValueLockedToken1 ?? 0)),
+      tvl: toFraction(value.totalValueLockedToken0 ?? 0).add(
+        toFraction(value.totalValueLockedToken1 ?? 0).multiply(toFraction(value.token0Price ?? 0))
+      ),
     }))
 
     const sum = tvls.reduce((memo, { tvl }) => memo.add(tvl), ZERO)
