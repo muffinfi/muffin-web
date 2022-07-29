@@ -1,7 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers'
 import { SafeAppConnector } from '@gnosis.pm/safe-apps-web3-react'
 import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
-import { INFURA_NETWORK_URLS } from 'constants/infura'
+import { SUPPORTED_INFURA_NETWORK_URLS } from 'constants/infura'
 import { InjectedConnector } from 'web3-react-injected-connector'
 import { PortisConnector } from 'web3-react-portis-connector'
 import { WalletConnectConnector } from 'web3-react-walletconnect-connector'
@@ -16,7 +16,7 @@ const FORMATIC_KEY = process.env.REACT_APP_FORTMATIC_KEY
 const PORTIS_ID = process.env.REACT_APP_PORTIS_ID
 
 export const network = new NetworkConnector({
-  urls: INFURA_NETWORK_URLS,
+  urls: SUPPORTED_INFURA_NETWORK_URLS,
   defaultChainId: 1,
 })
 
@@ -33,7 +33,7 @@ export const gnosisSafe = new SafeAppConnector()
 
 export const walletconnect = new WalletConnectConnector({
   supportedChainIds: ALL_SUPPORTED_CHAIN_IDS,
-  rpc: INFURA_NETWORK_URLS,
+  rpc: SUPPORTED_INFURA_NETWORK_URLS,
   qrcode: true,
 })
 
@@ -50,7 +50,7 @@ export const portis = new PortisConnector({
 })
 
 export const walletlink = new WalletLinkConnector({
-  url: INFURA_NETWORK_URLS[SupportedChainId.MAINNET],
+  url: SUPPORTED_INFURA_NETWORK_URLS[SupportedChainId.MAINNET],
   appName: 'Muffin',
   appLogoUrl: APP_LOGO_URL,
   supportedChainIds: ALL_SUPPORTED_CHAIN_IDS,

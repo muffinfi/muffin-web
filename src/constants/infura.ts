@@ -1,4 +1,4 @@
-import { SupportedChainId } from './chains'
+import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from './chains'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
 if (typeof INFURA_KEY === 'undefined') {
@@ -21,3 +21,11 @@ export const INFURA_NETWORK_URLS: { [key in SupportedChainId]: string } = {
   [SupportedChainId.POLYGON]: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
   [SupportedChainId.POLYGON_MUMBAI]: `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`,
 }
+
+export const SUPPORTED_INFURA_NETWORK_URLS: { [key: number]: string } = ALL_SUPPORTED_CHAIN_IDS.reduce(
+  (acc, chainId) => ({
+    ...acc,
+    [chainId]: INFURA_NETWORK_URLS[chainId],
+  }),
+  {}
+)
