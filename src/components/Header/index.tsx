@@ -1,12 +1,15 @@
 import { Trans } from '@lingui/macro'
+import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
 import * as M from '@muffinfi-ui'
 import useScrollPosition from '@react-hook/window-scroll'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { ExternalLink } from 'react-feather'
 import { match, NavLink } from 'react-router-dom'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled, { css } from 'styled-components/macro'
+import { HideSmall } from 'theme'
 
 import { ReactComponent as Logo } from '../../assets/svg/muffin_logo.svg'
 import { ReactComponent as LogoText } from '../../assets/svg/muffin_logo_text.svg'
@@ -137,6 +140,7 @@ export default function Header() {
       </M.Row>
 
       <M.Row gap="8px">
+        <FaucetButton />
         <NetworkSelector />
         <HeaderButton>
           {account && userEthBalance ? (
@@ -151,5 +155,23 @@ export default function Header() {
         <Menu />
       </M.Row>
     </HeaderWrapper>
+  )
+}
+
+const FaucetButton = () => {
+  const { chainId } = useActiveWeb3React()
+  if (!isFaucetSupported(chainId)) return null
+
+  return (
+    <HideSmall>
+      <M.ExternalLink href={FAUCET_URL} style={{ borderRadius: 16 }}>
+        <HeaderButton style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem' }}>
+          <M.Row gap="0.3em">
+            <span>Faucet</span>
+            <ExternalLink size="1em" />
+          </M.Row>
+        </HeaderButton>
+      </M.ExternalLink>
+    </HideSmall>
   )
 }

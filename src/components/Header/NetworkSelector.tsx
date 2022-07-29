@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
 import * as M from '@muffinfi-ui'
 import { RowBetween } from 'components/Row'
 import { CHAIN_INFO } from 'constants/chainInfo'
@@ -152,6 +153,13 @@ function Row({
             {helpCenterUrl ? (
               <ResourceLink href={helpCenterUrl}>
                 <Trans>Help Center</Trans>
+                <LinkOutCircle />
+              </ResourceLink>
+            ) : null}
+
+            {isFaucetSupported(chainId) ? (
+              <ResourceLink href={FAUCET_URL}>
+                <Trans>Faucet</Trans>
                 <LinkOutCircle />
               </ResourceLink>
             ) : null}
