@@ -134,12 +134,12 @@ export const COMMON_BASES: ChainCurrencyList = {
     WRAPPED_NATIVE_CURRENCY[SupportedChainId.ROPSTEN] as Token,
   ],
   [SupportedChainId.RINKEBY]: [
-    nativeOnChain(SupportedChainId.RINKEBY),
+    TETH_RINKEBY,
     USDC_RINKEBY,
     USDT_RINKEBY,
     DAI_RINKEBY,
     WBTC_RINKEBY,
-    TETH_RINKEBY,
+    nativeOnChain(SupportedChainId.RINKEBY),
     WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token,
   ],
   [SupportedChainId.GOERLI]: [

@@ -141,3 +141,19 @@ export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedCha
     [SupportedChainId.ROPSTEN]: USDC_ROPSTEN.address,
   },
 }
+
+/**
+ * Currencies shown disabled in the currency select.
+ * Mainly used to disallow using native eth and weth on testnet.
+ */
+export const CURRENCIES_DISABLED_IN_CURRENCY_SELECT: { [chainId: number]: Currency[] } = {
+  [SupportedChainId.RINKEBY]: [
+    nativeOnChain(SupportedChainId.RINKEBY), //
+    WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token,
+  ],
+}
+
+export const isDisabledInCurrencySelect = (chainId: number | undefined, currency: Currency | undefined) => {
+  if (chainId == null || currency == null) return false
+  return CURRENCIES_DISABLED_IN_CURRENCY_SELECT[chainId]?.some((x) => x.equals(currency)) ?? false
+}

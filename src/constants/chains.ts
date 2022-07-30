@@ -74,3 +74,23 @@ export const L2_CHAIN_IDS = [
 ] as const
 
 export type SupportedL2ChainId = typeof L2_CHAIN_IDS[number]
+
+// ---
+
+export const CHAIN_DISPLAY_NAMES = {
+  [SupportedChainId.MAINNET]: 'Mainnet',
+  [SupportedChainId.ROPSTEN]: 'Ropsten',
+  [SupportedChainId.RINKEBY]: 'Rinkeby',
+  [SupportedChainId.GOERLI]: 'Goerli',
+  [SupportedChainId.KOVAN]: 'Kovan',
+  [SupportedChainId.POLYGON]: 'Polygon',
+  [SupportedChainId.POLYGON_MUMBAI]: 'Polygon Mumbai',
+  [SupportedChainId.ARBITRUM_ONE]: 'Arbitrum',
+  [SupportedChainId.ARBITRUM_RINKEBY]: 'Arbitrum Rinkeby',
+  [SupportedChainId.OPTIMISM]: 'Optimism',
+  [SupportedChainId.OPTIMISTIC_KOVAN]: 'Optimistic Kovan',
+}
+
+export const getChainDisplayName = (chainId: number | undefined) => {
+  return CHAIN_DISPLAY_NAMES[(chainId ?? -1) as SupportedChainId] ?? `#${chainId}`
+}

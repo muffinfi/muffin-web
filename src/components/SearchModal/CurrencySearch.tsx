@@ -2,6 +2,7 @@
 import { t, Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
+import { isDisabledInCurrencySelect } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useToken } from 'hooks/useCurrency'
 import useDebounce from 'hooks/useDebounce'
@@ -134,6 +135,19 @@ export function CurrencySearch({
     return filteredSortedTokens
   }, [debouncedQuery, native, filteredSortedTokens])
 
+  const tokensShownOnTokenList = useMemo(() => {
+    const currencies = disableNonToken ? filteredSortedTokens : filteredSortedTokensWithETH
+
+    // move disallowed currencies to the end
+    const allowed: Currency[] = []
+    const disallowed: Currency[] = []
+    currencies.forEach((currency) => {
+      const arr = isDisabledInCurrencySelect(chainId, currency) ? disallowed : allowed
+      arr.push(currency)
+    })
+    return [...allowed, ...disallowed]
+  }, [disableNonToken, filteredSortedTokens, filteredSortedTokensWithETH, chainId])
+
   const handleCurrencySelect = useCallback(
     (currency: Currency) => {
       onCurrencySelect(currency)
@@ -221,13 +235,13 @@ export function CurrencySearch({
         <Column style={{ padding: '20px 0', height: '100%' }}>
           <ImportRow token={searchToken} showImportView={showImportView} setImportToken={setImportToken} />
         </Column>
-      ) : filteredSortedTokens?.length > 0 || filteredInactiveTokens?.length > 0 ? (
+      ) : tokensShownOnTokenList.length > 0 ? (
         <div style={{ flex: '1' }}>
           <AutoSizer disableWidth>
             {({ height }) => (
               <CurrencyList
                 height={height}
-                currencies={disableNonToken ? filteredSortedTokens : filteredSortedTokensWithETH}
+                currencies={tokensShownOnTokenList}
                 otherListTokens={filteredInactiveTokens}
                 onCurrencySelect={handleCurrencySelect}
                 otherCurrency={otherSelectedCurrency}

@@ -5,7 +5,11 @@ import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/CurrencyLogo'
 import ListLogo from 'components/ListLogo'
 import { AutoRow, RowFixed } from 'components/Row'
+import { MouseoverTooltip } from 'components/Tooltip'
+import { getChainDisplayName } from 'constants/chains'
+import { isDisabledInCurrencySelect } from 'constants/tokens'
 import { useIsTokenActive, useIsUserAddedToken } from 'hooks/Tokens'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
 import { CSSProperties } from 'react'
 import { CheckCircle } from 'react-feather'
@@ -62,6 +66,10 @@ export default function ImportRow({
 
   const list = token instanceof WrappedTokenInfo ? token.list : undefined
 
+  const { chainId } = useActiveWeb3React()
+  const isDisallowed = isDisabledInCurrencySelect(chainId, token)
+  const chainName = getChainDisplayName(chainId)
+
   return (
     <TokenSection style={style}>
       <CurrencyLogo currency={token} size={'24px'} style={{ opacity: dim ? '0.6' : '1' }} />
@@ -81,7 +89,14 @@ export default function ImportRow({
           </RowFixed>
         )}
       </AutoColumn>
-      {!isActive && !isAdded ? (
+
+      {isDisallowed ? (
+        <MouseoverTooltip text={<Trans>This token is disallowed here on {chainName}.</Trans>}>
+          <ButtonPrimary width="fit-content" padding="6px 12px" fontWeight={500} fontSize="14px" disabled>
+            <Trans>Disallowed</Trans>
+          </ButtonPrimary>
+        </MouseoverTooltip>
+      ) : !isActive && !isAdded ? (
         <ButtonPrimary
           width="fit-content"
           padding="6px 12px"

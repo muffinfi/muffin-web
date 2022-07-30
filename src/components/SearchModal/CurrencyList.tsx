@@ -1,8 +1,11 @@
 import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { LightGreyCard } from 'components/Card'
 import QuestionHelper from 'components/QuestionHelper'
+import { getChainDisplayName } from 'constants/chains'
+import { isDisabledInCurrencySelect } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
 import { CSSProperties, memo, MutableRefObject, useCallback, useEffect, useMemo, useState } from 'react'
@@ -130,11 +133,14 @@ function CurrencyRow({
   showCurrencyAmount?: boolean
   balanceSource?: BalanceSource
 }) {
-  const { account } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const key = currencyKey(currency)
   const selectedTokenList = useCombinedActiveList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency.isToken ? currency : undefined)
   const customAdded = useIsUserAddedToken(currency)
+
+  const isDisallowed = isDisabledInCurrencySelect(chainId, currency)
+  const chainName = getChainDisplayName(chainId)
 
   // debounce loading currency balance
   const [loadCurrencyBalance, setLoadCurrencyBalance] = useState(false)
@@ -148,15 +154,22 @@ function CurrencyRow({
     <MenuItem
       style={style}
       className={`token-item-${key}`}
-      onClick={() => (isSelected ? null : onSelect())}
-      disabled={isSelected}
+      onClick={() => (isSelected || isDisallowed ? null : onSelect())}
+      disabled={isSelected || isDisallowed}
       selected={otherSelected}
     >
       <CurrencyLogo currency={currency} size={'24px'} />
       <Column>
-        <Text title={currency.name} fontWeight={500}>
-          {currency.symbol}
-        </Text>
+        <M.Row gap="0.5em">
+          <Text title={currency.name} fontWeight={500}>
+            {currency.symbol}
+          </Text>
+          {isDisallowed ? (
+            <M.Text size="xs" color="text1">
+              <Trans> • Disallowed on {chainName}</Trans>
+            </M.Text>
+          ) : null}
+        </M.Row>
         <ThemedText.DarkGray ml="0px" fontSize={'12px'} fontWeight={300}>
           {!currency.isNative && !isOnSelectedList && customAdded ? (
             <Trans>{currency.name} • Added by user</Trans>
