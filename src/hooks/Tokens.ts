@@ -2,10 +2,12 @@ import { createSelector } from '@reduxjs/toolkit'
 import { Currency, Token } from '@uniswap/sdk-core'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { L2_CHAIN_IDS, SupportedChainId, SupportedL2ChainId } from 'constants/chains'
+import { DISALLOWED_CURRENCIES } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
 import { useAppSelector } from 'state/hooks'
+import { currencyId } from 'utils/currencyId'
 
 import { useAllLists, useInactiveListUrls } from '../state/lists/hooks'
 import {
@@ -135,9 +137,26 @@ export function useAllTokens(): { [address: string]: Token } {
   return useAppSelector((state) => selectAllTokens(state, chainId))
 }
 
+/**
+ * @deprecated please use `useUnsupportedCurrenciesById` instead.
+ */
 export function useUnsupportedTokens(): { [address: string]: Token } {
   const { chainId } = useActiveWeb3React()
   return useAppSelector((state) => selectUnsupportedTokens(state, chainId))
+}
+
+export function useUnsupportedCurrenciesById(): { [id: string]: Currency } {
+  const { chainId } = useActiveWeb3React()
+  const unsupportedTokenMap = useAppSelector((state) => selectUnsupportedTokens(state, chainId))
+
+  return useMemo(() => {
+    const currencies = DISALLOWED_CURRENCIES[chainId ?? -1] ?? []
+    const currenciesById = currencies.reduce<{ [id: string]: Currency }>(
+      (acc, currency) => ({ ...acc, [currencyId(currency)]: currency }),
+      {}
+    )
+    return { ...currenciesById, ...unsupportedTokenMap }
+  }, [chainId, unsupportedTokenMap])
 }
 
 export function useSearchInactiveTokenLists(search: string | undefined, minResults = 10): WrappedTokenInfo[] {

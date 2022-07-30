@@ -10,8 +10,9 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { CloseIcon, ExternalLink, ThemedText, Z_INDEX } from 'theme'
+import { currencyId } from 'utils/currencyId'
 
-import { useUnsupportedTokens } from '../../hooks/Tokens'
+import { useUnsupportedCurrenciesById } from '../../hooks/Tokens'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 
 const DetailsFooter = styled.div<{ show: boolean }>`
@@ -55,14 +56,7 @@ export default function UnsupportedCurrencyFooter({
   const { chainId } = useActiveWeb3React()
   const [showDetails, setShowDetails] = useState(false)
 
-  const tokens =
-    chainId && currencies
-      ? currencies.map((currency) => {
-          return currency?.wrapped
-        })
-      : []
-
-  const unsupportedTokens = useUnsupportedTokens()
+  const unsupportedCurrenciesById = useUnsupportedCurrenciesById()
 
   return (
     <DetailsFooter show={show}>
@@ -75,20 +69,20 @@ export default function UnsupportedCurrencyFooter({
               </ThemedText.MediumHeader>
               <CloseIcon onClick={() => setShowDetails(false)} />
             </RowBetween>
-            {tokens.map((token) => {
+            {currencies.map((currency) => {
               return (
-                token &&
-                unsupportedTokens &&
-                Object.keys(unsupportedTokens).includes(token.address) && (
-                  <OutlineCard key={token.address?.concat('not-supported')}>
+                currency &&
+                unsupportedCurrenciesById &&
+                Object.keys(unsupportedCurrenciesById).includes(currencyId(currency)) && (
+                  <OutlineCard key={currencyId(currency).concat('not-supported')}>
                     <AutoColumn gap="10px">
                       <AutoRow gap="5px" align="center">
-                        <CurrencyLogo currency={token} size={'24px'} />
-                        <ThemedText.Body fontWeight={500}>{token.symbol}</ThemedText.Body>
+                        <CurrencyLogo currency={currency} size={'24px'} />
+                        <ThemedText.Body fontWeight={500}>{currency.symbol}</ThemedText.Body>
                       </AutoRow>
-                      {chainId && (
-                        <ExternalLink href={getExplorerLink(chainId, token.address, ExplorerDataType.ADDRESS)}>
-                          <AddressText>{token.address}</AddressText>
+                      {currency.isToken && chainId && (
+                        <ExternalLink href={getExplorerLink(chainId, currency.address, ExplorerDataType.ADDRESS)}>
+                          <AddressText>{currency.address}</AddressText>
                         </ExternalLink>
                       )}
                     </AutoColumn>

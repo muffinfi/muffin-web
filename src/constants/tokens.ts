@@ -143,8 +143,10 @@ export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedCha
 }
 
 /**
- * Currencies disabled in the currency select, and disallowed for swap and add liquidity.
- * Less strict comparing to "unsupportedTokens". It is mainly used to disallow native eth on testnet.
+ * Currencies disallowed to be selected in the currency select, and disallowed for swap and add liquidity.
+ * They are also counted as "unsupported currencies", i.e. unable to import, swap, add liquidity and deposit.
+ *
+ * Mainly used to disallow native eth on testnet.
  */
 export const DISALLOWED_CURRENCIES: { [chainId: number]: Currency[] } = {
   [SupportedChainId.RINKEBY]: [
