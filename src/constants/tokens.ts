@@ -157,3 +157,17 @@ export const isDisabledInCurrencySelect = (chainId: number | undefined, currency
   if (chainId == null || currency == null) return false
   return CURRENCIES_DISABLED_IN_CURRENCY_SELECT[chainId]?.some((x) => x.equals(currency)) ?? false
 }
+
+/**
+ * Overriding default currency shown in the currency select. Native eth if not overridden.
+ */
+export const DEFAULT_CURRENCY_OVERRIDE: { [chainId: number]: Token } = {
+  [SupportedChainId.RINKEBY]: TETH_RINKEBY,
+}
+
+/**
+ * Returns default currency as either the string "ETH" or the token address
+ */
+export const getDefaultCurrencyId = (chainId: number | undefined) => {
+  return DEFAULT_CURRENCY_OVERRIDE[chainId ?? -1]?.address ?? 'ETH'
+}

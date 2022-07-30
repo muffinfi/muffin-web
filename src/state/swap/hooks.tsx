@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { TradeState } from 'state/routing/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 
-import { TOKEN_SHORTHANDS } from '../../constants/tokens'
+import { getDefaultCurrencyId, TOKEN_SHORTHANDS } from '../../constants/tokens'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
 import { AppState } from '../index'
@@ -66,16 +66,17 @@ export function useSwapActionHandlers(): {
     [dispatch]
   )
 
+  const { chainId } = useActiveWeb3React()
   const reset = useCallback(() => {
     dispatch(
       replaceSwapState({
         typedValue: '',
         field: Field.INPUT,
-        inputCurrencyId: 'ETH',
+        inputCurrencyId: getDefaultCurrencyId(chainId),
         recipient: null,
       })
     )
-  }, [dispatch])
+  }, [dispatch, chainId])
 
   return {
     onSwitchTokens,
@@ -245,7 +246,7 @@ function validatedRecipient(recipient: any): string | null {
   return null
 }
 
-export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
+export function queryParametersToSwapState(parsedQs: ParsedQs, chainId?: number): SwapState {
   let inputCurrency = parseCurrencyFromURLParameter(parsedQs.inputCurrency)
   let outputCurrency = parseCurrencyFromURLParameter(parsedQs.outputCurrency)
   const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)
@@ -253,7 +254,7 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    inputCurrency = 'ETH'
+    inputCurrency = getDefaultCurrencyId(chainId)
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
@@ -301,8 +302,8 @@ export function useDefaultsFromURLSearch(): SwapState {
   const parsedQs = useParsedQueryString()
 
   const parsedSwapState = useMemo(() => {
-    return queryParametersToSwapState(parsedQs)
-  }, [parsedQs])
+    return queryParametersToSwapState(parsedQs, chainId)
+  }, [parsedQs, chainId])
 
   useEffect(() => {
     if (!chainId) return

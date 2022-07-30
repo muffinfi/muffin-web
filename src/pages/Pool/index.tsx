@@ -6,6 +6,7 @@ import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
+import { getDefaultCurrencyId } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { useMemo } from 'react'
@@ -52,7 +53,7 @@ function PositionsLoadingPlaceholder() {
 }
 
 export default function Pool() {
-  const { account } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
 
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
@@ -92,7 +93,7 @@ export default function Pool() {
                 <Trans>Provide liquidity and earn fees on Muffin.</Trans>
               </M.Text>
             </M.Column>
-            <M.ButtonPrimary id="join-pool-button" as={Link} to="/add/ETH">
+            <M.ButtonPrimary id="join-pool-button" as={Link} to={`/add/${getDefaultCurrencyId(chainId)}`}>
               + <Trans>New Position</Trans>
             </M.ButtonPrimary>
           </M.RowBetween>
