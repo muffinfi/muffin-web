@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { Currency } from '@uniswap/sdk-core'
-import { ButtonEmpty } from 'components/Button'
 import Card, { OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -9,34 +9,11 @@ import { AutoRow, RowBetween } from 'components/Row'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
-import { CloseIcon, ExternalLink, ThemedText, Z_INDEX } from 'theme'
+import { CloseIcon, ExternalLink, ThemedText } from 'theme'
 import { currencyId } from 'utils/currencyId'
 
 import { useUnsupportedCurrenciesById } from '../../hooks/Tokens'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
-
-const DetailsFooter = styled.div<{ show: boolean }>`
-  padding-top: calc(16px + 2rem);
-  padding-bottom: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: -2rem;
-  width: 100%;
-  max-width: 400px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  color: ${({ theme }) => theme.text2};
-  background-color: ${({ theme }) => theme.advancedBG};
-  z-index: ${Z_INDEX.deprecated_zero};
-
-  transform: ${({ show }) => (show ? 'translateY(0%)' : 'translateY(-100%)')};
-  transition: transform 300ms ease-in-out;
-  text-align: center;
-`
-
-const StyledButtonEmpty = styled(ButtonEmpty)`
-  text-decoration: none;
-`
 
 const AddressText = styled(ThemedText.Blue)`
   font-size: 12px;
@@ -59,7 +36,7 @@ export default function UnsupportedCurrencyFooter({
   const unsupportedCurrenciesById = useUnsupportedCurrenciesById()
 
   return (
-    <DetailsFooter show={show}>
+    <div>
       <Modal isOpen={showDetails} onDismiss={() => setShowDetails(false)}>
         <Card padding="2rem">
           <AutoColumn gap="lg">
@@ -101,11 +78,16 @@ export default function UnsupportedCurrencyFooter({
           </AutoColumn>
         </Card>
       </Modal>
-      <StyledButtonEmpty padding={'0'} onClick={() => setShowDetails(true)}>
-        <ThemedText.Blue>
-          <Trans>Read more about unsupported assets</Trans>
-        </ThemedText.Blue>
-      </StyledButtonEmpty>
-    </DetailsFooter>
+
+      <M.Anchor
+        color="primary0"
+        hoverColor="primary2"
+        weight="medium"
+        role="button"
+        onClick={() => setShowDetails(true)}
+      >
+        <Trans>Read more about unsupported assets</Trans>
+      </M.Anchor>
+    </div>
   )
 }
