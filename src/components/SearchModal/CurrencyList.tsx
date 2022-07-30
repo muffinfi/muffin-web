@@ -5,7 +5,7 @@ import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { LightGreyCard } from 'components/Card'
 import QuestionHelper from 'components/QuestionHelper'
 import { getChainDisplayName } from 'constants/chains'
-import { isDisabledInCurrencySelect } from 'constants/tokens'
+import { isDisallowedCurrency } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
 import { CSSProperties, memo, MutableRefObject, useCallback, useEffect, useMemo, useState } from 'react'
@@ -139,7 +139,7 @@ function CurrencyRow({
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency.isToken ? currency : undefined)
   const customAdded = useIsUserAddedToken(currency)
 
-  const isDisallowed = isDisabledInCurrencySelect(chainId, currency)
+  const isDisallowed = isDisallowedCurrency(chainId, currency)
   const chainName = getChainDisplayName(chainId)
 
   // debounce loading currency balance

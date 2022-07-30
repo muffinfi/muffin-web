@@ -6,7 +6,7 @@ import { AutoRow } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainDisplayName } from 'constants/chains'
 import { COMMON_BASES } from 'constants/routing'
-import { isDisabledInCurrencySelect } from 'constants/tokens'
+import { isDisallowedCurrency } from 'constants/tokens'
 import { useTokenInfoFromActiveList } from 'hooks/useTokenInfoFromActiveList'
 import { useMemo } from 'react'
 import { Text } from 'rebass'
@@ -53,17 +53,16 @@ export default function CommonBases({
   const bases = useMemo(() => {
     if (typeof chainId === 'undefined') return []
     const currencies = COMMON_BASES[chainId] ?? []
-    const currenciesAllowed = currencies // .filter((currency) => !isDisabledInCurrencySelect(chainId, currency))
 
-    if (!disableNonToken) return currenciesAllowed
-    return currenciesAllowed.filter((currency) => currency.isToken)
+    if (!disableNonToken) return currencies
+    return currencies.filter((currency) => currency.isToken)
   }, [chainId, disableNonToken])
 
   return bases.length > 0 ? (
     <MobileWrapper gap="md">
       <AutoRow gap="4px">
         {bases.map((currency: Currency) => {
-          const disallowed = isDisabledInCurrencySelect(chainId, currency)
+          const disallowed = isDisallowedCurrency(chainId, currency)
           const disallowedOrSelected =
             disallowed || selectedCurrency?.equals(currency) || isCurrencySelected?.(currency, selectedCurrency)
 

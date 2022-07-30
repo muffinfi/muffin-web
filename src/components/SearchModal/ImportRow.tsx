@@ -7,7 +7,7 @@ import ListLogo from 'components/ListLogo'
 import { AutoRow, RowFixed } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainDisplayName } from 'constants/chains'
-import { isDisabledInCurrencySelect } from 'constants/tokens'
+import { isDisallowedCurrency } from 'constants/tokens'
 import { useIsTokenActive, useIsUserAddedToken } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
@@ -67,7 +67,7 @@ export default function ImportRow({
   const list = token instanceof WrappedTokenInfo ? token.list : undefined
 
   const { chainId } = useActiveWeb3React()
-  const isDisallowed = isDisabledInCurrencySelect(chainId, token)
+  const isDisallowed = isDisallowedCurrency(chainId, token)
   const chainName = getChainDisplayName(chainId)
 
   return (

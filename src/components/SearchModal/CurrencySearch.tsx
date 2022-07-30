@@ -2,7 +2,7 @@
 import { t, Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { isDisabledInCurrencySelect } from 'constants/tokens'
+import { isDisallowedCurrency } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useToken } from 'hooks/useCurrency'
 import useDebounce from 'hooks/useDebounce'
@@ -142,7 +142,7 @@ export function CurrencySearch({
     const allowed: Currency[] = []
     const disallowed: Currency[] = []
     currencies.forEach((currency) => {
-      const arr = isDisabledInCurrencySelect(chainId, currency) ? disallowed : allowed
+      const arr = isDisallowedCurrency(chainId, currency) ? disallowed : allowed
       arr.push(currency)
     })
     return [...allowed, ...disallowed]
