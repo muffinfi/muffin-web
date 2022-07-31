@@ -46,6 +46,3 @@ export const DEFAULT_ACTIVE_LIST_URLS: string[] = [
   MUFFIN_TESTNET_LIST,
   // UNI_LIST,
 ]
-
-// WIP:  1. setup default active list
-// WIP:  2. rename testnt list to a better name

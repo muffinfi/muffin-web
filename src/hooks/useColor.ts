@@ -46,19 +46,24 @@ async function getColorFromToken(token: Token): Promise<string | null> {
 async function getColorFromUriPath(uri: string): Promise<string | null> {
   const formattedPath = uriToHttp(uri)[0]
 
-  const palette = await Vibrant.from(formattedPath).getPalette()
-  if (!palette?.Vibrant) {
+  try {
+    const palette = await Vibrant.from(formattedPath).getPalette()
+    if (!palette?.Vibrant) {
+      return null
+    }
+
+    let detectedHex = palette.Vibrant.hex
+    let AAscore = hex(detectedHex, '#FFF')
+    while (AAscore < 3) {
+      detectedHex = shade(0.005, detectedHex)
+      AAscore = hex(detectedHex, '#FFF')
+    }
+
+    return detectedHex
+  } catch (error) {
+    console.log('Cannot determine list color: ', error)
     return null
   }
-
-  let detectedHex = palette.Vibrant.hex
-  let AAscore = hex(detectedHex, '#FFF')
-  while (AAscore < 3) {
-    detectedHex = shade(0.005, detectedHex)
-    AAscore = hex(detectedHex, '#FFF')
-  }
-
-  return detectedHex
 }
 
 export function useColor(token?: Token) {
