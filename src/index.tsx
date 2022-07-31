@@ -23,7 +23,6 @@ import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
 import ThemeProvider from './theme'
-import FaviconUpdater from './theme/FaviconUpdater'
 // import RadialGradientByChainUpdater from './theme/RadialGradientByChainUpdater'
 import getLibrary from './utils/getLibrary'
 
@@ -44,7 +43,6 @@ function Updaters() {
       <BlockUpdater />
       <MulticallUpdater />
       <LogsUpdater />
-      <FaviconUpdater />
     </>
   )
 }

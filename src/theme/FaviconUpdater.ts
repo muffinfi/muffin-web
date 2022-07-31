@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 
+/**
+ * @deprecated Not using anymore. Instead, directly use <style> tag in favicon svg
+ */
 export default function FaviconUpdater() {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')

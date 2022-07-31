@@ -77,7 +77,7 @@ const LogoLink = styled(M.Link)`
   & > svg {
     /* logo with text */
     :first-child {
-      margin-bottom: 5.454%; // 5px for 110px tall
+      margin-bottom: 5px;
       display: inline;
       ${({ theme }) => theme.mediaWidth.upToExtraSmall`display: none;`};
     }
@@ -123,8 +123,8 @@ export default function Header() {
     <HeaderWrapper showBackground={scrollY > 45}>
       <M.Row gap="48px">
         <LogoLink to=".">
-          <LogoText width="110px" height="30px" />
-          <Logo width="26px" height="29px" />
+          <LogoText width="110px" height="auto" />
+          <Logo width="28px" height="auto" />
         </LogoLink>
         <NavItemRow gap="36px">
           <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
