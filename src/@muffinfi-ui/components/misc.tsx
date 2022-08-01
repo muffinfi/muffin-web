@@ -32,9 +32,9 @@ export const Container = styled.div<{ maxWidth: string }>`
   margin-bottom: 72px;
 `
 
-export const SectionCard = styled.div<{ greedyMargin?: boolean }>`
+export const SectionCard = styled.div<{ greedyMargin?: boolean; padding?: string }>`
   border-radius: 16px;
-  padding: 1.1rem;
+  padding: ${({ padding, greedyMargin }) => (greedyMargin ? null : padding) ?? '1.1rem'};
   margin: ${({ greedyMargin }) => greedyMargin && '0 -1.1rem'};
   background-color: var(--layer1);
 

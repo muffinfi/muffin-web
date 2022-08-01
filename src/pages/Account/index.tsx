@@ -6,9 +6,11 @@ import TokenRow from 'components/account/TokenRow'
 import { LoadingRows } from 'components/Loader/styled'
 import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { useAllTokens } from 'hooks/Tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
+import { Info } from 'react-feather'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components/macro'
 
@@ -46,16 +48,36 @@ export default function Account(props: RouteComponentProps) {
 
   return (
     <>
-      <M.Container maxWidth="30rem">
+      <M.Container maxWidth="34rem">
         <M.Column stretch gap="32px">
           <M.RowBetween wrap="wrap" gap="1em">
             <M.Column gap="8px">
               <M.Text size="xl" weight="bold">
                 <Trans>Account</Trans>
               </M.Text>
-              <M.Text color="text2" size="sm" style={{ maxWidth: '16rem' }}>
-                <Trans>Your internal token balances in Muffin.</Trans>
-              </M.Text>
+              <M.Column gap="8px" style={{ maxWidth: '17rem' }}>
+                <M.Text color="text2" size="sm">
+                  <Trans>Your internal token balances in Muffin.</Trans>
+                </M.Text>
+                <M.TextDiv color="primary1" size="sm" weight="medium">
+                  <MouseoverTooltip
+                    text={
+                      <Trans>
+                        You can use Account to pay or receive tokens in swap or liquidity addition or removal.
+                        <br />
+                        <br />
+                        <M.Text weight="semibold">It saves 10–30% gas</M.Text> comparing to using your wallet. Useful
+                        when you’re an active trader or LP here.
+                      </Trans>
+                    }
+                  >
+                    <M.Row gap="0.33em">
+                      <Info size="1em" />
+                      When to use?
+                    </M.Row>
+                  </MouseoverTooltip>
+                </M.TextDiv>
+              </M.Column>
             </M.Column>
 
             <M.Row wrap="wrap" gap="0.75em">
@@ -68,7 +90,7 @@ export default function Account(props: RouteComponentProps) {
             </M.Row>
           </M.RowBetween>
 
-          <M.SectionCard>
+          <M.SectionCard padding="1.5rem 1.5rem 1rem">
             <M.Column stretch gap="24px">
               <M.RowBetween>
                 <M.Text size="sm" weight="semibold">
