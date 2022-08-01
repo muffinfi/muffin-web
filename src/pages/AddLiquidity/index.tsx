@@ -113,19 +113,19 @@ const getCapitalEfficiency = (
   priceLower: Price<Token, Token>,
   priceUpper: Price<Token, Token>
 ): number => {
-  const price = priceCurrent.greaterThan(priceUpper)
+  const priceClipped = priceCurrent.greaterThan(priceUpper)
     ? priceUpper
     : priceCurrent.lessThan(priceLower)
     ? priceLower
     : priceCurrent
-
-  const p = Number(price.toSignificant(18))
-  const sqrtP = Math.sqrt(Number(price.toSignificant(18)))
+  const sqrtPClipped = Math.sqrt(Number(priceClipped.toSignificant(18)))
   const sqrtPLower = Math.sqrt(Number(priceLower.toSignificant(18)))
   const sqrtPUpper = Math.sqrt(Number(priceUpper.toSignificant(18)))
 
-  const denom = p * (1 / sqrtP - 1 / sqrtPUpper) + (sqrtP - sqrtPLower)
-  const num = p * (1 / sqrtP) + sqrtP
+  const pNow = Number(priceCurrent.toSignificant(18))
+
+  const denom = pNow * (1 / sqrtPClipped - 1 / sqrtPUpper) + (sqrtPClipped - sqrtPLower)
+  const num = 2 * Math.sqrt(pNow)
   return num / denom
 }
 
