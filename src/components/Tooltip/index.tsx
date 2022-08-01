@@ -1,4 +1,5 @@
-import { ReactNode, useCallback, useState } from 'react'
+import { useSwitch, useSwitchWithDelayedClose } from 'hooks/useSwitch'
+import { ReactNode, useCallback } from 'react'
 import { Box, BoxProps } from 'rebass'
 import styled from 'styled-components/macro'
 
@@ -38,15 +39,23 @@ function TooltipContent({ content, wrap = false, ...rest }: TooltipContentProps)
 }
 
 export function MouseoverTooltip({
-  children,
+  keepOpenWhenHoverTooltip,
   wrapperProps,
+  children,
   ...rest
-}: Omit<TooltipProps, 'show'> & { wrapperProps?: Omit<BoxProps, 'onMouseEnter' | 'onMouseLeave'> }) {
-  const [show, setShow] = useState(false)
-  const open = useCallback(() => setShow(true), [])
-  const close = useCallback(() => setShow(false), [])
+}: Omit<TooltipProps, 'show'> & {
+  keepOpenWhenHoverTooltip?: boolean
+  wrapperProps?: Omit<BoxProps, 'onMouseEnter' | 'onMouseLeave'>
+}) {
+  const { state: show, open, close } = useSwitchWithDelayedClose()
+
   return (
-    <Tooltip {...rest} show={show}>
+    <Tooltip
+      {...rest}
+      show={show}
+      onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
+      onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+    >
       <Box {...wrapperProps} onMouseEnter={open} onMouseLeave={close}>
         {children}
       </Box>
@@ -61,12 +70,12 @@ export function MouseoverTooltipContent({
   disableHover,
   ...rest
 }: Omit<TooltipContentProps, 'show'>) {
-  const [show, setShow] = useState(false)
+  const { state: show, open: _open, close } = useSwitch()
   const open = useCallback(() => {
-    setShow(true)
+    _open()
     openCallback?.()
-  }, [openCallback])
-  const close = useCallback(() => setShow(false), [])
+  }, [_open, openCallback])
+
   return (
     <TooltipContent {...rest} show={show} content={disableHover ? null : content}>
       <div

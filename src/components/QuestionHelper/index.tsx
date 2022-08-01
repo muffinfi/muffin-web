@@ -1,4 +1,5 @@
-import { ReactNode, useCallback, useState } from 'react'
+import { useSwitchWithDelayedClose } from 'hooks/useSwitch'
+import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 
 import Tooltip from '../Tooltip'
@@ -29,15 +30,23 @@ const QuestionMark = styled.span`
   font-size: 13px;
 `
 
-export default function QuestionHelper({ text }: { text: ReactNode; size?: number }) {
-  const [show, setShow] = useState<boolean>(false)
-
-  const open = useCallback(() => setShow(true), [setShow])
-  const close = useCallback(() => setShow(false), [setShow])
+export default function QuestionHelper({
+  text,
+  keepOpenWhenHoverTooltip,
+}: {
+  text: ReactNode
+  keepOpenWhenHoverTooltip?: boolean
+}) {
+  const { state: show, open, close } = useSwitchWithDelayedClose()
 
   return (
     <span style={{ marginLeft: 4, display: 'flex', alignItems: 'center' }}>
-      <Tooltip text={text} show={show}>
+      <Tooltip
+        text={text}
+        show={show}
+        onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
+        onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+      >
         <QuestionWrapper onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <QuestionMark>?</QuestionMark>
         </QuestionWrapper>
@@ -71,14 +80,23 @@ const QuestionMarkInline = styled.span`
   }
 `
 
-export function QuestionHelperInline({ text }: { text: ReactNode }) {
-  const [show, setShow] = useState<boolean>(false)
-  const open = useCallback(() => setShow(true), [setShow])
-  const close = useCallback(() => setShow(false), [setShow])
+export function QuestionHelperInline({
+  text,
+  keepOpenWhenHoverTooltip,
+}: {
+  text: ReactNode
+  keepOpenWhenHoverTooltip?: boolean
+}) {
+  const { state: show, open, close } = useSwitchWithDelayedClose()
 
   return (
     <span style={{ marginLeft: 6 }}>
-      <Tooltip text={text} show={show}>
+      <Tooltip
+        text={text}
+        show={show}
+        onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
+        onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+      >
         <QuestionMarkInline onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <span>?</span>
         </QuestionMarkInline>

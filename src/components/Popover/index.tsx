@@ -11,6 +11,19 @@ const PopoverContainer = styled.div<{ show: boolean }>`
   opacity: ${(props) => (props.show ? 1 : 0)};
   transition: visibility 120ms linear, opacity 120ms linear;
   color: var(--text1);
+
+  &[data-popper-placement^='top'] {
+    padding-bottom: 8px;
+  }
+  &[data-popper-placement^='bottom'] {
+    padding-top: 8px;
+  }
+  &[data-popper-placement^='left'] {
+    padding-right: 8px;
+  }
+  &[data-popper-placement^='right'] {
+    padding-left: 8px;
+  }
 `
 
 const ReferenceElement = styled.div`
@@ -35,7 +48,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-top {
-    bottom: -3px;
+    bottom: 4px;
     ::before {
       border-top: none;
       border-left: none;
@@ -43,7 +56,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-bottom {
-    top: -4px;
+    top: 4px;
     ::before {
       border-bottom: none;
       border-right: none;
@@ -51,8 +64,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-left {
-    right: -3px;
-
+    right: 4px;
     ::before {
       border-bottom: none;
       border-left: none;
@@ -60,7 +72,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-right {
-    left: -4px;
+    left: 4px;
     ::before {
       border-right: none;
       border-top: none;
@@ -73,9 +85,18 @@ export interface PopoverProps {
   show: boolean
   children: React.ReactNode
   placement?: Placement
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }
 
-export default function Popover({ content, show, children, placement = 'auto' }: PopoverProps) {
+export default function Popover({
+  content,
+  show,
+  children,
+  placement = 'auto',
+  onMouseEnter,
+  onMouseLeave,
+}: PopoverProps) {
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
   const [arrowElement, setArrowElement] = useState<HTMLDivElement | null>(null)
@@ -85,7 +106,7 @@ export default function Popover({ content, show, children, placement = 'auto' }:
       placement,
       strategy: 'fixed',
       modifiers: [
-        { name: 'offset', options: { offset: [8, 8] } },
+        { name: 'offset', options: { offset: [0, 0] } },
         { name: 'arrow', options: { element: arrowElement } },
         { name: 'preventOverflow', options: { padding: 8 } },
       ],
@@ -104,7 +125,14 @@ export default function Popover({ content, show, children, placement = 'auto' }:
     <>
       <ReferenceElement ref={setReferenceElement as any}>{children}</ReferenceElement>
       <Portal>
-        <PopoverContainer show={show} ref={setPopperElement as any} style={styles.popper} {...attributes.popper}>
+        <PopoverContainer
+          show={show}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          ref={setPopperElement as any}
+          style={styles.popper}
+          {...attributes.popper}
+        >
           {content}
           <Arrow
             className={`arrow-${attributes.popper?.['data-popper-placement'] ?? ''}`}
