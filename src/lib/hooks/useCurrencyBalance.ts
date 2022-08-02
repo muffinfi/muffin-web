@@ -8,7 +8,7 @@ import {
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import JSBI from 'jsbi'
-import { useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 
 import { nativeOnChain } from '../../constants/tokens'
@@ -50,6 +50,29 @@ export function useNativeCurrencyBalances(uncheckedAddresses?: (string | undefin
   )
 }
 
+export function useNativeCurrencyBalanceWithLoadingIndicator(
+  uncheckedAddress: string | undefined
+): [CurrencyAmount<Currency> | undefined, boolean] {
+  const { chainId } = useActiveWeb3React()
+  const multicallContract = useInterfaceMulticall()
+  const address = uncheckedAddress ? isAddress(uncheckedAddress) || undefined : undefined
+
+  const callstate = useSingleCallResult(
+    address ? multicallContract : null,
+    'getEthBalance',
+    useMemo(() => (address ? [address] : undefined), [address])
+  )
+
+  const amount = useMemo(() => {
+    const value = callstate?.result?.[0]
+    return chainId && value != null
+      ? CurrencyAmount.fromRawAmount(nativeOnChain(chainId), JSBI.BigInt(value.toString()))
+      : undefined
+  }, [callstate, chainId])
+
+  return [amount, callstate.loading]
+}
+
 /**
  * Returns a map of token addresses to their eventually consistent token balances for a single account.
  */
@@ -60,26 +83,45 @@ export function useTokenBalancesWithLoadingIndicator(
 ): [{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }, boolean] {
   const isUseInternalAccount = useIsUsingInternalAccount()
   const validatedTokens = useValidatedTokens(tokens)
+
+  const isUseWalletBalances = source == null || source & BalanceSource.WALLET
+  const isUseInternalBalances =
+    (source == null && isUseInternalAccount) || // if source is null, use app's setting
+    (source ?? 0) & BalanceSource.INTERNAL_ACCOUNT
+
   const [walletBalances, loadingWallet] = useWalletTokenBalancesWithLoadingIndicator(
-    source == null || source & BalanceSource.WALLET ? address : undefined,
+    isUseWalletBalances ? address : undefined,
     validatedTokens
   )
   const [internalBalances, loadingInternal] = useInternalTokenBalancesWithLoadingIndicator(
-    (source == null && isUseInternalAccount) || (source ?? 0) & BalanceSource.INTERNAL_ACCOUNT ? address : undefined,
+    isUseInternalBalances ? address : undefined,
     validatedTokens
   )
   return useMemo(
     () => [
       validatedTokens.reduce<{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }>((memo, token) => {
-        const value = walletBalances[token.address] ?? CurrencyAmount.fromRawAmount(token, 0)
-        memo[token.address] = internalBalances[token.address]
-          ? value.add(internalBalances[token.address] as CurrencyAmount<typeof token>)
-          : value
+        const wallatBalance = walletBalances[token.address]
+        const internalBalance = internalBalances[token.address]
+
+        if (isUseWalletBalances && isUseInternalBalances) {
+          const sum = wallatBalance && internalBalance ? wallatBalance.add(internalBalance) : undefined
+          return { ...memo, [token.address]: sum }
+        }
+        if (isUseWalletBalances) return { ...memo, [token.address]: wallatBalance }
+        if (isUseInternalBalances) return { ...memo, [token.address]: internalBalance }
         return memo
       }, {}),
       loadingWallet || loadingInternal,
     ],
-    [validatedTokens, loadingWallet, loadingInternal, walletBalances, internalBalances]
+    [
+      validatedTokens,
+      loadingWallet,
+      loadingInternal,
+      walletBalances,
+      internalBalances,
+      isUseWalletBalances,
+      isUseInternalBalances,
+    ]
   )
 }
 
@@ -106,30 +148,54 @@ export function useTokenBalance(
   return tokenBalances[token.address]
 }
 
+export function useCurrencyBalancesWithLoadingIndicator(
+  account?: string,
+  currencies?: (Currency | undefined)[],
+  source?: BalanceSource
+): [(CurrencyAmount<Currency> | undefined)[], boolean] {
+  const tokens = useMemo(
+    () => currencies?.filter((currency): currency is Token => currency?.isToken ?? false) ?? [],
+    [currencies]
+  )
+  const [tokenBalances, loadingTokenBalances] = useTokenBalancesWithLoadingIndicator(account, tokens, source)
+
+  const containsETH: boolean = useMemo(() => currencies?.some((currency) => currency?.isNative) ?? false, [currencies])
+  const [ethBalance, loadingEthBalance] = useNativeCurrencyBalanceWithLoadingIndicator(
+    containsETH ? account : undefined
+  )
+
+  const amounts = useMemo(
+    () =>
+      currencies?.map((currency) => {
+        if (!account || !currency) return undefined
+        if (currency.isToken) return tokenBalances[currency.address]
+        if (currency.isNative) return ethBalance
+        return undefined
+      }) ?? [],
+    [account, currencies, ethBalance, tokenBalances]
+  )
+  return [amounts, loadingTokenBalances || loadingEthBalance]
+}
+
 export function useCurrencyBalances(
   account?: string,
   currencies?: (Currency | undefined)[],
   source?: BalanceSource
 ): (CurrencyAmount<Currency> | undefined)[] {
-  const tokens = useMemo(
-    () => currencies?.filter((currency): currency is Token => currency?.isToken ?? false) ?? [],
-    [currencies]
-  )
+  return useCurrencyBalancesWithLoadingIndicator(account, currencies, source)[0]
+}
 
-  const tokenBalances = useTokenBalances(account, tokens, source)
-  const containsETH: boolean = useMemo(() => currencies?.some((currency) => currency?.isNative) ?? false, [currencies])
-  const ethBalance = useNativeCurrencyBalances(useMemo(() => (containsETH ? [account] : []), [containsETH, account]))
-
-  return useMemo(
-    () =>
-      currencies?.map((currency) => {
-        if (!account || !currency) return undefined
-        if (currency.isToken) return tokenBalances[currency.address]
-        if (currency.isNative) return ethBalance[account]
-        return undefined
-      }) ?? [],
-    [account, currencies, ethBalance, tokenBalances]
+export function useCurrencyBalanceWithLoadingIndicator(
+  account?: string,
+  currency?: Currency,
+  source?: BalanceSource
+): [CurrencyAmount<Currency> | undefined, boolean] {
+  const [amounts, loading] = useCurrencyBalancesWithLoadingIndicator(
+    account,
+    useMemo(() => [currency], [currency]),
+    source
   )
+  return [amounts[0], loading]
 }
 
 export default function useCurrencyBalance(
@@ -137,9 +203,5 @@ export default function useCurrencyBalance(
   currency?: Currency,
   source?: BalanceSource
 ): CurrencyAmount<Currency> | undefined {
-  return useCurrencyBalances(
-    account,
-    useMemo(() => [currency], [currency]),
-    source
-  )[0]
+  return useCurrencyBalanceWithLoadingIndicator(account, currency, source)[0]
 }

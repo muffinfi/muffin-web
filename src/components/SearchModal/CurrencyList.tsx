@@ -9,6 +9,7 @@ import { getChainDisplayName } from 'constants/chains'
 import { isDisallowedCurrency } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
+import { useCurrencyBalanceWithLoadingIndicator } from 'lib/hooks/useCurrencyBalance'
 import { CSSProperties, memo, MutableRefObject, useCallback, useEffect, useMemo, useState } from 'react'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
@@ -18,7 +19,6 @@ import TokenListLogo from '../../assets/svg/tokenlist.svg'
 import { useIsUserAddedToken } from '../../hooks/Tokens'
 import { useCombinedActiveList } from '../../state/lists/hooks'
 import { WrappedTokenInfo } from '../../state/lists/wrappedTokenInfo'
-import { useCurrencyBalance } from '../../state/wallet/hooks'
 import { ThemedText } from '../../theme'
 import { isTokenOnList } from '../../utils'
 import Column from '../Column'
@@ -113,8 +113,8 @@ const CurrencyBalance = memo(function CurrencyBalance({
   currency: Currency
   balanceSource?: BalanceSource
 }) {
-  const balance = useCurrencyBalance(account ?? undefined, currency, balanceSource)
-  return balance ? <Balance balance={balance} /> : account ? <Loader /> : null
+  const [balance, loading] = useCurrencyBalanceWithLoadingIndicator(account ?? undefined, currency, balanceSource)
+  return balance ? <Balance balance={balance} /> : loading ? <Loader /> : null
 })
 
 function CurrencyRow({
