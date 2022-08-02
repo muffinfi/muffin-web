@@ -6,12 +6,12 @@ import { useMuffinPositionDetailFromTokenId } from '@muffinfi/hooks/usePositions
 import { ADDRESS_ZERO, PositionManager } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
-import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Loader'
 import QuestionHelper from 'components/QuestionHelper'
 import { RowBetween } from 'components/Row'
@@ -59,14 +59,14 @@ const TokenAmountsCard = memo(function TokenAmountsCard({
             <CurrencyLogo size="1.25em" currency={partialAmount0?.currency} />
             <M.Text weight="medium">{partialAmount0?.currency.symbol}</M.Text>
           </M.Row>
-          {partialAmount0 && <FormattedCurrencyAmount currencyAmount={partialAmount0} significantDigits={6} />}
+          {formatTokenBalance(partialAmount0, 6, 0)}
         </M.RowBetween>
         <RowBetween>
           <M.Row gap="0.5em">
             <CurrencyLogo size="1.25em" currency={partialAmount1?.currency} />
             <M.Text weight="medium">{partialAmount1?.currency.symbol}</M.Text>
           </M.Row>
-          {partialAmount1 && <FormattedCurrencyAmount currencyAmount={partialAmount1} significantDigits={6} />}
+          {formatTokenBalance(partialAmount1, 6, 0)}
         </RowBetween>
       </M.Column>
 
@@ -79,14 +79,14 @@ const TokenAmountsCard = memo(function TokenAmountsCard({
             <CurrencyLogo size="1.25em" currency={feeAmount0?.currency} />
             <M.Text weight="medium">{feeAmount0?.currency.symbol}</M.Text>
           </M.Row>
-          {feeAmount0 && <FormattedCurrencyAmount currencyAmount={feeAmount0} significantDigits={6} />}
+          {formatTokenBalance(feeAmount0, 6, 0)}
         </M.RowBetween>
         <M.RowBetween>
           <M.Row gap="0.5em">
             <CurrencyLogo size="1.25em" currency={feeAmount1?.currency} />
             <M.Text weight="medium">{feeAmount1?.currency.symbol}</M.Text>
           </M.Row>
-          {feeAmount1 && <FormattedCurrencyAmount currencyAmount={feeAmount1} significantDigits={6} />}
+          {formatTokenBalance(feeAmount1, 6, 0)}
         </M.RowBetween>
       </M.Column>
     </M.Column>
@@ -202,7 +202,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
    *====================================================================*/
 
   const { onPercentSelect } = useBurnV3ActionHandlers()
-  const [percentForSlider, onPercentSelectForSlider] = useDebouncedChangeHandler(percent, onPercentSelect)
+  const [percentForSlider, onPercentSelectForSlider] = useDebouncedChangeHandler(percent, onPercentSelect, 0) // turned off debounce
 
   /*=====================================================================
    *                            UI STATES

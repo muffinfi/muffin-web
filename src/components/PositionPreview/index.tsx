@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Position } from '@muffinfi/muffin-sdk'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency } from '@uniswap/sdk-core'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -69,14 +70,14 @@ export const PositionPreview = ({
               <CurrencyLogo currency={currency0} />
               <M.Text weight="medium">{currency0?.symbol}</M.Text>
             </M.Row>
-            <M.Text weight="medium">{position.amount0.toSignificant(4)}</M.Text>
+            <M.Text weight="medium">{formatTokenBalance(position.amount0, 4, 0)}</M.Text>
           </M.RowBetween>
           <M.RowBetween>
             <M.Row gap="0.75em">
               <CurrencyLogo currency={currency1} />
               <M.Text weight="medium">{currency1?.symbol}</M.Text>
             </M.Row>
-            <M.Text weight="medium">{position.amount1.toSignificant(4)}</M.Text>
+            <M.Text weight="medium">{formatTokenBalance(position.amount1, 4, 0)}</M.Text>
           </M.RowBetween>
         </M.Column>
       </LightCard>

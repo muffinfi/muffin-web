@@ -8,8 +8,9 @@ import { usePositionUSDCValue } from '@muffinfi/hooks/usePositionUSDCValue'
 import { LimitOrderType, Position } from '@muffinfi/muffin-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
+import { formatTokenBalance, formatUSDBalanceWithDollarSign } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
-import { Currency, CurrencyAmount, Fraction, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
 import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
@@ -93,10 +94,9 @@ const TokenAmountAndValue = ({
       <M.Text>
         <LinkedCurrency chainId={chainId} currency={currency} />
       </M.Text>
-      <M.Text>{amount?.toSignificant(4)}</M.Text>
+      <M.Text>{formatTokenBalance(amount)}</M.Text>
       <M.Text color="text2" size="sm">
-        {/* TODO: is 4 sig fig good? */}
-        <Trans>${fiatValue?.toSignificant(4, { groupSeparator: ',' }) ?? '-'}</Trans>
+        <Trans>{formatUSDBalanceWithDollarSign(fiatValue)}</Trans>
       </M.Text>
       {!showRatio ? null : ratio != null ? (
         <TokenProportionBadge>
@@ -410,11 +410,7 @@ export function PositionPage({
             <Trans>Liquidity</Trans>
           </M.Text>
           <M.Text size="2xl" weight="semibold">
-            {fiatValueOfLiquidity?.greaterThan(new Fraction(1, 100)) ? (
-              <Trans>${fiatValueOfLiquidity.toFixed(2, { groupSeparator: ',' })}</Trans>
-            ) : (
-              <Trans>$-</Trans>
-            )}
+            {formatUSDBalanceWithDollarSign(fiatValueOfLiquidity, 3, 5)}
           </M.Text>
         </M.Column>
         <M.Column gap="0.5em">
@@ -451,11 +447,7 @@ export function PositionPage({
             <Trans>Unclaimed fees</Trans>
           </M.Text>
           <M.Text size="2xl" weight="semibold">
-            {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
-              <Trans>${fiatValueOfFees.toFixed(2, { groupSeparator: ',' })}</Trans>
-            ) : (
-              <Trans>$-</Trans>
-            )}
+            {formatUSDBalanceWithDollarSign(fiatValueOfFees, 3, 5)}
           </M.Text>
         </M.Column>
         <M.Column gap="0.5em">
