@@ -370,7 +370,7 @@ export default function Deposit({ history }: RouteComponentProps) {
               ) : !inputAmounts[0] ? (
                 <Trans>Select a token</Trans>
               ) : (
-                <Trans>Deposit</Trans>
+                <Trans>Deposit from Wallet to Account</Trans>
               )}
             </M.Text>
             {isAttemptingTxn && <Loader />}

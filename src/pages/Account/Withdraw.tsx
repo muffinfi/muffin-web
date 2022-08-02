@@ -285,7 +285,7 @@ export default function Withdraw({ history }: RouteComponentProps) {
               ) : !inputAmounts[0] ? (
                 <Trans>Select a token</Trans>
               ) : (
-                <Trans>Withdraw</Trans>
+                <Trans>Withdraw from Account to Wallet</Trans>
               )}
             </M.Text>
             {isAttemptingTxn && <Loader />}
