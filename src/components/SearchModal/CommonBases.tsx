@@ -7,8 +7,9 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainDisplayName } from 'constants/chains'
 import { COMMON_BASES } from 'constants/routing'
 import { isDisallowedCurrency } from 'constants/tokens'
+import useCurrency from 'hooks/useCurrency'
 import { useTokenInfoFromActiveList } from 'hooks/useTokenInfoFromActiveList'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
 import { currencyId } from 'utils/currencyId'
@@ -37,7 +38,50 @@ const BaseWrapper = styled.div<{ disable?: boolean }>`
   filter: ${({ disable }) => disable && 'grayscale(1)'};
 `
 
-export default function CommonBases({
+function CommonBase({
+  currency,
+  chainId,
+  onSelect,
+  selectedCurrency,
+  isCurrencySelected,
+}: {
+  currency: Currency
+  chainId: number | undefined
+  selectedCurrency: Currency | null | undefined
+  isCurrencySelected: ((iterCurrency: Currency, selectedCurrency: Currency | null | undefined) => boolean) | undefined
+  onSelect: (currency: Currency) => void
+}) {
+  const disallowed = isDisallowedCurrency(chainId, currency)
+  const disallowedOrSelected =
+    disallowed || //
+    selectedCurrency?.equals(currency) ||
+    isCurrencySelected?.(currency, selectedCurrency)
+
+  // Get currency instance patched with logoURI
+  const currencyPatched = useCurrency(currencyId(currency)) ?? currency
+
+  const makeInner = () => (
+    <BaseWrapper onClick={() => !disallowedOrSelected && onSelect(currencyPatched)} disable={disallowedOrSelected}>
+      <CurrencyLogoFromList currency={currency} />
+      <Text fontWeight={500} fontSize={16}>
+        {currency.symbol}
+      </Text>
+    </BaseWrapper>
+  )
+
+  if (disallowed) {
+    const chainName = getChainDisplayName(chainId)
+    return (
+      <MouseoverTooltip text={<Trans>This token is disallowed here on {chainName}.</Trans>}>
+        {makeInner()}
+      </MouseoverTooltip>
+    )
+  }
+
+  return makeInner()
+}
+
+export default memo(function CommonBases({
   chainId,
   onSelect,
   selectedCurrency,
@@ -61,42 +105,20 @@ export default function CommonBases({
   return bases.length > 0 ? (
     <MobileWrapper gap="md">
       <AutoRow gap="4px">
-        {bases.map((currency: Currency) => {
-          const disallowed = isDisallowedCurrency(chainId, currency)
-          const disallowedOrSelected =
-            disallowed || selectedCurrency?.equals(currency) || isCurrencySelected?.(currency, selectedCurrency)
-
-          const makeInner = () => (
-            <BaseWrapper
-              onClick={() => !disallowedOrSelected && onSelect(currency)}
-              disable={disallowedOrSelected}
-              key={currencyId(currency)}
-            >
-              <CurrencyLogoFromList currency={currency} />
-              <Text fontWeight={500} fontSize={16}>
-                {currency.symbol}
-              </Text>
-            </BaseWrapper>
-          )
-
-          if (disallowed) {
-            const chainName = getChainDisplayName(chainId)
-            return (
-              <MouseoverTooltip
-                key={currencyId(currency)}
-                text={<Trans>This token is disallowed here on {chainName}.</Trans>}
-              >
-                {makeInner()}
-              </MouseoverTooltip>
-            )
-          }
-
-          return makeInner()
-        })}
+        {bases.map((currency: Currency, i) => (
+          <CommonBase
+            key={currencyId(currency)}
+            currency={currency}
+            chainId={chainId}
+            onSelect={onSelect}
+            selectedCurrency={selectedCurrency}
+            isCurrencySelected={isCurrencySelected}
+          />
+        ))}
       </AutoRow>
     </MobileWrapper>
   ) : null
-}
+})
 
 /** helper component to retrieve a base currency from the active token lists */
 function CurrencyLogoFromList({ currency }: { currency: Currency }) {
