@@ -33,12 +33,22 @@ export const CHAIN_IDS_TO_NAMES = {
 }
 
 /**
- * Array of all the supported chain IDs
+ * Array of all the supported chain IDs.
  */
 // export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = Object.values(SupportedChainId).filter(
 //   (id) => typeof id === 'number'
 // ) as SupportedChainId[]
-export const ALL_SUPPORTED_CHAIN_IDS = [SupportedChainId.MAINNET, SupportedChainId.RINKEBY]
+export const ALL_SUPPORTED_CHAIN_IDS = [
+  // SupportedChainId.MAINNET,
+  SupportedChainId.RINKEBY,
+]
+
+/**
+ * The default chain id for infura connector
+ */
+export const DEFAULT_CHAIN_ID = ALL_SUPPORTED_CHAIN_IDS[0]
+
+//
 
 export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
   SupportedChainId.MAINNET,

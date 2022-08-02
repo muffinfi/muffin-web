@@ -1,6 +1,6 @@
 import { Web3Provider } from '@ethersproject/providers'
 import { SafeAppConnector } from '@gnosis.pm/safe-apps-web3-react'
-import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
+import { ALL_SUPPORTED_CHAIN_IDS, DEFAULT_CHAIN_ID, SupportedChainId } from 'constants/chains'
 import { SUPPORTED_INFURA_NETWORK_URLS } from 'constants/infura'
 import { InjectedConnector } from 'web3-react-injected-connector'
 import { PortisConnector } from 'web3-react-portis-connector'
@@ -17,7 +17,7 @@ const PORTIS_ID = process.env.REACT_APP_PORTIS_ID
 
 export const network = new NetworkConnector({
   urls: SUPPORTED_INFURA_NETWORK_URLS,
-  defaultChainId: 1,
+  defaultChainId: DEFAULT_CHAIN_ID,
 })
 
 let networkLibrary: Web3Provider | undefined

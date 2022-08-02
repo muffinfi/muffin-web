@@ -199,7 +199,7 @@ export default function NetworkSelector() {
               <M.TextDiv color="text2" style={{ padding: '4px 4px 0' }}>
                 <Trans>Select a network</Trans>
               </M.TextDiv>
-              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} />
+              {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} /> */}
               <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.RINKEBY} />
               {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.POLYGON} />
               <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.OPTIMISM} />
