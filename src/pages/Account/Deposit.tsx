@@ -9,6 +9,7 @@ import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
@@ -17,6 +18,7 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useCurrency from 'hooks/useCurrency'
+import { useHasUnsupportedCurrencies } from 'hooks/useIsUnsupportedCurrency'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -41,6 +43,8 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
 
+const isNotNull = <T,>(x: T | undefined): x is T => x != null
+
 export default function Deposit({ history }: RouteComponentProps) {
   const { account, library } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
@@ -59,6 +63,9 @@ export default function Deposit({ history }: RouteComponentProps) {
   const { permitSignatures, updatePermitSignature, approvalStates, updateApprovalStates } =
     useTokenApproveOrPermitButtonHandler()
 
+  const currencies = useMemo(() => inputAmounts.filter(isNotNull).map((amount) => amount.currency), [inputAmounts])
+  const hasUnsupportedCurrencies = Boolean(useHasUnsupportedCurrencies(currencies))
+
   const argentWalletContract = useArgentWalletContract()
 
   const resetState = useCallback(() => {
@@ -70,9 +77,9 @@ export default function Deposit({ history }: RouteComponentProps) {
   const deposit = useCallback(() => {
     if (!account || !managerAddress || inputAmounts.length === 0) return
     // Sort currency amounts to prevent ETH/WETH race condition
-    const amounts = (inputAmounts.filter(Boolean) as CurrencyAmount<Currency>[]).sort((a, b) =>
-      a.currency.isNative ? -1 : b.currency.isNative ? 1 : 0
-    )
+    const amounts = inputAmounts
+      .filter(isNotNull)
+      .sort((a, b) => (a.currency.isNative ? -1 : b.currency.isNative ? 1 : 0))
     const permits = Object.fromEntries(
       Object.entries(permitSignatures)
         .map(([key, value]) => [key, signatureDataToPermitOptions(value)])
@@ -334,7 +341,11 @@ export default function Deposit({ history }: RouteComponentProps) {
 
   const makeButton = () => (
     <div>
-      {!account ? (
+      {hasUnsupportedCurrencies ? (
+        <M.ButtonRowPrimary disabled>
+          <Trans>Unsupported Asset</Trans>
+        </M.ButtonRowPrimary>
+      ) : !account ? (
         <M.ButtonRowSecondary onClick={toggleWalletModal}>
           <Trans>Connect Wallet</Trans>
         </M.ButtonRowSecondary>
@@ -429,6 +440,8 @@ export default function Deposit({ history }: RouteComponentProps) {
           </M.SectionCard>
         </M.Column>
       </M.Container>
+
+      {hasUnsupportedCurrencies && <UnsupportedCurrencyFooter currencies={currencies} />}
 
       <AlertWrapper>
         <NetworkAlert />

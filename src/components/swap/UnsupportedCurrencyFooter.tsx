@@ -23,13 +23,7 @@ const AddressText = styled(ThemedText.Blue)`
 `}
 `
 
-export default function UnsupportedCurrencyFooter({
-  show,
-  currencies,
-}: {
-  show: boolean
-  currencies: (Currency | undefined | null)[]
-}) {
+export default function UnsupportedCurrencyFooter({ currencies }: { currencies: (Currency | undefined | null)[] }) {
   const { chainId } = useActiveWeb3React()
   const [showDetails, setShowDetails] = useState(false)
 

@@ -1252,7 +1252,7 @@ export default function AddLiquidity({
         </M.Column>
       </M.Container>
 
-      {addIsUnsupported && <UnsupportedCurrencyFooter show={addIsUnsupported} currencies={[currencyA, currencyB]} />}
+      {addIsUnsupported && <UnsupportedCurrencyFooter currencies={[currencyA, currencyB]} />}
       <SwitchLocaleLink />
     </>
   )

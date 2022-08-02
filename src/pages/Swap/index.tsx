@@ -593,10 +593,7 @@ export default function Swap({ history }: RouteComponentProps) {
       <SwitchLocaleLink />
 
       {!swapIsUnsupported ? null : (
-        <UnsupportedCurrencyFooter
-          show={swapIsUnsupported}
-          currencies={[currencies[Field.INPUT], currencies[Field.OUTPUT]]}
-        />
+        <UnsupportedCurrencyFooter currencies={[currencies[Field.INPUT], currencies[Field.OUTPUT]]} />
       )}
     </>
   )
