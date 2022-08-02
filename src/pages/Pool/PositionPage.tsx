@@ -205,8 +205,8 @@ export function PositionPage({
   }, [token0, token1, positionDetail])
 
   const [collecting, setCollecting] = useState<boolean>(false)
-  const [collectMigrationHash, setCollectMigrationHash] = useState<string | null>(null)
-  const isCollectPending = useIsTransactionPending(collectMigrationHash ?? undefined)
+  const [collectTxHash, setCollectTxHash] = useState<string | null>(null)
+  const isCollectPending = useIsTransactionPending(collectTxHash ?? undefined)
   const [showConfirm, setShowConfirm] = useState(false)
 
   // flag for receiving WETH
@@ -222,7 +222,7 @@ export function PositionPage({
   //     currency0 &&
   //     currency1 &&
   //     (currency0.isNative || currency1.isNative) &&
-  //     !collectMigrationHash &&
+  //     !collectTxHash &&
   //     !onOptimisticChain
   // )
 
@@ -288,7 +288,7 @@ export function PositionPage({
   const onCollectSuccess = useCallback(
     (response: TransactionResponse, tokenDestination: BalanceSource) => {
       if (!feeAmount0?.currency || !feeAmount1?.currency || !position) return
-      setCollectMigrationHash(response.hash)
+      setCollectTxHash(response.hash)
       setCollecting(false)
 
       ReactGA.event({
@@ -382,28 +382,23 @@ export function PositionPage({
           </M.ButtonPrimary>
         ) : null}
 
-        {feeAmount0?.greaterThan(0) ||
-        feeAmount1?.greaterThan(0) ||
-        !!collectMigrationHash ||
-        positionDetail?.settled ? (
-          <M.Button
-            color={!!collectMigrationHash && !isCollectPending ? 'tertiary' : 'secondary'}
-            disabled={collecting || !!collectMigrationHash}
-            onClick={() => setShowConfirm(true)}
-          >
-            {!!collectMigrationHash && !isCollectPending ? (
-              <Trans>Collected</Trans>
-            ) : isCollectPending || collecting ? (
-              <Dots>
-                <Trans>Collecting</Trans>
-              </Dots>
-            ) : positionDetail?.settled ? (
-              <Trans>Collect fulfilled</Trans>
-            ) : (
-              <Trans>Collect fees</Trans>
-            )}
-          </M.Button>
-        ) : null}
+        <M.Button
+          color={Boolean(collectTxHash) && !isCollectPending ? 'tertiary' : 'secondary'}
+          disabled={collecting || Boolean(collectTxHash)}
+          onClick={() => setShowConfirm(true)}
+        >
+          {Boolean(collectTxHash) && !isCollectPending ? (
+            <Trans>Collected</Trans>
+          ) : isCollectPending || collecting ? (
+            <Dots>
+              <Trans>Collecting</Trans>
+            </Dots>
+          ) : positionDetail?.settled ? (
+            <Trans>Collect fulfilled</Trans>
+          ) : (
+            <Trans>Collect fees</Trans>
+          )}
+        </M.Button>
       </M.Row>
     ) : null
 
@@ -623,7 +618,7 @@ export function PositionPage({
           isOpen={showConfirm}
           onDismiss={() => setShowConfirm(false)}
           attemptingTxn={collecting}
-          hash={collectMigrationHash ?? ''}
+          hash={collectTxHash ?? ''}
           content={() => (
             <ConfirmationModalContent
               title={positionDetail?.settled ? <Trans>Collect fulfilled</Trans> : <Trans>Collect fees</Trans>}

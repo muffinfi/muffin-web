@@ -53,6 +53,8 @@ export default function CollectConfirmModalContent({
     [baseFeeAmount, baseLiquidityAmount, position?.settled]
   )
 
+  const isZeroAmounts = useMemo(() => qouteAmount?.equalTo(0) && baseAmount?.equalTo(0), [qouteAmount, baseAmount])
+
   const token0 = baseAmount?.currency
   const token1 = qouteAmount?.currency
 
@@ -145,9 +147,15 @@ export default function CollectConfirmModalContent({
         )}
       </M.Text>
 
-      <M.ButtonRowPrimary onClick={collect}>
-        <Trans>Collect</Trans>
-      </M.ButtonRowPrimary>
+      {isZeroAmounts ? (
+        <M.ButtonRowPrimary disabled>
+          <Trans>Nothing to collect</Trans>
+        </M.ButtonRowPrimary>
+      ) : (
+        <M.ButtonRowPrimary onClick={collect}>
+          <Trans>Collect</Trans>
+        </M.ButtonRowPrimary>
+      )}
     </M.Column>
   )
 }
