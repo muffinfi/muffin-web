@@ -627,8 +627,8 @@ export function PositionPage({
                 <CollectConfirmModalContent
                   tokenId={tokenId}
                   position={position}
-                  qouteLiquidityAmount={underlyings.quote.liquidity.amount}
-                  qouteFeeAmount={underlyings.quote.fee.amount}
+                  quoteLiquidityAmount={underlyings.quote.liquidity.amount}
+                  quoteFeeAmount={underlyings.quote.fee.amount}
                   baseLiquidityAmount={underlyings.base.liquidity.amount}
                   baseFeeAmount={underlyings.base.fee.amount}
                   onBeforeCollect={onBeforeCollect}

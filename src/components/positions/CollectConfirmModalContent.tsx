@@ -19,8 +19,8 @@ const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 export default function CollectConfirmModalContent({
   tokenId,
   position,
-  qouteLiquidityAmount,
-  qouteFeeAmount,
+  quoteLiquidityAmount,
+  quoteFeeAmount,
   baseLiquidityAmount,
   baseFeeAmount,
   onBeforeCollect,
@@ -29,20 +29,20 @@ export default function CollectConfirmModalContent({
 }: {
   tokenId?: BigNumberish
   position?: Position
-  qouteLiquidityAmount?: CurrencyAmount<Token>
-  qouteFeeAmount?: CurrencyAmount<Token>
+  quoteLiquidityAmount?: CurrencyAmount<Token>
+  quoteFeeAmount?: CurrencyAmount<Token>
   baseLiquidityAmount?: CurrencyAmount<Token>
   baseFeeAmount?: CurrencyAmount<Token>
   onBeforeCollect?: () => void
   onCollectSuccess?: (response: TransactionResponse, outputDestination: BalanceSource) => void
   onCollectError?: (error: any) => void
 }) {
-  const qouteAmount = useMemo(
+  const quoteAmount = useMemo(
     () =>
       position?.settled
-        ? qouteFeeAmount?.add(qouteLiquidityAmount ?? CurrencyAmount.fromRawAmount(qouteFeeAmount.currency, 0))
-        : qouteFeeAmount,
-    [qouteFeeAmount, qouteLiquidityAmount, position?.settled]
+        ? quoteFeeAmount?.add(quoteLiquidityAmount ?? CurrencyAmount.fromRawAmount(quoteFeeAmount.currency, 0))
+        : quoteFeeAmount,
+    [quoteFeeAmount, quoteLiquidityAmount, position?.settled]
   )
 
   const baseAmount = useMemo(
@@ -53,10 +53,10 @@ export default function CollectConfirmModalContent({
     [baseFeeAmount, baseLiquidityAmount, position?.settled]
   )
 
-  const isZeroAmounts = useMemo(() => qouteAmount?.equalTo(0) && baseAmount?.equalTo(0), [qouteAmount, baseAmount])
+  const isZeroAmounts = useMemo(() => quoteAmount?.equalTo(0) && baseAmount?.equalTo(0), [quoteAmount, baseAmount])
 
   const token0 = baseAmount?.currency
-  const token1 = qouteAmount?.currency
+  const token1 = quoteAmount?.currency
 
   const { account, chainId, library } = useActiveWeb3React()
   const managerAddress = useManagerAddress()
@@ -115,15 +115,15 @@ export default function CollectConfirmModalContent({
       <M.Column stretch gap="0.666em">
         <M.RowBetween>
           <M.Row gap="0.5em">
-            <CurrencyLogo currency={qouteAmount?.currency} size="1.25em" />
-            <M.Text weight="medium">{qouteAmount?.currency.wrapped.symbol}</M.Text>
+            <CurrencyLogo currency={quoteAmount?.currency} size="1.25em" />
+            <M.Text weight="medium">{quoteAmount?.currency.wrapped.symbol}</M.Text>
           </M.Row>
-          <M.Text>{qouteAmount ? formatTokenBalance(qouteAmount, 4) : '-'}</M.Text>
+          <M.Text>{quoteAmount ? formatTokenBalance(quoteAmount, 4) : '-'}</M.Text>
         </M.RowBetween>
         <M.RowBetween>
           <M.Row gap="0.5em">
-            <CurrencyLogo currency={baseFeeAmount?.currency} size="1.25em" />
-            <M.Text weight="medium">{baseFeeAmount?.currency.wrapped.symbol}</M.Text>
+            <CurrencyLogo currency={baseAmount?.currency} size="1.25em" />
+            <M.Text weight="medium">{baseAmount?.currency.wrapped.symbol}</M.Text>
           </M.Row>
           <M.Text>{baseAmount ? formatTokenBalance(baseAmount, 4) : '-'}</M.Text>
         </M.RowBetween>
