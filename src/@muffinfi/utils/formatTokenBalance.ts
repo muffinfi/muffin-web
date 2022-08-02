@@ -1,8 +1,8 @@
-import { CurrencyAmount, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { DEFAULT_LOCALE } from 'constants/locales'
 import JSBI from 'jsbi'
 
-export const formatTokenBalance = (amount: CurrencyAmount<Token> | undefined) => {
+export const formatTokenBalance = (amount: CurrencyAmount<Currency> | undefined, sigFigs = 4) => {
   if (amount == null) return undefined
   if (JSBI.equal(amount.quotient, JSBI.BigInt(0))) return '0'
 
@@ -10,6 +10,10 @@ export const formatTokenBalance = (amount: CurrencyAmount<Token> | undefined) =>
   const value = parseFloat(amount.toSignificant(18))
 
   if (value < 0.0001) return '<0.0001'
-  if (value >= 100) return value.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: 2 })
-  return value.toLocaleString(DEFAULT_LOCALE, { maximumSignificantDigits: 4 })
+  if (value >= 10 ** sigFigs) return value.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: 0 })
+  return value.toLocaleString(DEFAULT_LOCALE, { maximumSignificantDigits: sigFigs })
+}
+
+export const formatTokenBalanceWithSymbol = (amount: CurrencyAmount<Currency> | undefined, sigFigs = 4) => {
+  return amount ? `${formatTokenBalance(amount, sigFigs)} ${amount.currency.symbol}` : '-'
 }

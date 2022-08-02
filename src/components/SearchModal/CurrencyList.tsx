@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { LightGreyCard } from 'components/Card'
@@ -35,7 +36,7 @@ function currencyKey(currency: Currency): string {
 const StyledBalanceText = styled(Text)`
   white-space: nowrap;
   overflow: hidden;
-  max-width: 5rem;
+  max-width: 7rem;
   text-overflow: ellipsis;
 `
 
@@ -62,7 +63,7 @@ const FixedContentRow = styled.div`
 `
 
 function Balance({ balance }: { balance: CurrencyAmount<Currency> }) {
-  return <StyledBalanceText title={balance.toExact()}>{balance.toSignificant(4)}</StyledBalanceText>
+  return <StyledBalanceText title={balance.toExact()}>{formatTokenBalance(balance)}</StyledBalanceText>
 }
 
 const TagContainer = styled.div`

@@ -2,6 +2,7 @@ import { faBuildingColumns, faWallet } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance, formatTokenBalanceWithSymbol } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
@@ -10,7 +11,6 @@ import { useUSDCValue } from 'hooks/useUSDCPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
-import { formatCurrencyAmount, formatCurrencyAmountWithSymbol } from 'utils/formatCurrencyAmount'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 const BalanceWrapper = styled(M.Column).attrs({ stretch: true })`
@@ -99,14 +99,14 @@ export default function DepositWithdrawInputRow({
           <M.Text size="xs">
             <FontAwesomeIcon icon={faWallet} />
           </M.Text>
-          <Trans>Wallet: {formatCurrencyAmount(amount, 4)}</Trans>
+          <Trans>Wallet: {formatTokenBalance(amount)}</Trans>
         </M.Row>
       ) : (
         <M.Row gap="0.5em">
           <M.Text size="xs">
             <FontAwesomeIcon icon={faBuildingColumns} />
           </M.Text>
-          <Trans>Account: {formatCurrencyAmount(amount.currency.isNative ? accountBalance : amount, 4)}</Trans>
+          <Trans>Account: {formatTokenBalance(amount.currency.isNative ? accountBalance : amount)}</Trans>
         </M.Row>
       ),
     [isDeposit, accountBalance]
@@ -146,7 +146,7 @@ export default function DepositWithdrawInputRow({
                 </M.Text>
                 <Trans>Wallet</Trans>
               </M.Row>
-              <M.Text>{formatCurrencyAmountWithSymbol(walletBalance, 6)}</M.Text>
+              <M.Text>{formatTokenBalanceWithSymbol(walletBalance, 6)}</M.Text>
             </M.RowBetween>
             <M.RowBetween gap="1em">
               <M.Row gap="0.5em">
@@ -155,7 +155,7 @@ export default function DepositWithdrawInputRow({
                 </M.Text>
                 <Trans>Account</Trans>
               </M.Row>
-              <M.Text>{formatCurrencyAmountWithSymbol(accountBalance, 6)}</M.Text>
+              <M.Text>{formatTokenBalanceWithSymbol(accountBalance, 6)}</M.Text>
             </M.RowBetween>
           </BalanceWrapper>
         </M.TextContents>

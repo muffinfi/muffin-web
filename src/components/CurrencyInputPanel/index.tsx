@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
@@ -8,7 +9,6 @@ import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Lock } from 'react-feather'
 import styled, { css } from 'styled-components/macro'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/wallet/hooks'
@@ -241,7 +241,7 @@ export default function CurrencyInputPanel({
                       ) : (
                         <M.Row gap="0.5rem">
                           <M.Text size="sm" color="text2">
-                            <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                            <Trans>Balance: {formatTokenBalance(selectedCurrencyBalance)}</Trans>
                           </M.Text>
                           {onMax && (
                             <M.ButtonSecondary size="badge" onClick={onMax}>

@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { AccountManager } from '@muffinfi/muffin-sdk'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import DepositWithdrawInputRow from 'components/account/DepositWithdrawInputRow'
@@ -29,7 +30,6 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode } from 'state/user/hooks'
 import useResizeObserver from 'use-resize-observer'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { AlertWrapper } from './styled'
 import { getAmountsString, getRowKey } from './utils'
@@ -126,7 +126,7 @@ export default function Withdraw({ history }: RouteComponentProps) {
                 <CurrencyLogo currency={amount?.currency} size={'20px'} style={{ marginRight: '0.5rem' }} />
                 <M.Text>{amount?.currency.symbol}</M.Text>
               </M.Row>
-              <M.Text>{amount ? formatCurrencyAmount(amount, 4) : '-'}</M.Text>
+              <M.Text>{amount ? formatTokenBalance(amount, 4) : '-'}</M.Text>
             </M.RowBetween>
           ))}
         </M.Column>

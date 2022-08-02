@@ -4,6 +4,7 @@ import { Trans } from '@lingui/macro'
 import { ADDRESS_ZERO, Position, PositionManager } from '@muffinfi/muffin-sdk'
 import { useUserStoreIntoInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
+import { formatTokenBalance } from '@muffinfi/utils/formatTokenBalance'
 import * as M from '@muffinfi-ui'
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import CurrencyLogo from 'components/CurrencyLogo'
@@ -12,7 +13,6 @@ import { useManagerAddress } from 'hooks/useContractAddress'
 import { useCallback, useMemo } from 'react'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
@@ -116,14 +116,14 @@ export default function CollectConfirmModalContent({
             <CurrencyLogo currency={qouteAmount?.currency} size="1.25em" />
             <M.Text weight="medium">{qouteAmount?.currency.wrapped.symbol}</M.Text>
           </M.Row>
-          <M.Text>{qouteAmount ? formatCurrencyAmount(qouteAmount, 4) : '-'}</M.Text>
+          <M.Text>{qouteAmount ? formatTokenBalance(qouteAmount, 4) : '-'}</M.Text>
         </M.RowBetween>
         <M.RowBetween>
           <M.Row gap="0.5em">
             <CurrencyLogo currency={baseFeeAmount?.currency} size="1.25em" />
             <M.Text weight="medium">{baseFeeAmount?.currency.wrapped.symbol}</M.Text>
           </M.Row>
-          <M.Text>{baseAmount ? formatCurrencyAmount(baseAmount, 4) : '-'}</M.Text>
+          <M.Text>{baseAmount ? formatTokenBalance(baseAmount, 4) : '-'}</M.Text>
         </M.RowBetween>
       </M.Column>
 
