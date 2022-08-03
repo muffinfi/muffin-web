@@ -114,7 +114,7 @@ const CurrencyBalance = memo(function CurrencyBalance({
   balanceSource?: BalanceSource
 }) {
   const [balance, loading] = useCurrencyBalanceWithLoadingIndicator(account ?? undefined, currency, balanceSource)
-  return balance ? <Balance balance={balance} /> : loading ? <Loader /> : null
+  return balance ? <Balance balance={balance} /> : loading ? <Loader stroke="var(--text2)" /> : null
 })
 
 function CurrencyRow({
@@ -185,7 +185,7 @@ function CurrencyRow({
           {loadCurrencyBalance ? (
             <CurrencyBalance account={account} currency={currency} balanceSource={balanceSource} />
           ) : account ? (
-            <Loader />
+            <Loader stroke="var(--text2)" />
           ) : null}
         </RowFixed>
       )}
