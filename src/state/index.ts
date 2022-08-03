@@ -16,6 +16,7 @@ import { routingApi } from './routing/slice'
 import swap from './swap/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
+import wallet from './wallet/slice'
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists']
 
@@ -34,9 +35,14 @@ const store = configureStore({
     logs,
     [dataApi.reducerPath]: dataApi.reducer,
     [routingApi.reducerPath]: routingApi.reducer,
+    wallet,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: true, serializableCheck: false }) // TODO: TEMP for dev
+    getDefaultMiddleware({
+      thunk: true,
+      serializableCheck: false,
+      immutableCheck: false, // TODO: TEMP for dev
+    })
       .concat(dataApi.middleware)
       .concat(routingApi.middleware)
       .concat(save({ states: PERSISTED_KEYS, debounce: 1000 })),

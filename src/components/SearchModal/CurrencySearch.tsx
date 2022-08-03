@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
-import { BalanceSource } from '@muffinfi/state/wallet/hooks'
-import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
+import { BalanceSource, useSortTokensByBalances } from '@muffinfi/state/wallet/hooks'
+import { Currency, Token } from '@uniswap/sdk-core'
 import { isDisallowedCurrency } from 'constants/tokens'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useToken } from 'hooks/useCurrency'
@@ -11,7 +11,7 @@ import useTheme from 'hooks/useTheme'
 import useToggle from 'hooks/useToggle'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
-import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
+import { useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
 import { KeyboardEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Edit } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -110,16 +110,19 @@ export function CurrencySearch({
   }, [allTokens, debouncedQuery])
 
   /**
-   * FIXME:
-   * CPU usage explodes when users are using lists of >1000 tokens.
-   * Temporarily disabled it. The purpose of loading all balances at once is to sort tokens.
+   * NOTE:
+   * Original method explodes your CPU when you are using lists of >1000 tokens.
+   * We changed the method, but still should keep track on its performance for now.
+   *
+   * ```ts
+   * // original method
+   * const balances = useAllTokenBalances()
+   * const sortedTokens: Token[] = useMemo(() => {
+   *   return filteredTokens.sort(tokenComparator.bind(null, balances))
+   * }, [balances, filteredTokens])
+   * ```
    */
-  // const balances = useAllTokenBalances()
-  const balances = useMemo(() => ({}), []) as { [address: string]: CurrencyAmount<Token> | undefined }
-
-  const sortedTokens: Token[] = useMemo(() => {
-    return filteredTokens.sort(tokenComparator.bind(null, balances))
-  }, [balances, filteredTokens])
+  const sortedTokens = useSortTokensByBalances(filteredTokens, balanceSource)
 
   const filteredSortedTokens = useSortTokensByQuery(debouncedQuery, sortedTokens)
 
