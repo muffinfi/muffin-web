@@ -56,3 +56,5 @@ cypress/fixtures/example.json
 src/**/__*/
 src/**/__*.ts__
 src/**/__*.tsx__
+
+/scripts/.env.deployment
