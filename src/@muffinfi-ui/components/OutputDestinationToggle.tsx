@@ -20,7 +20,7 @@ export default function OutputDestinationToggle({
     <RowBetween>
       <Row gap="0.25em">
         <Text>
-          <Trans>Output destination</Trans>
+          <Trans>Receive tokens to</Trans>
         </Text>
         {questionHelperContent && <QuestionHelper text={questionHelperContent} />}
       </Row>

@@ -341,7 +341,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       />
       <M.RowBetween>
         <M.Text size="sm" weight="semibold">
-          <Trans>Output destination</Trans>
+          <Trans>Receive tokens to</Trans>
         </M.Text>
         <M.Text size="sm">{storeInInternalAccount ? <Trans>Muffin Account</Trans> : <Trans>Wallet</Trans>}</M.Text>
       </M.RowBetween>

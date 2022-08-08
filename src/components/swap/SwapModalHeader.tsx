@@ -156,7 +156,7 @@ export default function SwapModalHeader({
 
       <M.RowBetween gap="1em" style={{ padding: '0 0.75rem' }}>
         <M.Text size="sm" weight="semibold">
-          <Trans>Output destination</Trans>
+          <Trans>Receive tokens to</Trans>
         </M.Text>
         <M.Text size="sm">{toInternalAccount ? <M.OutputDestinationAccount /> : <M.OutputDestinationWallet />}</M.Text>
       </M.RowBetween>
