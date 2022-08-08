@@ -20,7 +20,7 @@ const FallbackWrapper = styled.div`
 const BodyWrapper = styled.div<{ margin?: string }>`
   padding: 1rem;
   width: 100%;
-  white-space: ;
+  /* white-space: ; */
 `
 
 const CodeBlockWrapper = styled.div`
@@ -47,7 +47,7 @@ type ErrorBoundaryState = {
   error: Error | null
 }
 
-const IS_MUFFIN = window.location.hostname === 'app.muffin.fi'
+const IS_MUFFIN = window.location.hostname === 'muffin.fi'
 
 export default class ErrorBoundary extends React.Component<unknown, ErrorBoundaryState> {
   constructor(props: unknown) {
@@ -91,7 +91,7 @@ export default class ErrorBoundary extends React.Component<unknown, ErrorBoundar
                   <LinkWrapper>
                     <ExternalLink
                       id="create-github-issue-link"
-                      href={`https://github.com/muffinfi/muffin-v1-web/issues/new?assignees=&labels=bug&body=${encodedBody}&title=${encodeURIComponent(
+                      href={`https://github.com/muffinfi/muffin-web/issues/new?assignees=&labels=bug&body=${encodedBody}&title=${encodeURIComponent(
                         `Crash report: \`${error.name}${error.message && `: ${error.message}`}\``
                       )}`}
                       target="_blank"
@@ -102,14 +102,14 @@ export default class ErrorBoundary extends React.Component<unknown, ErrorBoundar
                       </ThemedText.Link>
                     </ExternalLink>
                   </LinkWrapper>
-                  <LinkWrapper>
+                  {/* <LinkWrapper>
                     <ExternalLink id="get-support-on-discord" href="https://discord.gg/TMaF2BFJhj" target="_blank">
                       <ThemedText.Link fontSize={16}>
                         <Trans>Get support on Discord</Trans>
                         <span>↗</span>
                       </ThemedText.Link>
                     </ExternalLink>
-                  </LinkWrapper>
+                  </LinkWrapper> */}
                 </AutoRow>
               ) : null}
             </AutoColumn>
