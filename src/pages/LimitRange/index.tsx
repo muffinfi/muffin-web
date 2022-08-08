@@ -10,7 +10,7 @@ import {
   Position,
   PositionManager,
   priceToClosestTick,
-  TickMath,
+  // TickMath,
   tickToPrice,
   ZERO,
 } from '@muffinfi/muffin-sdk'
@@ -460,36 +460,36 @@ export default function LimitRange({ history }: RouteComponentProps) {
         })
   }, [pool, parsedAmount, tierId, ticks.LOWER, ticks.UPPER, zeroForOne, isExactIn])
 
-  const averagePrice0 = useMemo(() => {
-    if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolJustChanged) {
-      // when pool changed, set to undefined to wait for new valid endTick set up
-      return undefined
-    }
+  // const averagePrice0 = useMemo(() => {
+  //   if (!pool || tierId == null || ticks.LOWER == null || ticks.UPPER == null || isPoolJustChanged) {
+  //     // when pool changed, set to undefined to wait for new valid endTick set up
+  //     return undefined
+  //   }
 
-    const limitOrderType = zeroForOne ? LimitOrderType.ZeroForOne : LimitOrderType.OneForZero
+  //   const limitOrderType = zeroForOne ? LimitOrderType.ZeroForOne : LimitOrderType.OneForZero
 
-    const position = Position.fromLimitOrderExactOutput({
-      pool,
-      tierId,
-      tickLower: ticks.LOWER,
-      tickUpper: ticks.UPPER,
-      amount0: zeroForOne ? ZERO : tryParseCurrencyAmount('1', pool.token0)?.quotient ?? 1,
-      amount1: zeroForOne ? tryParseCurrencyAmount('1', pool.token1)?.quotient ?? 1 : ZERO,
-      limitOrderType,
-    })
-    const { amount0: mintAmount0, amount1: mintAmount1 } = position.mintAmountsAtPrice(
-      TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1)
-    )
-    const { amount0: settleAmount0, amount1: settleAmount1 } = position.settleAmounts
-    const settleAmount = zeroForOne ? settleAmount1 : settleAmount0
-    if (!settleAmount) return undefined
-    return new Price(
-      pool.token0,
-      pool.token1,
-      (zeroForOne ? mintAmount0 : settleAmount).toString(),
-      (!zeroForOne ? mintAmount1 : settleAmount).toString()
-    )
-  }, [pool, isPoolJustChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
+  //   const position = Position.fromLimitOrderExactOutput({
+  //     pool,
+  //     tierId,
+  //     tickLower: ticks.LOWER,
+  //     tickUpper: ticks.UPPER,
+  //     amount0: zeroForOne ? ZERO : tryParseCurrencyAmount('1', pool.token0)?.quotient ?? 1,
+  //     amount1: zeroForOne ? tryParseCurrencyAmount('1', pool.token1)?.quotient ?? 1 : ZERO,
+  //     limitOrderType,
+  //   })
+  //   const { amount0: mintAmount0, amount1: mintAmount1 } = position.mintAmountsAtPrice(
+  //     TickMath.tickToSqrtPriceX72(zeroForOne ? ticks.LOWER - 1 : ticks.UPPER + 1)
+  //   )
+  //   const { amount0: settleAmount0, amount1: settleAmount1 } = position.settleAmounts
+  //   const settleAmount = zeroForOne ? settleAmount1 : settleAmount0
+  //   if (!settleAmount) return undefined
+  //   return new Price(
+  //     pool.token0,
+  //     pool.token1,
+  //     (zeroForOne ? mintAmount0 : settleAmount).toString(),
+  //     (!zeroForOne ? mintAmount1 : settleAmount).toString()
+  //   )
+  // }, [pool, isPoolJustChanged, tierId, ticks.LOWER, ticks.UPPER, zeroForOne])
 
   const priceChangeRate = useMemo(() => {
     if (!selectedTier?.token0Price || !selectedTier?.token1Price || !tickPrices.LOWER || !tickPrices.UPPER) {
@@ -1021,7 +1021,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
                 tickAtLimit={areTicksAtMinMaxTicks}
                 invert={endPriceInverted}
               />{' '}
-              in the <M.PoolTierExprInline tier={selectedTier} />. Your position will stay as 100%{' '}
+              in the <M.PoolTierExprInline tier={selectedTier} />. Your position will remain as 100%{' '}
               {outputCurrency?.symbol} once the price reaches{' '}
               <M.PriceExprInline price={endPrice0} invert={endPriceInverted} />.
             </M.TextDiv>
