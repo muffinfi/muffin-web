@@ -49,3 +49,16 @@ registerRoute(({ request, url }: { request: Request; url: URL }) => {
 
   return true
 }, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'))
+
+// This allows the web app to trigger skipWaiting via
+// registration.waiting.postMessage({type: 'SKIP_WAITING'})
+//
+// see
+// - https://create-react-app.dev/docs/making-a-progressive-web-app/
+// - https://jeffy.info/2018/10/10/sw-in-c-r-a.html
+// - https://web.dev/service-worker-lifecycle/#waiting
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  }
+})
