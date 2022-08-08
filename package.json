@@ -158,7 +158,8 @@
     "test": "react-scripts test --env=./custom-test-env.cjs",
     "test:e2e": "start-server-and-test 'serve build -l 3000' http://localhost:3000 'cypress run --record'",
     "widgets:start": "cosmos",
-    "widgets:build": "rollup --config --failAfterWarnings --configPlugin typescript2"
+    "widgets:build": "rollup --config --failAfterWarnings --configPlugin typescript2",
+    "pin-to-ipfs": "yarn build && node ./scripts/pin-to-ipfs.js"
   },
   "jest": {
     "transformIgnorePatterns": [
