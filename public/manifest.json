@@ -1,7 +1,7 @@
 {
-  "background_color": "#fff",
+  "background_color": "#F6F6F6",
   "display": "standalone",
-  "homepage_url": "https://app.muffin.fi",
+  "homepage_url": "https://muffin.fi",
   "providedBy": {
     "name": "Muffin",
     "url": "https://muffin.fi"
