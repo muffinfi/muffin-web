@@ -57,9 +57,9 @@ const lightThemeMixin = css`
 
 const darkThemeMixin = css`
   /* color */
-  --bg: #151515;
-  --layer1: #262626;
-  --layer2: #181818;
+  --bg: #141414;
+  --layer1: #222222;
+  --layer2: #1a1a1a;
   --layer3: #333;
 
   /* border */
@@ -77,9 +77,9 @@ const darkThemeMixin = css`
   --primary2: ${darken(0.12, '#D23A25')};
   --primary-text: #fff;
 
-  --secondary0: #3f2119;
-  --secondary1: #4e2318;
-  --secondary2: #5c2517;
+  --secondary0: #4e2318;
+  --secondary1: #5c2517;
+  --secondary2: #6e2816;
   --secondary-text: #f9381f;
 
   --tertiary0: #333;
