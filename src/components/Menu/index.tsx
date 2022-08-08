@@ -202,6 +202,11 @@ export default function Menu() {
                       <MenuItemInternalLink to="/account" onClick={toggleMenu}>
                         <Trans>Account</Trans>
                       </MenuItemInternalLink>
+                      <MenuItemExternalLink href="https://analytics.muffin.fi/">
+                        <div>
+                          <Trans>Analytics</Trans> ↗
+                        </div>
+                      </MenuItemExternalLink>
                       <MenuSeperator />
                     </NavMenuItemList>
 

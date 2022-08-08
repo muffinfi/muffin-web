@@ -6,7 +6,7 @@ import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { ExternalLink } from 'react-feather'
-import { match, NavLink } from 'react-router-dom'
+import { match } from 'react-router-dom'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
 import styled, { css } from 'styled-components/macro'
 import { HideSmall } from 'theme'
@@ -19,11 +19,11 @@ import HeaderButton from './HeaderButton'
 import NetworkSelector from './NetworkSelector'
 
 const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
-  padding: 16px 32px;
+  padding: 12px 28px;
   transition: background-color 100ms, box-shadow 100ms;
 
   ${({ theme, showBackground }) => css`
-    background: ${showBackground ? (theme.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255, 0.3)') : 'transparent'};
+    background: ${showBackground ? (theme.darkMode ? 'rgba(20,20,20,0.3)' : 'rgba(246,246,246, 0.3)') : 'transparent'};
     backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
     box-shadow: 0px 0px 0px 1px ${showBackground ? 'var(--borderColor)' : 'transparent'};
   `};
@@ -40,16 +40,28 @@ const NavItemRow = styled(M.Row)`
   `};
 `
 
-const NavItem = styled(NavLink).attrs({ activeClassName: 'ACTIVE' })`
-  color: var(--text2);
-  font-weight: var(--regular);
-  :hover {
+const NavItem = styled(M.NavLink).attrs({
+  color: 'text2',
+  weight: 'medium',
+  $activeColor: 'text1',
+  $activeWeight: 'semibold',
+})`
+  opacity: 0.75;
+  &:hover {
     color: var(--text1);
   }
-
   &.ACTIVE {
+    opacity: 1;
+  }
+`
+
+const NavItemExternal = styled(M.ExternalLink).attrs({
+  color: 'text2',
+  weight: 'medium',
+})`
+  opacity: 0.75;
+  &:hover {
     color: var(--text1);
-    font-weight: var(--semibold);
   }
 `
 
@@ -123,10 +135,10 @@ export default function Header() {
     <HeaderWrapper showBackground={scrollY > 45}>
       <M.Row gap="48px">
         <LogoLink to=".">
-          <LogoText width="110px" height="auto" />
-          <Logo width="28px" height="auto" />
+          <LogoText width="110px" height={undefined} />
+          <Logo width="28px" height={undefined} />
         </LogoLink>
-        <NavItemRow gap="36px">
+        <NavItemRow gap="40px">
           <NavItem id={`swap-nav-link`} to={'/swap'} isActive={isSwapActive}>
             <Trans>Swap</Trans>
           </NavItem>
@@ -136,6 +148,12 @@ export default function Header() {
           <NavItem id={`account-nav-link`} to={'/account'}>
             <Trans>Account</Trans>
           </NavItem>
+          <NavItemExternal href={'https://analytics.muffin.fi/'}>
+            <M.Row wrap="nowrap" style={{ alignItems: 'flex-start' }}>
+              <Trans>Analytics</Trans>
+              <sup>↗</sup>
+            </M.Row>
+          </NavItemExternal>
         </NavItemRow>
       </M.Row>
 

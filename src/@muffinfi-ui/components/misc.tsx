@@ -1,4 +1,4 @@
-import { NavLink as RouterNavLink } from 'react-router-dom'
+import { NavLink as RouterNavLink, NavLinkProps as RouterNavLinkProps } from 'react-router-dom'
 import styled, { css } from 'styled-components/macro'
 import { handleClickExternalLink } from 'utils/handleClickExternalLink'
 
@@ -15,7 +15,7 @@ export const ExternalLink = styled(Anchor).attrs({
 export const NavLink = styled(Link).attrs({
   as: RouterNavLink,
   activeClassName: 'ACTIVE',
-})<{ $activeColor?: string; $activeWeight?: string }>`
+})<{ $activeColor?: string; $activeWeight?: string } & RouterNavLinkProps>`
   &.ACTIVE {
     font-weight: ${({ $activeWeight }) => $activeWeight && `var(--${$activeWeight})`};
     color: ${({ $activeColor }) => $activeColor && `var(--${$activeColor})`};
