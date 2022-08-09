@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
+import { getMuffinAnalyticsURL } from '@muffinfi/utils/getMuffinAnalyticsURL'
 import * as M from '@muffinfi-ui'
 import useScrollPosition from '@react-hook/window-scroll'
 import { CHAIN_INFO } from 'constants/chainInfo'
@@ -40,29 +41,38 @@ const NavItemRow = styled(M.Row)`
   `};
 `
 
+const navItemMixin = css`
+  // underline stroke
+  padding: 0.25em 0;
+  box-shadow: 0 2px 0 0 transparent;
+
+  opacity: 0.8;
+  transition: color 100ms, opacity 100ms, box-shadow 100ms;
+
+  &:hover {
+    color: var(--text1);
+    opacity: 1;
+  }
+  &.ACTIVE {
+    opacity: 1;
+    box-shadow: 0 2px 0 0 var(--text1);
+  }
+`
+
 const NavItem = styled(M.NavLink).attrs({
   color: 'text2',
   weight: 'medium',
   $activeColor: 'text1',
-  $activeWeight: 'semibold',
+  $activeWeight: 'medium',
 })`
-  opacity: 0.75;
-  &:hover {
-    color: var(--text1);
-  }
-  &.ACTIVE {
-    opacity: 1;
-  }
+  ${navItemMixin}
 `
 
 const NavItemExternal = styled(M.ExternalLink).attrs({
   color: 'text2',
   weight: 'medium',
 })`
-  opacity: 0.75;
-  &:hover {
-    color: var(--text1);
-  }
+  ${navItemMixin}
 `
 
 const BalanceText = styled.div`
@@ -148,7 +158,7 @@ export default function Header() {
           <NavItem id={`account-nav-link`} to={'/account'}>
             <Trans>Account</Trans>
           </NavItem>
-          <NavItemExternal href={'https://analytics.muffin.fi/'}>
+          <NavItemExternal href={getMuffinAnalyticsURL(chainId)}>
             <M.Row wrap="nowrap" style={{ alignItems: 'flex-start' }}>
               <Trans>Analytics</Trans>
               <sup>↗</sup>

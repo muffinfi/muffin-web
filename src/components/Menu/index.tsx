@@ -1,9 +1,11 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
+import { getMuffinAnalyticsURL } from '@muffinfi/utils/getMuffinAnalyticsURL'
 import HeaderButton from 'components/Header/HeaderButton'
 import { PrivacyPolicyModal } from 'components/PrivacyPolicy'
 import { LOCALE_LABEL, SUPPORTED_LOCALES, SupportedLocale } from 'constants/locales'
 import { useActiveLocale } from 'hooks/useActiveLocale'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useLocationLinkProps } from 'hooks/useLocationLinkProps'
 import React, { useEffect, useRef, useState } from 'react'
 import {
@@ -176,6 +178,8 @@ export default function Menu() {
     setMenu('main')
   }, [open])
 
+  const { chainId } = useActiveWeb3React()
+
   return (
     <>
       <MenuWrapper ref={node}>
@@ -202,7 +206,7 @@ export default function Menu() {
                       <MenuItemInternalLink to="/account" onClick={toggleMenu}>
                         <Trans>Account</Trans>
                       </MenuItemInternalLink>
-                      <MenuItemExternalLink href="https://analytics.muffin.fi/">
+                      <MenuItemExternalLink href={getMuffinAnalyticsURL(chainId)}>
                         <div>
                           <Trans>Analytics</Trans> ↗
                         </div>

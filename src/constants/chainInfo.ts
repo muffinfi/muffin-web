@@ -27,6 +27,7 @@ interface BaseChainInfo {
     symbol: string // e.g. 'gorETH',
     decimals: number // e.g. 18,
   }
+  readonly testnet?: boolean
 }
 
 export interface L1ChainInfo extends BaseChainInfo {
@@ -40,9 +41,10 @@ export interface L2ChainInfo extends BaseChainInfo {
   readonly defaultListUrl: string
 }
 
-export type ChainInfoMap = { readonly [chainId: number]: L1ChainInfo | L2ChainInfo } & {
-  readonly [chainId in SupportedL2ChainId]: L2ChainInfo
-} &
+// prettier-ignore
+export type ChainInfoMap =
+  { readonly [chainId: number]: L1ChainInfo | L2ChainInfo } &
+  { readonly [chainId in SupportedL2ChainId]: L2ChainInfo } &
   { readonly [chainId in SupportedL1ChainId]: L1ChainInfo }
 
 export const CHAIN_INFO: ChainInfoMap = {
@@ -63,6 +65,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     label: 'Rinkeby',
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Rinkeby Ether', symbol: 'rETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.ROPSTEN]: {
     networkType: NetworkType.L1,
@@ -72,6 +75,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     label: 'Ropsten',
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Ropsten Ether', symbol: 'ropETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.KOVAN]: {
     networkType: NetworkType.L1,
@@ -81,6 +85,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     label: 'Kovan',
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Kovan Ether', symbol: 'kovETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.GOERLI]: {
     networkType: NetworkType.L1,
@@ -90,6 +95,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     label: 'Görli',
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Görli Ether', symbol: 'görETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.OPTIMISM]: {
     networkType: NetworkType.L2,
@@ -118,6 +124,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     statusPage: 'https://optimism.io/status',
     helpCenterUrl: 'https://help.uniswap.org/en/collections/3137778-uniswap-on-optimistic-ethereum-oξ',
     nativeCurrency: { name: 'Optimistic Kovan Ether', symbol: 'kovOpETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.ARBITRUM_ONE]: {
     networkType: NetworkType.L2,
@@ -144,6 +151,7 @@ export const CHAIN_INFO: ChainInfoMap = {
     defaultListUrl: ARBITRUM_LIST,
     helpCenterUrl: 'https://help.uniswap.org/en/collections/3137787-uniswap-on-arbitrum',
     nativeCurrency: { name: 'Rinkeby Arbitrum Ether', symbol: 'rinkArbETH', decimals: 18 },
+    testnet: true,
   },
   [SupportedChainId.POLYGON]: {
     networkType: NetworkType.L1,
@@ -166,5 +174,6 @@ export const CHAIN_INFO: ChainInfoMap = {
     label: 'Polygon Mumbai',
     logoUrl: polygonMaticLogo,
     nativeCurrency: { name: 'Polygon Mumbai Matic', symbol: 'mMATIC', decimals: 18 },
+    testnet: true,
   },
 }
