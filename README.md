@@ -1,4 +1,4 @@
-# Muffin Interface
+# Muffin Web Interface
 
 An open-source interface for the Muffin protocol. The code base is forked from Uniswap Interface.
 
@@ -22,11 +22,9 @@ An open-source interface for the Muffin protocol. The code base is forked from U
   - [V2](https://uniswap.org/whitepaper.pdf)
   - [V3](https://uniswap.org/whitepaper-v3.pdf) -->
 
-## Accessing the Muffin Interface
+## Accessing the Muffin web interface
 
-To access the Muffin Interface, use an IPFS gateway link from the
-[latest release](https://github.com/muffinfi/muffin-v1-web/releases/latest),
-or visit [muffin.fi](https://muffin.fi).
+To access the Muffin web interface, visit [muffin.fi](https://muffin.fi).
 
 ## Unsupported tokens
 
