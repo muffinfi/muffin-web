@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
 const { getFilesFromPath, Web3Storage } = require('web3.storage')
@@ -24,6 +25,8 @@ async function main() {
   })
 
   console.log('Content added with CID:', cid)
+
+  fs.appendFileSync(path.join(__dirname, '__cid.txt'), '\n' + cid)
 }
 
 main().catch(console.error)
