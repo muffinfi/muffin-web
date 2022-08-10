@@ -14,7 +14,6 @@
 /src/locales/**/pseudo.po
 /src/state/data/generated.ts
 
-
 # dependencies
 /node_modules
 
@@ -27,14 +26,17 @@
 /dist
 /dts
 
-# misc
-.DS_Store
+# env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.development
 .env.production
+/scripts/.env.deployment
+
+# misc
+.DS_Store
 
 /.netlify
 
@@ -53,10 +55,9 @@ cypress/videos
 cypress/screenshots
 cypress/fixtures/example.json
 
-
 # deleted, not related to muffin
 src/**/__*/
 src/**/__*.ts__
 src/**/__*.tsx__
 
-/scripts/.env.deployment
+/scripts/__*
