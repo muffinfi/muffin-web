@@ -1,10 +1,12 @@
 import { Trans } from '@lingui/macro'
+import * as M from '@muffinfi-ui'
 import { AutoColumn } from 'components/Column'
-import { PrivacyPolicy } from 'components/PrivacyPolicy'
-import Row, { AutoRow, RowBetween } from 'components/Row'
+import { DisclaimerModal, PrivacyPolicy } from 'components/PrivacyPolicy'
+import Row, { AutoRow } from 'components/Row'
 import { useWalletConnectMonitoringEventCallback } from 'hooks/useMonitoringEventCallback'
+import useToggle from 'hooks/useToggle'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, Info } from 'react-feather'
+import { ArrowLeft } from 'react-feather'
 import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
 import { AbstractConnector } from 'web3-react-abstract-connector'
@@ -19,10 +21,10 @@ import { SUPPORTED_WALLETS } from '../../constants/wallet'
 import usePrevious from '../../hooks/usePrevious'
 import { useModalOpen, useWalletModalToggle } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
-import { ExternalLink, ThemedText } from '../../theme'
+import { ThemedText } from '../../theme'
 import { isMobile } from '../../utils/userAgent'
 import AccountDetails from '../AccountDetails'
-import Card, { LightCard } from '../Card'
+import Card from '../Card'
 import Modal from '../Modal'
 import Option from './Option'
 import PendingView from './PendingView'
@@ -109,14 +111,20 @@ const HoverText = styled.div`
   }
 `
 
-const LinkCard = styled(Card)`
-  background-color: ${({ theme }) => theme.bg1};
-  color: ${({ theme }) => theme.text3};
+// const LinkCard = styled(Card)`
+//   background-color: ${({ theme }) => theme.bg1};
+//   color: ${({ theme }) => theme.text3};
 
-  :hover {
-    cursor: pointer;
-    filter: brightness(0.9);
-  }
+//   :hover {
+//     cursor: pointer;
+//     filter: brightness(0.9);
+//   }
+// `
+
+const LighterCard = styled(Card)`
+  padding: 1rem;
+  background-color: var(--layer2);
+  color: var(--text2);
 `
 
 const WALLET_VIEWS = {
@@ -307,6 +315,8 @@ export default function WalletModal({
     })
   }
 
+  const [openDisclaimer, toggleDisclaimer] = useToggle(false)
+
   function getModalContent() {
     if (error) {
       return (
@@ -390,18 +400,6 @@ export default function WalletModal({
 
         <ContentWrapper>
           <AutoColumn gap="16px">
-            <LightCard>
-              <AutoRow style={{ flexWrap: 'nowrap' }}>
-                <ThemedText.Black fontSize={14}>
-                  <Trans>
-                    By connecting a wallet, you agree to Muffin&apos;s{' '}
-                    <ExternalLink href="https://muffin.fi/terms-of-service/">Terms of Service</ExternalLink> and
-                    acknowledge that you have read and understand the Muffin{' '}
-                    <ExternalLink href="https://muffin.fi/disclaimer/">Protocol Disclaimer</ExternalLink>.
-                  </Trans>
-                </ThemedText.Black>
-              </AutoRow>
-            </LightCard>
             {walletView === WALLET_VIEWS.PENDING ? (
               <PendingView
                 connector={pendingWallet}
@@ -412,7 +410,24 @@ export default function WalletModal({
             ) : (
               <OptionGrid>{getOptions()}</OptionGrid>
             )}
-            <LinkCard padding=".5rem" $borderRadius=".75rem" onClick={() => setWalletView(WALLET_VIEWS.LEGAL)}>
+
+            <LighterCard>
+              <AutoRow style={{ flexWrap: 'nowrap' }}>
+                <M.Text size="sm" weight="medium">
+                  <Trans>
+                    By connecting a wallet, you acknowledge that you have read and understand the{' '}
+                    <M.Anchor onClick={toggleDisclaimer} style={{ textDecoration: 'underline' }}>
+                      Protocol Disclaimer
+                    </M.Anchor>
+                    .
+                  </Trans>
+                </M.Text>
+              </AutoRow>
+            </LighterCard>
+
+            <DisclaimerModal open={openDisclaimer} toggle={toggleDisclaimer} />
+
+            {/* <LinkCard padding=".5rem" $borderRadius=".75rem" onClick={() => setWalletView(WALLET_VIEWS.LEGAL)}>
               <RowBetween>
                 <AutoRow gap="4px">
                   <Info size={20} />
@@ -422,7 +437,7 @@ export default function WalletModal({
                 </AutoRow>
                 <ArrowRight size={16} />
               </RowBetween>
-            </LinkCard>
+            </LinkCard> */}
           </AutoColumn>
         </ContentWrapper>
       </UpperSection>
@@ -431,6 +446,8 @@ export default function WalletModal({
 
   return (
     <Modal isOpen={walletModalOpen} onDismiss={toggleWalletModal} minHeight={false} maxHeight={90}>
+      {/* prevents reach modal's auto-focusing element */}
+      <div tabIndex={1} />
       <Wrapper>{getModalContent()}</Wrapper>
     </Modal>
   )

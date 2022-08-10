@@ -251,7 +251,7 @@ export default function Menu() {
                       </div>
                       <Globe opacity={0.6} size={16} />
                     </MenuItem> */}
-                    <MenuItemExternalLink href="/">
+                    <MenuItemExternalLink href="https://docs.muffin.fi/">
                       <div>
                         <Trans>Docs</Trans>
                       </div>

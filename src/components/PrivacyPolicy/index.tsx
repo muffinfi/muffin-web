@@ -1,11 +1,13 @@
 import { Trans } from '@lingui/macro'
-import Card, { DarkGreyCard } from 'components/Card'
-import Row, { AutoRow, RowBetween } from 'components/Row'
+import * as M from '@muffinfi-ui'
+import { DarkGreyCard } from 'components/Card'
+import { AutoRow, RowBetween } from 'components/Row'
+import useToggle from 'hooks/useToggle'
 import { useEffect, useRef } from 'react'
 import { ArrowDown, Info, X } from 'react-feather'
 import ReactGA from 'react-ga'
 import styled from 'styled-components/macro'
-import { ExternalLink, ThemedText } from 'theme'
+import { ThemedText } from 'theme'
 import { isMobile } from 'utils/userAgent'
 
 import { useModalOpen, useTogglePrivacyPolicy } from '../../state/application/hooks'
@@ -16,19 +18,28 @@ import Modal from '../Modal'
 const Wrapper = styled.div`
   max-height: 70vh;
   overflow: auto;
-  padding: 0 1rem;
+  padding: 0 1rem 1rem;
 `
 
-const StyledExternalCard = styled(Card)`
-  background-color: ${({ theme }) => theme.primary5};
-  padding: 0.5rem;
+const StyledCard = styled(DarkGreyCard)`
+  cursor: pointer;
+  color: var(--text1);
+  background-color: var(--tertiary0);
+  padding: 1rem;
   width: 100%;
 
   :hover,
-  :focus,
-  :active {
-    background-color: ${({ theme }) => theme.primary4};
+  :focus {
+    background-color: var(--tertiary1);
   }
+  :active {
+    background-color: var(--tertiary2);
+  }
+`
+
+const APICard = styled(DarkGreyCard)`
+  color: var(--text1);
+  background-color: var(--layer2);
 `
 
 const HoverText = styled.div`
@@ -54,20 +65,6 @@ const EXTERNAL_APIS = [
   {
     name: 'Infura',
     description: <Trans>The app fetches on-chain data and constructs contract calls with an Infura API.</Trans>,
-  },
-  {
-    name: 'TRM Labs',
-    description: (
-      <>
-        <Trans>
-          The app securely collects your wallet address and shares it with TRM Labs Inc. for risk and compliance
-          reasons.
-        </Trans>{' '}
-        <ExternalLink href="https://help.uniswap.org/en/articles/5675203-terms-of-service-faq">
-          <Trans>Learn more</Trans>
-        </ExternalLink>
-      </>
-    ),
   },
   {
     name: 'Google Analytics',
@@ -104,6 +101,7 @@ export function PrivacyPolicyModal() {
             <X size={24} />
           </HoverText>
         </RowBetween>
+
         <PrivacyPolicy />
       </AutoColumn>
     </Modal>
@@ -111,6 +109,8 @@ export function PrivacyPolicyModal() {
 }
 
 export function PrivacyPolicy() {
+  const [openDisclaimer, toggleDisclaimer] = useToggle(false)
+
   return (
     <Wrapper
       draggable="true"
@@ -123,7 +123,7 @@ export function PrivacyPolicy() {
     >
       <AutoColumn gap="16px">
         <AutoColumn gap="8px" style={{ width: '100%' }}>
-          <StyledExternalCard>
+          {/* <StyledCard>
             <ExternalLink href={'https://muffin.fi/terms-of-service'}>
               <RowBetween>
                 <AutoRow gap="4px">
@@ -135,27 +135,25 @@ export function PrivacyPolicy() {
                 <StyledLinkOut size={20} />
               </RowBetween>
             </ExternalLink>
-          </StyledExternalCard>
-          <StyledExternalCard>
-            <ExternalLink href={'https://muffin.fi/disclaimer/'}>
-              <RowBetween>
-                <AutoRow gap="4px">
-                  <Info size={20} />
-                  <ThemedText.Main fontSize={14} color={'primaryText1'}>
-                    <Trans>Protocol Disclaimer</Trans>
-                  </ThemedText.Main>
-                </AutoRow>
-                <StyledLinkOut size={20} />
-              </RowBetween>
-            </ExternalLink>
-          </StyledExternalCard>
+          </StyledCard> */}
+          <StyledCard onClick={toggleDisclaimer}>
+            <RowBetween>
+              <AutoRow gap="4px">
+                <Info size={18} />
+                <M.Text size="sm" weight="medium">
+                  <Trans>Protocol Disclaimer</Trans>
+                </M.Text>
+              </AutoRow>
+              <StyledLinkOut size={18} />
+            </RowBetween>
+          </StyledCard>
         </AutoColumn>
         <ThemedText.Main fontSize={14}>
           <Trans>This app uses the following third-party APIs:</Trans>
         </ThemedText.Main>
         <AutoColumn gap="12px">
           {EXTERNAL_APIS.map(({ name, description }, i) => (
-            <DarkGreyCard key={i}>
+            <APICard key={i}>
               <AutoColumn gap="8px">
                 <AutoRow gap="4px">
                   <Info size={18} />
@@ -165,15 +163,48 @@ export function PrivacyPolicy() {
                 </AutoRow>
                 <ThemedText.Main fontSize={14}>{description}</ThemedText.Main>
               </AutoColumn>
-            </DarkGreyCard>
+            </APICard>
           ))}
-          <Row justify="center" marginBottom="1rem">
+          {/* <Row justify="center" marginBottom="1rem">
             <ExternalLink href="https://help.uniswap.org/en/articles/5675203-terms-of-service-faq">
               <Trans>Learn more</Trans>
             </ExternalLink>
-          </Row>
+          </Row> */}
         </AutoColumn>
       </AutoColumn>
+
+      <DisclaimerModal open={openDisclaimer} toggle={toggleDisclaimer} />
     </Wrapper>
+  )
+}
+
+export const DisclaimerModal = ({ open, toggle }: { open: boolean; toggle: () => void }) => {
+  return (
+    <Modal isOpen={open} maxWidth={600} onDismiss={toggle}>
+      <div style={{ padding: '0.5rem 1rem 1rem', fontSize: '14px', lineHeight: 1.45, fontWeight: 375 }}>
+        <h2>Protocol Disclaimer</h2>
+        <p>
+          Muffin is a decentralized peer-to-peer protocol that people can use to create liquidity and trade ERC-20
+          tokens. The Muffin protocol is made up of free, public, open-source or source-available software including a
+          set of smart contracts that are deployed on the Ethereum Blockchain. Your use of the Muffin protocol involves
+          various risks, including, but not limited to, losses while digital assets are being supplied to the Muffin
+          protocol and losses due to the fluctuation of prices of tokens in a trading pair or liquidity pool. Before
+          using the Muffin protocol, you should review the relevant documentation to make sure you understand how the
+          Muffin protocol works. Additionally, just as you can access email email protocols such as SMTP through
+          multiple email clients, you can access the Muffin protocol through dozens of web or mobile interfaces. You are
+          responsible for doing your own diligence on those interfaces to understand the fees and risks they present.
+        </p>
+        <p>
+          {/* eslint-disable react/no-unescaped-entities */}
+          THE MUFFIN PROTOCOL IS PROVIDED "AS IS", AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. It is run by
+          smart contracts deployed on the Ethereum blockchain, and can be interacted permissionlessly by anyone who has
+          access to the blockchain. No developer or entity involved in creating the Muffin protocol can will be liable
+          for any claims or damages whatsoever associated with your use, inability to use, or your interaction with
+          other users of, the Muffin protocol, including any direct, indirect, incidental, special, exemplary, punitive
+          or consequential damages, or loss of profits, cryptocurrencies, tokens, or anything else of value.
+          {/* eslint-enable react/no-unescaped-entities */}
+        </p>
+      </div>
+    </Modal>
   )
 }
