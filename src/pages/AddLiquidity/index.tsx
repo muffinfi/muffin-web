@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPositionByTokenId } from '@muffinfi/hooks/useDerivedPosition'
 import { useFeeTierOptions } from '@muffinfi/hooks/useFeeTierOptions'
-import { usePoolDefaultParameters } from '@muffinfi/hooks/usePoolDefaultParameters'
+import { usePoolDefaultTickSpacing } from '@muffinfi/hooks/usePoolDefaultTickSpacing'
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
 import {
   encodeSqrtPriceX72,
@@ -159,7 +159,7 @@ export default function AddLiquidity({
     [currencyA, currencyB]
   )
 
-  const [defaultTickSpacing] = usePoolDefaultParameters()
+  const defaultTickSpacing = usePoolDefaultTickSpacing(currencyA, currencyB)
 
   // fetch pool and tier
   const [poolState, pool] = useMuffinPool(baseCurrency, quoteCurrency)
