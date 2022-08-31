@@ -1,6 +1,6 @@
 import { tickToPrice } from '@muffinfi/muffin-sdk'
 import { Token } from '@uniswap/sdk-core'
-import { AllV3TicksQuery } from 'state/data/generated'
+import type { TickData } from 'hooks/usePoolTickData'
 
 import { Datum } from './types'
 
@@ -18,12 +18,7 @@ import { Datum } from './types'
  * - merge data of different time series into one time series
  * - convert tick to price
  */
-export const processTicksData = (
-  rawData: AllV3TicksQuery,
-  baseToken: Token,
-  quoteToken: Token,
-  invertPrice: boolean
-) => {
+export const processTicksData = (rawData: TickData, baseToken: Token, quoteToken: Token, invertPrice: boolean) => {
   const ascendingTick = !invertPrice
 
   // sort and convert liquidityNet to liquidity
@@ -109,19 +104,22 @@ const sortAndMergeDataList = (dataList: Datum[][], ascending: boolean, initialEm
  * - dataList[2]: [4, 4, 4, 4]
  */
 export const stackDataList = (dataList: Datum[][]) => {
-  const len = dataList[0]?.length
-  return dataList.map((data, j) => {
-    if (data.length !== len) throw new Error('Data list are not the same size')
+  if (dataList.length === 0) return []
 
-    return data.map((datum, i): Datum => {
-      let prevVY = 0
-      for (let k = 0; k < j; k++) prevVY += dataList[k][i].vy
-      return {
-        vx: datum.vx,
-        vy: datum.vy + prevVY,
-      }
-    })
-  })
+  const res: Datum[][] = new Array(dataList.length)
+  res[0] = dataList[0]
+
+  const len = dataList[0]?.length
+
+  for (let k = 1; k < dataList.length; k++) {
+    const data = dataList[k]
+    if (data.length !== len) throw new Error('Data list are not the same size')
+    res[k] = data.map((datum, i) => ({
+      vx: datum.vx,
+      vy: res[k - 1][i].vy + datum.vy,
+    }))
+  }
+  return res
 }
 
 /**
@@ -149,18 +147,16 @@ export const clipData = (originalData: Datum[], domain: [number, number]) => {
     if (iEnd == null && vx > domain[1]) iEnd = i
     if (iStart != null && iEnd != null) break
   }
-  let data = [...originalData]
 
   // patch end datum
   if (iEnd == null) iEnd = originalData.length
-  data = data.slice(0, iEnd)
+  let data = originalData.slice(0, iEnd)
   data.push({ vx: domain[1], vy: originalData[iEnd - 1].vy })
 
   // patch start datum
   if (iStart != null && iStart !== -1) {
     data = data.slice(iStart)
-    data.shift()
-    data.unshift({ vx: domain[0], vy: originalData[iStart].vy })
+    data[0] = { vx: domain[0], vy: originalData[iStart].vy }
   }
 
   return data

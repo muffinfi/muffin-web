@@ -107,8 +107,8 @@ export const LiquidityChart = ({
     if (!pool || tierId == null) return undefined
     // Fallback the first tier's price if tier is not found (i.e. creating tier)
     const token0Price = (pool.tiers[tierId] ?? pool.tiers[0])?.token0Price
-    const price = invertPrice ? token0Price.invert() : token0Price
-    return priceToNumber(price)
+    if (!token0Price) return undefined
+    return priceToNumber(invertPrice ? token0Price.invert() : token0Price)
   }, [pool, tierId, invertPrice])
 
   const onSelectedRangeChange = useCallback(

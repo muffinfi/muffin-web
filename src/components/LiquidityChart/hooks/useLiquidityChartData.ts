@@ -1,24 +1,15 @@
-import { useMuffinPool, useMuffinPoolId } from '@muffinfi/hooks/usePools'
-import { skipToken } from '@reduxjs/toolkit/query/react'
+import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { Currency } from '@uniswap/sdk-core'
+import { useAllV3Ticks } from 'hooks/usePoolTickData'
 import { useMemo } from 'react'
-import { useAllV3TicksQuery } from 'state/data/enhanced'
-import { AllV3TicksQuery } from 'state/data/generated'
 
 import { processTicksData } from '../utils/processData'
 
 export const useLiquidityChartData = (currencyBase: Currency | undefined, currencyQuote: Currency | undefined) => {
-  const { poolId, token0, token1 } = useMuffinPoolId(currencyBase, currencyQuote)
+  const [poolState, pool] = useMuffinPool(currencyBase, currencyQuote)
+  const { token0, token1 } = pool || {}
 
-  const { data: rawData, ...queryState } = useAllV3TicksQuery(poolId ? { poolId, skip: 0 } : skipToken, {
-    pollingInterval: 30000, // 30 secs polling
-  }) as {
-    isLoading: boolean
-    isUninitialized?: boolean
-    isError: boolean
-    error: unknown
-    data: AllV3TicksQuery | undefined
-  }
+  const { data: rawData, ...queryState } = useAllV3Ticks(pool)
 
   const invertPrice = token0 && currencyBase ? token0 !== currencyBase.wrapped : undefined
 
@@ -27,8 +18,6 @@ export const useLiquidityChartData = (currencyBase: Currency | undefined, curren
       ? processTicksData(rawData, token0, token1, invertPrice)
       : undefined
   }, [rawData, token0, token1, invertPrice])
-
-  const [poolState, pool] = useMuffinPool(currencyBase, currencyQuote)
 
   return {
     invertPrice,

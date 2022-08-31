@@ -1,21 +1,43 @@
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
+import { useLensContract } from '@muffinfi/hooks/useContract'
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
-import { Pool, TickMath, tickToPrice, Tier } from '@muffinfi/muffin-sdk'
+import { MAX_TICK, MIN_TICK, Pool, SupportedChainId, TickMath, tickToPrice, Tier } from '@muffinfi/muffin-sdk'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { Currency } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAllV3TicksQuery } from 'state/data/enhanced'
-import { AllV3TicksQuery, Tick } from 'state/data/generated'
+import { Tick } from 'state/data/generated'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
 const PRICE_FIXED_DIGITS = 8
-// const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [ChainId.ARBITRUM_ONE, ChainId.ARBITRUM_RINKEBY]
+const BLOCKS_PER_FETCH = 2
+const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [SupportedChainId.RINKEBY]
+
+export interface LensTickData {
+  tickIdx: number
+  liquidityLowerD8: BigNumber
+  liquidityUpperD8: BigNumber
+  needSettle0: boolean
+  needSettle1: boolean
+}
 
 export interface TickData {
-  tick: number
-  liquidityNet: JSBI
-  liquidityGross: JSBI
+  tiers: {
+    tick: number
+    liquidity: string
+    sqrtGamma: string
+    nextTickBelow: number
+    nextTickAbove: number
+    ticks: {
+      tickIdx: number
+      tierId: number
+      liquidityNet: string
+    }[]
+  }[]
 }
 
 // Tick with fields parsed to JSBIs, and active liquidity computed.
@@ -31,107 +53,115 @@ export type StackedTick = Record<number, any> & Pick<Tick, 'tickIdx' | 'price0'>
 const getActiveTick = (tickCurrent: number | undefined, tickSpacing: number | undefined) =>
   tickCurrent != null && tickSpacing != null ? Math.floor(tickCurrent / tickSpacing) * tickSpacing : undefined
 
-// const REFRESH_FREQUENCY = { blocksPerFetch: 2 }
+const parseTickData = (tickData: string) => {
+  const words = tickData.replace(/^0x/, '').match(/.{1,64}/g)
+  if (words == null) return [] as LensTickData[]
+  const abiTypes = [
+    'int24 tickIdx', //
+    'uint96 liquidityLowerD8',
+    'uint96 liquidityUpperD8',
+    'bool needSettle0',
+    'bool needSettle1',
+  ]
+  return words.map((word) => {
+    const sliced = [
+      word.slice(0 / 4, 24 / 4), //     int24   tickIdx
+      word.slice(24 / 4, 120 / 4), //   uint96  liquidityLowerD8
+      word.slice(120 / 4, 216 / 4), //  uint96  liquidityUpperD8
+      word.slice(216 / 4, 224 / 4), //  bool    needSettle0
+      word.slice(224 / 4, 232 / 4), //  bool    needSettle1
+    ]
+    return defaultAbiCoder.decode(
+      abiTypes,
+      '0x' + sliced.map((x) => x.padStart(64, '0')).join('')
+    ) as unknown as LensTickData
+  })
+}
 
-// const bitmapIndex = (tick: number, tickSpacing: number) => {
-//   return Math.floor(tick / tickSpacing / 256)
-// }
+function useTicksFromTickLens(pool?: Pool | null, numSurroundingTicks: number | undefined = 1000) {
+  const [tickDataLatestSynced, setTickDataLatestSynced] = useState<TickData | undefined>()
+  const blockNumber = useBlockNumber()
+  const [lastUpdatedBlock, setLastUpdatedBlock] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<any>(undefined)
+  const skipRef = useRef(false)
+  const poolIdRef = useRef(pool?.poolId)
 
-// function useTicksFromTickLens(
-//   currencyA: Currency | undefined,
-//   currencyB: Currency | undefined,
-//   feeAmount: FeeAmount | undefined,
-//   numSurroundingTicks: number | undefined = 125
-// ) {
-//   const [tickDataLatestSynced, setTickDataLatestSynced] = useState<TickData[]>([])
+  const tickLens = useLensContract()
 
-//   const [poolState, pool] = usePool(currencyA, currencyB, feeAmount)
+  // reset on input change
+  useEffect(() => {
+    poolIdRef.current = pool?.poolId
+    setTickDataLatestSynced(undefined)
+    setLastUpdatedBlock(0)
+    setIsLoading(false)
+    setError(undefined)
+  }, [pool?.poolId])
 
-//   const tickSpacing = feeAmount && TICK_SPACINGS[feeAmount]
+  useEffect(
+    () => () => {
+      skipRef.current = true
+    },
+    []
+  )
 
-//   // Find nearest valid tick for pool in case tick is not initialized.
-//   const activeTick = pool?.tickCurrent && tickSpacing ? nearestUsableTick(pool?.tickCurrent, tickSpacing) : undefined
+  useEffect(() => {
+    if (
+      isLoading ||
+      error ||
+      !tickLens ||
+      !pool?.tiers ||
+      pool.tiers.length === 0 ||
+      blockNumber == null ||
+      lastUpdatedBlock + BLOCKS_PER_FETCH > blockNumber
+    ) {
+      return
+    }
+    setIsLoading(true)
+    const tickPromises = pool.tiers.map((_, i) => tickLens.getTicks(pool.poolId, i, MIN_TICK, MAX_TICK, 1000))
+    Promise.all(tickPromises)
+      .then((ticks) => {
+        if (skipRef.current || poolIdRef.current !== pool.poolId) return
+        const tickData = {
+          tiers: ticks.map((result, i) => {
+            const tier = pool.tiers[i] as Tier
+            return {
+              tick: tier.tickCurrent,
+              liquidity: tier.liquidity.toString(),
+              sqrtGamma: tier.sqrtGamma.toString(),
+              nextTickBelow: tier.nextTickBelow,
+              nextTickAbove: tier.nextTickAbove,
+              ticks: parseTickData(result.ticks).map((parsed) => ({
+                tickIdx: parsed.tickIdx,
+                tierId: i,
+                liquidityNet: parsed.liquidityLowerD8.sub(parsed.liquidityUpperD8).mul(256).toString(),
+              })),
+            }
+          }),
+        }
+        setTickDataLatestSynced((prev) => (JSON.stringify(prev) !== JSON.stringify(tickData) ? tickData : prev))
+      })
+      .catch((error) => {
+        if (skipRef.current || poolIdRef.current !== pool.poolId) return
+        setError(error)
+      })
+      .finally(() => {
+        if (skipRef.current || poolIdRef.current !== pool.poolId) return
+        setLastUpdatedBlock(blockNumber)
+        setIsLoading(false)
+      })
+  }, [blockNumber, error, isLoading, lastUpdatedBlock, pool?.poolId, pool?.tiers, tickLens])
 
-//   const poolAddress =
-//     currencyA && currencyB && feeAmount && poolState === PoolState.EXISTS
-//       ? Pool.getAddress(currencyA?.wrapped, currencyB?.wrapped, feeAmount)
-//       : undefined
-
-//   // it is also possible to grab all tick data but it is extremely slow
-//   // bitmapIndex(nearestUsableTick(TickMath.MIN_TICK, tickSpacing), tickSpacing)
-//   const minIndex = useMemo(
-//     () =>
-//       tickSpacing && activeTick ? bitmapIndex(activeTick - numSurroundingTicks * tickSpacing, tickSpacing) : undefined,
-//     [tickSpacing, activeTick, numSurroundingTicks]
-//   )
-
-//   const maxIndex = useMemo(
-//     () =>
-//       tickSpacing && activeTick ? bitmapIndex(activeTick + numSurroundingTicks * tickSpacing, tickSpacing) : undefined,
-//     [tickSpacing, activeTick, numSurroundingTicks]
-//   )
-
-//   const tickLensArgs: [string, number][] = useMemo(
-//     () =>
-//       maxIndex && minIndex && poolAddress && poolAddress !== ZERO_ADDRESS
-//         ? new Array(maxIndex - minIndex + 1)
-//             .fill(0)
-//             .map((_, i) => i + minIndex)
-//             .map((wordIndex) => [poolAddress, wordIndex])
-//         : [],
-//     [minIndex, maxIndex, poolAddress]
-//   )
-
-//   const tickLens = useTickLens()
-//   const callStates = useSingleContractMultipleData(
-//     tickLensArgs.length > 0 ? tickLens : undefined,
-//     'getPopulatedTicksInWord',
-//     tickLensArgs,
-//     REFRESH_FREQUENCY
-//   )
-
-//   const isError = useMemo(() => callStates.some(({ error }) => error), [callStates])
-//   const isLoading = useMemo(() => callStates.some(({ loading }) => loading), [callStates])
-//   const IsSyncing = useMemo(() => callStates.some(({ syncing }) => syncing), [callStates])
-//   const isValid = useMemo(() => callStates.some(({ valid }) => valid), [callStates])
-
-//   const tickData: TickData[] = useMemo(
-//     () =>
-//       callStates
-//         .map(({ result }) => result?.populatedTicks)
-//         .reduce(
-//           (accumulator, current) => [
-//             ...accumulator,
-//             ...(current?.map((tickData: TickData) => {
-//               return {
-//                 tick: tickData.tick,
-//                 liquidityNet: JSBI.BigInt(tickData.liquidityNet),
-//                 liquidityGross: JSBI.BigInt(tickData.liquidityGross),
-//               }
-//             }) ?? []),
-//           ],
-//           []
-//         ),
-//     [callStates]
-//   )
-
-//   // reset on input change
-//   useEffect(() => {
-//     setTickDataLatestSynced([])
-//   }, [currencyA, currencyB, feeAmount])
-
-//   // return the latest synced tickData even if we are still loading the newest data
-//   useEffect(() => {
-//     if (!IsSyncing && !isLoading && !isError && isValid) {
-//       setTickDataLatestSynced(tickData.sort((a, b) => a.tick - b.tick))
-//     }
-//   }, [isError, isLoading, IsSyncing, tickData, isValid])
-
-//   return useMemo(
-//     () => ({ isLoading, IsSyncing, isError, isValid, tickData: tickDataLatestSynced }),
-//     [isLoading, IsSyncing, isError, isValid, tickDataLatestSynced]
-//   )
-// }
+  return useMemo(
+    () => ({
+      isLoading: isLoading && tickDataLatestSynced == null,
+      isError: !!error,
+      error,
+      data: tickDataLatestSynced,
+    }),
+    [isLoading, error, tickDataLatestSynced]
+  )
+}
 
 function useTicksFromSubgraph(pool?: Pool | null) {
   return useAllV3TicksQuery(pool ? { poolId: pool.poolId, skip: 0 } : skipToken, {
@@ -140,27 +170,24 @@ function useTicksFromSubgraph(pool?: Pool | null) {
 }
 
 // Fetches all ticks for a given pool
-function useAllV3Ticks(pool?: Pool | null): {
+export function useAllV3Ticks(pool?: Pool | null): {
   isLoading: boolean
   isUninitialized?: boolean
   isError: boolean
-  error: unknown
-  data: AllV3TicksQuery | undefined
+  error?: unknown
+  data: TickData | undefined
 } {
-  // TODO: may be we need get tick data from lens in future
-  // const useSubgraph = currencyA ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(currencyA.chainId) : true
+  const useSubgraph = pool ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(pool.chainId) : true
 
-  // const tickLensTickData = useTicksFromTickLens(!useSubgraph ? currencyA : undefined, currencyB, feeAmount)
-  // const subgraphTickData = useTicksFromSubgraph(useSubgraph ? pool : undefined)
+  const tickLensTickData = useTicksFromTickLens(!useSubgraph ? pool : undefined)
+  const subgraphTickData = useTicksFromSubgraph(useSubgraph ? pool : undefined)
 
-  // return useSubgraph ? subgraphTickData : tickLensTickData
-
-  return useTicksFromSubgraph(pool) as {
+  return (useSubgraph ? subgraphTickData : tickLensTickData) as {
     isLoading: boolean
     isUninitialized?: boolean
     isError: boolean
-    error: unknown
-    data: AllV3TicksQuery | undefined
+    error?: unknown
+    data: TickData | undefined
   }
 }
 
@@ -189,10 +216,10 @@ export function usePoolActiveLiquidity(
                 pool.token0,
                 pool.token1,
                 tier.liquidity,
-                TickMath.tickToSqrtPriceX72(parseInt(tier.tick)),
+                TickMath.tickToSqrtPriceX72(tier.tick),
                 parseInt(tier.sqrtGamma),
-                parseInt(tier.nextTickBelow),
-                parseInt(tier.nextTickAbove)
+                tier.nextTickBelow,
+                tier.nextTickAbove
               )
           ),
     [pool?.token0, pool?.token1, rawData]
