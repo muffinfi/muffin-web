@@ -148,6 +148,9 @@ export const clipData = (originalData: Datum[], domain: [number, number]) => {
     if (iStart != null && iEnd != null) break
   }
 
+  // return empty array if all data greater than end domain
+  if (iEnd === 0) return []
+
   // patch end datum
   if (iEnd == null) iEnd = originalData.length
   let data = originalData.slice(0, iEnd)
