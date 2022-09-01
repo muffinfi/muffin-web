@@ -126,7 +126,7 @@ export function useAllWalletTokenBalances(
   allTokens: Token[],
   fetchEnabled = true
 ) {
-  const lastUpdated = useAppSelector((state) => state.wallet[chainId ?? -1]?.[account ?? ''].wallet.lastUpdated ?? 0)
+  const lastUpdated = useAppSelector((state) => state.wallet[chainId ?? -1]?.[account ?? '']?.wallet.lastUpdated ?? 0)
   const secondElaspedRef = useRef(0) // use ref because we don't want it to trigger re-fetch
   secondElaspedRef.current = Date.now() - lastUpdated
 
@@ -175,7 +175,7 @@ export function useAllInternalTokenBalances(
   allTokens: Token[],
   fetchEnabled = true
 ) {
-  const lastUpdated = useAppSelector((state) => state.wallet[chainId ?? -1]?.[account ?? ''].internal.lastUpdated ?? 0)
+  const lastUpdated = useAppSelector((state) => state.wallet[chainId ?? -1]?.[account ?? '']?.internal.lastUpdated ?? 0)
   const secondElaspedRef = useRef(0) // use ref because we don't want it to trigger re-fetch
   secondElaspedRef.current = Date.now() - lastUpdated
 
