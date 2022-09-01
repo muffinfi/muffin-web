@@ -101,8 +101,8 @@ export default function Popover({
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
   const [arrowElement, setArrowElement] = useState<HTMLDivElement | null>(null)
 
-  const options = useMemo(
-    (): Options => ({
+  const options: Options = useMemo(
+    () => ({
       placement,
       strategy: 'fixed',
       modifiers: [
@@ -117,26 +117,26 @@ export default function Popover({
   const { styles, update, attributes } = usePopper(referenceElement, popperElement, options)
 
   const updateCallback = useCallback(() => {
-    update && update()
+    update?.()
   }, [update])
   useInterval(updateCallback, show ? 100 : null)
 
   return (
     <>
-      <ReferenceElement ref={setReferenceElement as any}>{children}</ReferenceElement>
+      <ReferenceElement ref={setReferenceElement}>{children}</ReferenceElement>
       <Portal>
         <PopoverContainer
           show={show}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          ref={setPopperElement as any}
+          ref={setPopperElement}
           style={styles.popper}
           {...attributes.popper}
         >
           {content}
           <Arrow
             className={`arrow-${attributes.popper?.['data-popper-placement'] ?? ''}`}
-            ref={setArrowElement as any}
+            ref={setArrowElement}
             style={styles.arrow}
             {...attributes.arrow}
           />

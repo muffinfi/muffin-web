@@ -35,11 +35,12 @@ export default memo(function AccountWalletButton() {
   const { state: show, open, close } = useSwitch()
 
   return (
-    <Tooltip show={show} text={<Trans>Choose whether to pay with your Muffin account besides your wallet.</Trans>}>
+    <Tooltip
+      show={show}
+      text={<Trans>Choose whether to pay with your Muffin account besides your wallet.</Trans>}
+      placement="bottom"
+    >
       <Row gap="0.5em" onMouseEnter={open} onMouseLeave={close}>
-        {/* <Text size="xs" color="text2">
-          <Trans>Pay with</Trans>
-        </Text> */}
         <StyledButton active={internalAccountMode} onClick={toggleInternalAccountMode}>
           <FontAwesomeIcon icon={faBuildingColumns} />
           <span>+</span>
