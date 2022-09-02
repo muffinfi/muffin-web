@@ -74,8 +74,8 @@ export const api = createApi({
             tiers(orderBy: tierId, orderDirection: asc, where: { poolId: $poolId }) {
               tierId
               token0Price
-              totalValueLockedToken0
-              totalValueLockedToken1
+              amount0
+              amount1
             }
           }
         `,

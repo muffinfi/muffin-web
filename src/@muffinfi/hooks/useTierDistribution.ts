@@ -53,8 +53,8 @@ export function useMuffinTierDistribution(pool: Pool | undefined) {
     // sum total tvl for token0 and token1
     const tvls = tiers.map((value) => ({
       tierId: value.tierId,
-      tvl: toFraction(value.totalValueLockedToken0 ?? 0).add(
-        toFraction(value.totalValueLockedToken1 ?? 0).multiply(toFraction(value.token0Price ?? 0))
+      tvl: toFraction(value.amount0 ?? 0).add(
+        toFraction(value.amount1 ?? 0).multiply(toFraction(value.token0Price ?? 0))
       ),
     }))
 
