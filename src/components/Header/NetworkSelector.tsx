@@ -3,7 +3,7 @@ import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
 import * as M from '@muffinfi-ui'
 import { RowBetween } from 'components/Row'
 import { CHAIN_INFO } from 'constants/chainInfo'
-import { SupportedChainId } from 'constants/chains'
+import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { useRef } from 'react'
@@ -64,8 +64,13 @@ const FlyoutItem = styled(M.Column).attrs({ stretch: true, gap: '0.75rem' })<{ a
 const GreenDot = styled.div`
   background-color: var(--green);
   border-radius: 50%;
-  height: 9px;
-  width: 9px;
+  height: 12px;
+  width: 12px;
+  margin-right: 12px;
+  position: absolute;
+  border: 2px solid black;
+  right: -16px;
+  bottom: -4px;
 `
 
 const ResourceLink = styled(M.ExternalLink)`
@@ -76,6 +81,29 @@ const ResourceLink = styled(M.ExternalLink)`
 
 const LinkOutCircle = styled(ArrowDownCircle).attrs({ size: '1rem' })`
   transform: rotate(230deg);
+`
+
+const Badge = styled.div<{ bgColor?: string }>`
+  background-color: ${({ theme, bgColor }) => bgColor ?? theme.bg4};
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 600;
+`
+
+const LogaContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`
+
+const NetworkButton = styled(RowBetween)`
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
 `
 
 ///////////////
@@ -95,6 +123,7 @@ const BridgeLabel = ({ chainId }: { chainId: SupportedChainId }) => {
       return <Trans>Bridge</Trans>
   }
 }
+
 const ExplorerLabel = ({ chainId }: { chainId: SupportedChainId }) => {
   switch (chainId) {
     case SupportedChainId.ARBITRUM_ONE:
@@ -123,17 +152,20 @@ function Row({
     return null
   }
   const active = chainId === targetChain
-  const { helpCenterUrl, explorer, bridge, label, logoUrl } = CHAIN_INFO[targetChain]
+  const { helpCenterUrl, explorer, bridge, label, logoUrl, testnet } = CHAIN_INFO[targetChain]
 
   return (
     <FlyoutItem active={active}>
-      <RowBetween onClick={() => onSelectChain(targetChain)} style={{ cursor: 'pointer' }} role="button">
+      <NetworkButton onClick={() => onSelectChain(targetChain)} role="button">
         <M.Row gap="0.5rem">
-          <Logo src={logoUrl} />
+          <LogaContainer>
+            <Logo src={logoUrl} />
+            {chainId === targetChain && <GreenDot />}
+          </LogaContainer>
           <M.Text weight="medium">{label}</M.Text>
         </M.Row>
-        {chainId === targetChain && <GreenDot />}
-      </RowBetween>
+        {testnet && <Badge>Testnet</Badge>}
+      </NetworkButton>
 
       {active && (
         <M.TextContents color="text2" size="sm" weight="medium">
@@ -197,13 +229,11 @@ export default function NetworkSelector() {
           <FlyoutMenu>
             <M.Column stretch gap="0.5rem">
               <M.TextDiv color="text2" style={{ padding: '4px 4px 0' }}>
-                <Trans>Select a network</Trans>
+                <Trans>Select network</Trans>
               </M.TextDiv>
-              {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.MAINNET} /> */}
-              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.RINKEBY} />
-              {/* <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.POLYGON} />
-              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.OPTIMISM} />
-              <Row onSelectChain={handleChainSwitch} targetChain={SupportedChainId.ARBITRUM_ONE} /> */}
+              {ALL_SUPPORTED_CHAIN_IDS.map((chainId) => (
+                <Row key={chainId} onSelectChain={handleChainSwitch} targetChain={chainId} />
+              ))}
             </M.Column>
           </FlyoutMenu>
         </FlyoutMenuWrapper>
