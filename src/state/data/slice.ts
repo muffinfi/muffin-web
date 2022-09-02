@@ -8,7 +8,7 @@ import { AppState } from 'state'
 // TODO:
 // List of supported subgraphs. Note that the app currently only support one active subgraph at a time
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
-  // [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
+  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/muffinfi/muffin-mainnet',
   [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/virtues-milkier/muffin-rinkeby',
   [SupportedChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/dkenw/muffin-goerli',
 

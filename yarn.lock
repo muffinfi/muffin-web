@@ -3337,10 +3337,10 @@
   dependencies:
     "@openzeppelin/contracts" "4.3.1"
 
-"@muffinfi/muffin-sdk@^1.0.4-alpha.0":
-  version "1.0.4-alpha.0"
-  resolved "https://registry.yarnpkg.com/@muffinfi/muffin-sdk/-/muffin-sdk-1.0.4-alpha.0.tgz#4c0cc11117e76457b1ef030eafbb7e3c2fe09ae3"
-  integrity sha512-q9ymqI7j5TBlbos2GKmeta6VvQ1hyRFDtB2Aoc/gOUZFrXjM9rKr3Vhv7eGorarXN5M57aZFRmDhBHrRouZWqg==
+"@muffinfi/muffin-sdk@^1.0.4-alpha.1":
+  version "1.0.4-alpha.1"
+  resolved "https://registry.yarnpkg.com/@muffinfi/muffin-sdk/-/muffin-sdk-1.0.4-alpha.1.tgz#dde5c067b72cdbd6b60228ba093e7a4bfe86eb3b"
+  integrity sha512-sG3VatEIERevL5Ma35de5k+IPIhv3UaotlWKJ3pxsF4QJ4FtYvu8is5W6HwXf9NUvnBUVXOQNOzweBZ9s5XZbg==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/contracts" "^5.5.0"
