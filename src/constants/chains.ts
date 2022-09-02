@@ -40,6 +40,7 @@ export const CHAIN_IDS_TO_NAMES = {
 // ) as SupportedChainId[]
 export const ALL_SUPPORTED_CHAIN_IDS = [
   // SupportedChainId.MAINNET,
+  SupportedChainId.GOERLI,
   SupportedChainId.RINKEBY,
 ]
 

@@ -3330,10 +3330,17 @@
   dependencies:
     "@openzeppelin/contracts" "4.3.1"
 
-"@muffinfi/muffin-sdk@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@muffinfi/muffin-sdk/-/muffin-sdk-1.0.2.tgz#5ff35b68ad5b436a6af74005fc99419866dc197b"
-  integrity sha512-vnvtfpprt0ymOOgJ6df6o8ArFf+OEy6pbXb/MPGjw1izV5GZBUSpphda7Biogo4cO/bd5ntaOmIcFN37/I0MOQ==
+"@muffinfi/muffin-contracts@^1.0.13-alpha.0":
+  version "1.0.13-alpha.0"
+  resolved "https://registry.yarnpkg.com/@muffinfi/muffin-contracts/-/muffin-contracts-1.0.13-alpha.0.tgz#2c164e2af2ac05274e3c39a3dc8a9b5d78e7f9a9"
+  integrity sha512-xEfyMf9Y7z60aZBihA9lBjM02p2nBr1/jKxJlat/mbTqLWoi5S6CxWL5wGLvdUl8csvLS3tZPXMbzW/4Q1cyDw==
+  dependencies:
+    "@openzeppelin/contracts" "4.3.1"
+
+"@muffinfi/muffin-sdk@^1.0.4-alpha.0":
+  version "1.0.4-alpha.0"
+  resolved "https://registry.yarnpkg.com/@muffinfi/muffin-sdk/-/muffin-sdk-1.0.4-alpha.0.tgz#4c0cc11117e76457b1ef030eafbb7e3c2fe09ae3"
+  integrity sha512-q9ymqI7j5TBlbos2GKmeta6VvQ1hyRFDtB2Aoc/gOUZFrXjM9rKr3Vhv7eGorarXN5M57aZFRmDhBHrRouZWqg==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/contracts" "^5.5.0"

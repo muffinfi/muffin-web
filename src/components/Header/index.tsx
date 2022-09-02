@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
+import { getFaucetUrl, isFaucetSupported } from '@muffinfi/utils/faucet'
 import { getMuffinAnalyticsURL } from '@muffinfi/utils/getMuffinAnalyticsURL'
 import * as M from '@muffinfi-ui'
 import useScrollPosition from '@react-hook/window-scroll'
@@ -192,7 +192,7 @@ const FaucetButton = () => {
 
   return (
     <HideSmall>
-      <M.ExternalLink href={FAUCET_URL} style={{ borderRadius: 16 }}>
+      <M.ExternalLink href={getFaucetUrl(chainId)} style={{ borderRadius: 16 }}>
         <HeaderButton style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem' }}>
           <M.Row gap="0.3em">
             <span>Faucet</span>

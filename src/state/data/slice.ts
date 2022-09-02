@@ -10,6 +10,7 @@ import { AppState } from 'state'
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
   // [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
   [SupportedChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/virtues-milkier/muffin-rinkeby',
+  [SupportedChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/dkenw/muffin-goerli',
 
   // [SupportedChainId.ARBITRUM_ONE]: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
 

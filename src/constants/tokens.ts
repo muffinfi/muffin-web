@@ -20,11 +20,17 @@ import { SupportedChainId } from './chains'
 /**
  * Prepared by Muffin for testing. Not offical tokens
  */
+// Rinkeby:
 export const TETH_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x15e4F1fc9a02e36039554531cDdF1C70F0B05364', 18, 'tETH', 'Test Ether')
 export const WBTC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x0C58e68883E8c6390255A83a73dfA42b56EC6400', 8, 'WBTC', 'Wrapped BTC')
 export const USDC_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xC6399e9E8D6d70A2aA1fc6ade21F56567f6c7862', 6, 'USDC', 'USD Coin')
-export const USDT_RINKEBY = new Token(SupportedChainId.RINKEBY, '0xFD709452E12Df357f415D971eE12C7854285a072', 6, 'USDT', 'Tether USD')
 export const DAI_RINKEBY = new Token(SupportedChainId.RINKEBY, '0x7C4e4edc8Cda71DfaB107a1A44f6858f36857cA8', 18, 'DAI', 'Dai Stablecoin')
+
+// Goerli
+export const TETH_GOERLI = new Token(SupportedChainId.GOERLI, '0x2C03fF2a384b5CbB93998be296adE0Ed2d9E60f9', 18, 'tETH', 'Test Ether')
+export const WBTC_GOERLI = new Token(SupportedChainId.GOERLI, '0x2bfeDe717809561176086760Ee3f4a4895A399af', 8, 'WBTC', 'Wrapped BTC')
+export const USDC_GOERLI = new Token(SupportedChainId.GOERLI, '0xb6136C36610d4d5374030AC0Ec0021fB1F04aaAa', 6, 'USDC', 'USD Coin')
+export const DAI_GOERLI = new Token(SupportedChainId.GOERLI, '0x63435cf71274eD12d9bFbC18440a4975764F74Fd', 18, 'DAI', 'Dai Stablecoin')
 /////////////////////////////////////////////
 
 export { USDC_ARBITRUM, USDC_MAINNET, USDC_OPTIMISM, USDC_POLYGON }
@@ -149,10 +155,8 @@ export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedCha
  * Mainly used to disallow native eth on testnet.
  */
 export const DISALLOWED_CURRENCIES: { [chainId: number]: Currency[] } = {
-  [SupportedChainId.RINKEBY]: [
-    nativeOnChain(SupportedChainId.RINKEBY), //
-    WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token,
-  ],
+  [SupportedChainId.RINKEBY]: [nativeOnChain(SupportedChainId.RINKEBY), WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token],
+  [SupportedChainId.GOERLI]: [nativeOnChain(SupportedChainId.GOERLI), WRAPPED_NATIVE_CURRENCY[SupportedChainId.GOERLI] as Token],
 }
 
 export const isDisallowedCurrency = (chainId: number | undefined, currency: Currency | undefined) => {
@@ -165,6 +169,7 @@ export const isDisallowedCurrency = (chainId: number | undefined, currency: Curr
  */
 export const DEFAULT_CURRENCY_OVERRIDE: { [chainId: number]: Token } = {
   [SupportedChainId.RINKEBY]: TETH_RINKEBY,
+  [SupportedChainId.GOERLI]: TETH_GOERLI,
 }
 
 /**

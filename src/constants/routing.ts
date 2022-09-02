@@ -6,6 +6,7 @@ import {
   AMPL,
   DAI,
   DAI_ARBITRUM_ONE,
+  DAI_GOERLI,
   DAI_OPTIMISM,
   DAI_POLYGON,
   DAI_RINKEBY,
@@ -18,9 +19,11 @@ import {
   rETH2,
   sETH2,
   SWISE,
+  TETH_GOERLI,
   TETH_RINKEBY,
   TRIBE,
   USDC_ARBITRUM,
+  USDC_GOERLI,
   USDC_MAINNET,
   USDC_OPTIMISM,
   USDC_POLYGON,
@@ -29,9 +32,9 @@ import {
   USDT_ARBITRUM_ONE,
   USDT_OPTIMISM,
   USDT_POLYGON,
-  USDT_RINKEBY,
   WBTC,
   WBTC_ARBITRUM_ONE,
+  WBTC_GOERLI,
   WBTC_OPTIMISM,
   WBTC_POLYGON,
   WBTC_RINKEBY,
@@ -84,14 +87,19 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
     WETH_POLYGON,
   ],
 
-  // eslint-disable-next-line prettier/prettier
   [SupportedChainId.RINKEBY]: [
     ...WRAPPED_NATIVE_CURRENCIES_ONLY[SupportedChainId.RINKEBY],
     USDC_RINKEBY,
     WBTC_RINKEBY,
-    USDT_RINKEBY,
     DAI_RINKEBY,
     TETH_RINKEBY,
+  ],
+  [SupportedChainId.GOERLI]: [
+    ...WRAPPED_NATIVE_CURRENCIES_ONLY[SupportedChainId.GOERLI],
+    USDC_GOERLI,
+    WBTC_GOERLI,
+    DAI_GOERLI,
+    TETH_GOERLI,
   ],
 }
 export const ADDITIONAL_BASES: { [chainId: number]: { [tokenAddress: string]: Token[] } } = {
@@ -136,15 +144,18 @@ export const COMMON_BASES: ChainCurrencyList = {
   [SupportedChainId.RINKEBY]: [
     TETH_RINKEBY,
     USDC_RINKEBY,
-    USDT_RINKEBY,
     DAI_RINKEBY,
     WBTC_RINKEBY,
     nativeOnChain(SupportedChainId.RINKEBY),
     // WRAPPED_NATIVE_CURRENCY[SupportedChainId.RINKEBY] as Token,
   ],
   [SupportedChainId.GOERLI]: [
+    TETH_GOERLI,
+    USDC_GOERLI,
+    DAI_GOERLI,
+    WBTC_GOERLI,
     nativeOnChain(SupportedChainId.GOERLI),
-    WRAPPED_NATIVE_CURRENCY[SupportedChainId.GOERLI] as Token,
+    // WRAPPED_NATIVE_CURRENCY[SupportedChainId.GOERLI] as Token,
   ],
   [SupportedChainId.KOVAN]: [
     nativeOnChain(SupportedChainId.KOVAN),

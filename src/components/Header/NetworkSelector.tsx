@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { FAUCET_URL, isFaucetSupported } from '@muffinfi/utils/faucet'
+import { getFaucetUrl, isFaucetSupported } from '@muffinfi/utils/faucet'
 import * as M from '@muffinfi-ui'
 import { RowBetween } from 'components/Row'
 import { CHAIN_INFO } from 'constants/chainInfo'
@@ -68,9 +68,9 @@ const GreenDot = styled.div`
   width: 12px;
   margin-right: 12px;
   position: absolute;
-  border: 2px solid black;
+  border: 2px solid var(--layer2);
   right: -16px;
-  bottom: -4px;
+  bottom: -3px;
 `
 
 const ResourceLink = styled(M.ExternalLink)`
@@ -84,7 +84,8 @@ const LinkOutCircle = styled(ArrowDownCircle).attrs({ size: '1rem' })`
 `
 
 const Badge = styled.div<{ bgColor?: string }>`
-  background-color: ${({ theme, bgColor }) => bgColor ?? theme.bg4};
+  background-color: ${({ theme, bgColor }) => bgColor ?? 'var(--borderColor)'};
+  color: var(--text1);
   border-radius: 6px;
   padding: 2px 6px;
   font-size: 12px;
@@ -190,7 +191,7 @@ function Row({
             ) : null}
 
             {isFaucetSupported(chainId) ? (
-              <ResourceLink href={FAUCET_URL}>
+              <ResourceLink href={getFaucetUrl(chainId)}>
                 <Trans>Faucet</Trans>
                 <LinkOutCircle />
               </ResourceLink>
