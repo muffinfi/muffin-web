@@ -7,14 +7,14 @@ import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components/macro'
 
 import GoogleAnalyticsReporter from '../components/analytics/GoogleAnalyticsReporter'
-import AddressClaimModal from '../components/claim/AddressClaimModal'
+// import AddressClaimModal from '../components/claim/AddressClaimModal'
 import ErrorBoundary from '../components/ErrorBoundary'
 import Header from '../components/Header'
 import Polling from '../components/Header/Polling'
 import Popups from '../components/Popups'
 import Web3ReactManager from '../components/Web3ReactManager'
-import { useModalOpen, useToggleModal } from '../state/application/hooks'
-import { ApplicationModal } from '../state/application/reducer'
+// import { useModalOpen, useToggleModal } from '../state/application/hooks'
+// import { ApplicationModal } from '../state/application/reducer'
 import DarkModeQueryParamReader from '../theme/DarkModeQueryParamReader'
 import Account from './Account'
 import Deposit from './Account/Deposit'
@@ -60,11 +60,11 @@ const HeaderWrapper = styled.div`
   width: 100%;
 `
 
-function TopLevelModals() {
-  const open = useModalOpen(ApplicationModal.ADDRESS_CLAIM)
-  const toggle = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
-  return <AddressClaimModal isOpen={open} onDismiss={toggle} />
-}
+// function TopLevelModals() {
+//   const open = useModalOpen(ApplicationModal.ADDRESS_CLAIM)
+//   const toggle = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
+//   return <AddressClaimModal isOpen={open} onDismiss={toggle} />
+// }
 
 export default function App() {
   return (
@@ -80,7 +80,7 @@ export default function App() {
           <BodyWrapper>
             <Popups />
             <Polling />
-            <TopLevelModals />
+            {/* <TopLevelModals /> */}
             <Suspense fallback={<Loader />}>
               <Switch>
                 {/* <Route strict path="/vote" component={Vote} /> */}
