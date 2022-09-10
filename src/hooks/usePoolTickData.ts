@@ -15,7 +15,7 @@ import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
 const PRICE_FIXED_DIGITS = 8
 const BLOCKS_PER_FETCH = 2
-const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [SupportedChainId.RINKEBY]
+const CHAIN_IDS_WITH_SUBGRAPH_DATA: SupportedChainId[] = []
 
 export interface LensTickData {
   tickIdx: number
@@ -177,7 +177,7 @@ export function useAllV3Ticks(pool?: Pool | null): {
   error?: unknown
   data: TickData | undefined
 } {
-  const useSubgraph = pool ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(pool.chainId) : true
+  const useSubgraph = pool ? CHAIN_IDS_WITH_SUBGRAPH_DATA.includes(pool.chainId) : false
 
   const tickLensTickData = useTicksFromTickLens(!useSubgraph ? pool : undefined)
   const subgraphTickData = useTicksFromSubgraph(useSubgraph ? pool : undefined)
