@@ -974,7 +974,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
               <QuestionHelperInline
                 text={
                   <Trans>
-                    While your order is being filled, you also <M.Text weight="semibold">earn</M.Text> this percetange
+                    While your order is being filled, you also <M.Text weight="semibold">earn</M.Text> this percentage
                     swap fees from the swaps executed in your order’s price range.
                   </Trans>
                 }
