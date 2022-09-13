@@ -203,7 +203,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@muffinfi/muffin-contracts": "^1.0.14",
-    "@muffinfi/muffin-sdk": "^1.0.5",
+    "@muffinfi/muffin-sdk": "^1.0.6-alpha.0",
     "@popperjs/core": "^2.11.6",
     "@reduxjs/toolkit": "^1.6.1",
     "@uniswap/redux-multicall": "^1.1.5",
