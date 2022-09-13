@@ -130,6 +130,27 @@ const getCapitalEfficiency = (
   return num / denom
 }
 
+/**
+ * Show currency amount in the format of "1.23*10^-4 ETH" format
+ */
+const CurrencyAmountInScienticNotation = ({ amount }: { amount: CurrencyAmount<Currency> | undefined }) => {
+  if (!amount) return <span>---</span>
+
+  const rawAmt = amount.quotient.toString()
+  const sign = rawAmt[0] === '-' ? '-' : ''
+  const absRawAmt = rawAmt.replace(/^-/, '')
+  const exp = Math.floor(Math.log10(Number(absRawAmt))) - amount.currency.decimals
+  let mantissa = absRawAmt.length > 1 ? `${absRawAmt[0]}.${absRawAmt.slice(1)}` : absRawAmt
+  if (mantissa.length > 4) mantissa = (Number(mantissa) + 0.005).toFixed(2)
+
+  return (
+    <span>
+      {sign}
+      {mantissa}×10<sup>{exp}</sup> {amount.currency.symbol}
+    </span>
+  )
+}
+
 export default function AddLiquidity({
   match: { params },
   history,
@@ -970,6 +991,23 @@ export default function AddLiquidity({
             ) : null}
           </M.RowBetween>
 
+          {isAddingTier ? (
+            <YellowCard padding="12px" $borderRadius="12px">
+              <M.RowBetween gap="12px">
+                <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
+                <M.Text color="alert-text" style={{ fontSize: 13 }}>
+                  <Trans>
+                    Note that initializing a fee tier will cost a higher gas fee, and will also charge a tiny amount of
+                    the underlying tokens (
+                    <CurrencyAmountInScienticNotation amount={amtAForCreateTier} /> and{' '}
+                    <CurrencyAmountInScienticNotation amount={amtBForCreateTier} />
+                    ).
+                  </Trans>
+                </M.Text>
+              </M.RowBetween>
+            </YellowCard>
+          ) : null}
+
           <M.Column stretch gap="16px">
             <M.Row gap="1em">
               <M.Text color="text2" size="sm">
@@ -1152,6 +1190,16 @@ export default function AddLiquidity({
           showCommonBases
           locked={depositBDisabled}
         />
+
+        {isCreatingPool || isAddingTier ? (
+          <StyledCard>
+            <M.TextDiv paragraphLineHeight>
+              In addition, <CurrencyAmountInScienticNotation amount={amtAForCreateTier} /> and{' '}
+              <CurrencyAmountInScienticNotation amount={amtBForCreateTier} /> are charged for creating this new{' '}
+              {isCreatingPool ? 'pool' : 'fee tier'}.
+            </M.TextDiv>
+          </StyledCard>
+        ) : null}
 
         {addIsUnsupported ? (
           <M.ButtonRowPrimary disabled>
