@@ -41,7 +41,7 @@ import { useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -56,7 +56,6 @@ import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { unwrappedToken } from 'utils/unwrappedToken'
 
 import { ErrorCard, OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
@@ -133,7 +132,11 @@ const getCapitalEfficiency = (
 /**
  * Show currency amount in the format of "1.23*10^-4 ETH" format
  */
-const CurrencyAmountInScienticNotation = ({ amount }: { amount: CurrencyAmount<Currency> | undefined }) => {
+const CurrencyAmountInScienticNotation = memo(function CurrencyAmountInScienticNotation({
+  amount,
+}: {
+  amount: CurrencyAmount<Currency> | undefined
+}) {
   if (!amount) return <span>---</span>
 
   const rawAmt = amount.quotient.toString()
@@ -146,10 +149,10 @@ const CurrencyAmountInScienticNotation = ({ amount }: { amount: CurrencyAmount<C
   return (
     <span>
       {sign}
-      {mantissa}×10<sup>{exp}</sup> {amount.currency.symbol}
+      {mantissa}&times;10<sup>{exp}</sup> {amount.currency.symbol}
     </span>
   )
-}
+})
 
 export default function AddLiquidity({
   match: { params },
@@ -409,18 +412,18 @@ export default function AddLiquidity({
    * Amounts needed to be the base liquidity if creating tier
    */
   const [amtAForCreateTier, amtBForCreateTier] = useMemo(() => {
-    if (!currencyA || !mockPool) return [undefined, undefined]
-    if (!isCreatingPool && !isAddingTier) return [undefined, undefined]
+    if (!currencyA || !currencyB || !mockPool || (!isCreatingPool && !isAddingTier)) return [undefined, undefined]
 
-    const currency0 = unwrappedToken(mockPool.token0)
-    const currency1 = unwrappedToken(mockPool.token1)
-    const amt0ForNewTier = CurrencyAmount.fromRawAmount(currency0, mockPool.token0AmountForCreateTier.quotient)
-    const amt1ForNewTier = CurrencyAmount.fromRawAmount(currency1, mockPool.token1AmountForCreateTier.quotient)
-
-    return amt0ForNewTier.currency.equals(currencyA)
-      ? [amt0ForNewTier, amt1ForNewTier]
-      : [amt1ForNewTier, amt0ForNewTier]
-  }, [mockPool, currencyA, isCreatingPool, isAddingTier])
+    return invertPrice
+      ? [
+          CurrencyAmount.fromRawAmount(currencyA, mockPool.token1AmountForCreateTier.quotient),
+          CurrencyAmount.fromRawAmount(currencyB, mockPool.token0AmountForCreateTier.quotient),
+        ]
+      : [
+          CurrencyAmount.fromRawAmount(currencyA, mockPool.token0AmountForCreateTier.quotient),
+          CurrencyAmount.fromRawAmount(currencyB, mockPool.token1AmountForCreateTier.quotient),
+        ]
+  }, [currencyA, mockPool, isCreatingPool, isAddingTier, invertPrice, currencyB])
 
   /**
    * Amounts we send to the contract, including the amounts for the position and the amounts for creating tier
@@ -428,8 +431,8 @@ export default function AddLiquidity({
   const inputAmounts = useMemo(() => {
     let amtAIn = parsedAmounts[Field.CURRENCY_A]
     let amtBIn = parsedAmounts[Field.CURRENCY_B]
-    if (amtAForCreateTier) amtAIn = amtAIn ? amtAIn.add(amtAForCreateTier) : amtAForCreateTier
-    if (amtBForCreateTier) amtBIn = amtBIn ? amtBIn.add(amtBForCreateTier) : amtBForCreateTier
+    if (amtAForCreateTier) amtAIn = amtAIn?.add(amtAForCreateTier) ?? amtAForCreateTier
+    if (amtBForCreateTier) amtBIn = amtBIn?.add(amtBForCreateTier) ?? amtBForCreateTier
     return {
       [Field.CURRENCY_A]: amtAIn,
       [Field.CURRENCY_B]: amtBIn,
@@ -1068,13 +1071,13 @@ export default function AddLiquidity({
                 Full range
               </M.Button>
               <M.Button color="outline" size="xs" onClick={handleSetPriceRange20000Bps}>
-                ×÷2
+                &times;&divide;2
               </M.Button>
               <M.Button color="outline" size="xs" onClick={handleSetPriceRange12000Bps}>
-                ×÷1.2
+                &times;&divide;1.2
               </M.Button>
               <M.Button color="outline" size="xs" onClick={handleSetPriceRange10100Bps}>
-                ×÷1.01
+                &times;&divide;1.01
               </M.Button>
             </M.Row>
 
