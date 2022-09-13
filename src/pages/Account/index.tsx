@@ -66,8 +66,8 @@ export default function Account(props: RouteComponentProps) {
                         You can use Account to pay or receive tokens in swap or liquidity addition or removal.
                         <br />
                         <br />
-                        <M.Text weight="semibold">It saves 10–30% gas</M.Text> comparing to using your own wallet.
-                        Useful when you’re an active trader or LP here.
+                        <M.Text weight="semibold">It saves 10&ndash;30% gas</M.Text> comparing to using your own wallet.
+                        Useful when you&rsquo;re an active trader or LP here.
                       </Trans>
                     }
                   >

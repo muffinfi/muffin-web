@@ -975,7 +975,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
                 text={
                   <Trans>
                     While your order is being filled, you also <M.Text weight="semibold">earn</M.Text> this percentage
-                    swap fees from the swaps executed in your order’s price range.
+                    swap fees from the swaps executed in your order&rsquo;s price range.
                   </Trans>
                 }
               />
@@ -1014,7 +1014,7 @@ export default function LimitRange({ history }: RouteComponentProps) {
           <>
             <Separator />
             <M.TextDiv color="text2" paragraphLineHeight>
-              You’re creating a position with the price range{' '}
+              You&rsquo;re creating a position with the price range{' '}
               <M.PriceRangeExprInline
                 priceLower={tickPrices.LOWER}
                 priceUpper={tickPrices.UPPER}
