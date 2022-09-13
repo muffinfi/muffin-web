@@ -56,6 +56,7 @@ import approveAmountCalldata from 'utils/approveAmountCalldata'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { unwrappedToken } from 'utils/unwrappedToken'
 
 import { ErrorCard, OutlineCard, YellowCard } from '../../components/Card'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
@@ -380,6 +381,41 @@ export default function AddLiquidity({
   }
 
   /*=====================================================================
+   *                  EXTRA AMOUNTS FOR CREATE POOL/TIER
+   *====================================================================*/
+
+  /**
+   * Amounts needed to be the base liquidity if creating tier
+   */
+  const [amtAForCreateTier, amtBForCreateTier] = useMemo(() => {
+    if (!currencyA || !mockPool) return [undefined, undefined]
+    if (!isCreatingPool && !isAddingTier) return [undefined, undefined]
+
+    const currency0 = unwrappedToken(mockPool.token0)
+    const currency1 = unwrappedToken(mockPool.token1)
+    const amt0ForNewTier = CurrencyAmount.fromRawAmount(currency0, mockPool.token0AmountForCreateTier.quotient)
+    const amt1ForNewTier = CurrencyAmount.fromRawAmount(currency1, mockPool.token1AmountForCreateTier.quotient)
+
+    return amt0ForNewTier.currency.equals(currencyA)
+      ? [amt0ForNewTier, amt1ForNewTier]
+      : [amt1ForNewTier, amt0ForNewTier]
+  }, [mockPool, currencyA, isCreatingPool, isAddingTier])
+
+  /**
+   * Amounts we send to the contract, including the amounts for the position and the amounts for creating tier
+   */
+  const inputAmounts = useMemo(() => {
+    let amtAIn = parsedAmounts[Field.CURRENCY_A]
+    let amtBIn = parsedAmounts[Field.CURRENCY_B]
+    if (amtAForCreateTier) amtAIn = amtAIn ? amtAIn.add(amtAForCreateTier) : amtAForCreateTier
+    if (amtBForCreateTier) amtBIn = amtBIn ? amtBIn.add(amtBForCreateTier) : amtBForCreateTier
+    return {
+      [Field.CURRENCY_A]: amtAIn,
+      [Field.CURRENCY_B]: amtBIn,
+    }
+  }, [parsedAmounts, amtAForCreateTier, amtBForCreateTier])
+
+  /*=====================================================================
    *                         ACCOUNT BALANCES
    *====================================================================*/
 
@@ -388,14 +424,26 @@ export default function AddLiquidity({
     useMemo(() => [currencyA, currencyB], [currencyA, currencyB])
   )
 
-  // get the max amounts user can add (actually only for taking care of native eth + gas)
-  const maxAmounts = {
-    CURRENCY_A: maxAmountSpend(balanceA),
-    CURRENCY_B: maxAmountSpend(balanceB),
-  }
+  const maxAmounts = useMemo(() => {
+    // get the max amounts user can add (actually only for taking care of native eth + gas)
+    let maxAmtA = maxAmountSpend(balanceA)
+    let maxAmtB = maxAmountSpend(balanceB)
+
+    // subtract with the amounts needed to create tier, if we're creating tier
+    if (maxAmtA && amtAForCreateTier) maxAmtA = maxAmtA.subtract(amtAForCreateTier)
+    if (maxAmtB && amtBForCreateTier) maxAmtB = maxAmtB.subtract(amtBForCreateTier)
+    if (maxAmtA?.lessThan(0)) maxAmtA = CurrencyAmount.fromRawAmount(maxAmtA.currency, 0)
+    if (maxAmtB?.lessThan(0)) maxAmtB = CurrencyAmount.fromRawAmount(maxAmtB.currency, 0)
+
+    return {
+      [Field.CURRENCY_A]: maxAmtA,
+      [Field.CURRENCY_B]: maxAmtB,
+    }
+  }, [balanceA, balanceB, amtAForCreateTier, amtBForCreateTier])
+
   const atMaxAmounts = {
-    CURRENCY_A: maxAmounts.CURRENCY_A?.equalTo(parsedAmounts.CURRENCY_A ?? '0'),
-    CURRENCY_B: maxAmounts.CURRENCY_B?.equalTo(parsedAmounts.CURRENCY_B ?? '0'),
+    [Field.CURRENCY_A]: maxAmounts[Field.CURRENCY_A]?.equalTo(parsedAmounts[Field.CURRENCY_A] ?? '0'),
+    [Field.CURRENCY_B]: maxAmounts[Field.CURRENCY_B]?.equalTo(parsedAmounts[Field.CURRENCY_B] ?? '0'),
   }
 
   /*=====================================================================
@@ -422,8 +470,8 @@ export default function AddLiquidity({
    *====================================================================*/
 
   let errorMessage: ReactNode | undefined
-  const amountA = parsedAmounts[Field.CURRENCY_A]
-  const amountB = parsedAmounts[Field.CURRENCY_B]
+  const amountA = inputAmounts[Field.CURRENCY_A]
+  const amountB = inputAmounts[Field.CURRENCY_B]
 
   if (!account) {
     errorMessage = <Trans>Connect Wallet</Trans>
@@ -497,8 +545,8 @@ export default function AddLiquidity({
     useTokenApproveOrPermitButtonHandler()
 
   const amountsToApprove = {
-    [Field.CURRENCY_A]: useOutstandingAmountToApprove(account ?? undefined, parsedAmounts[Field.CURRENCY_A]),
-    [Field.CURRENCY_B]: useOutstandingAmountToApprove(account ?? undefined, parsedAmounts[Field.CURRENCY_B]),
+    [Field.CURRENCY_A]: useOutstandingAmountToApprove(account ?? undefined, inputAmounts[Field.CURRENCY_A]),
+    [Field.CURRENCY_B]: useOutstandingAmountToApprove(account ?? undefined, inputAmounts[Field.CURRENCY_B]),
   }
 
   /*=====================================================================
@@ -677,8 +725,8 @@ export default function AddLiquidity({
     let txn = { to: manager.address, data: calldata, value }
 
     if (argentWalletContract) {
-      const amountA = parsedAmounts[Field.CURRENCY_A]
-      const amountB = parsedAmounts[Field.CURRENCY_B]
+      const amountA = inputAmounts[Field.CURRENCY_A]
+      const amountB = inputAmounts[Field.CURRENCY_B]
       const batch = [
         ...(amountA && amountA.currency.isToken ? [approveAmountCalldata(amountA, manager.address)] : []),
         ...(amountB && amountB.currency.isToken ? [approveAmountCalldata(amountB, manager.address)] : []),
@@ -739,6 +787,7 @@ export default function AddLiquidity({
     permitSignatures,
     argentWalletContract,
     parsedAmounts,
+    inputAmounts,
     addTransaction,
     currencies,
   ])
