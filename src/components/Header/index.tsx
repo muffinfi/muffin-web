@@ -24,8 +24,7 @@ const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
   transition: background-color 100ms, box-shadow 100ms;
 
   ${({ theme, showBackground }) => css`
-    background: ${showBackground ? (theme.darkMode ? 'rgba(20,20,20,0.3)' : 'rgba(246,246,246, 0.3)') : 'transparent'};
-    backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
+    background: ${showBackground ? (theme.darkMode ? 'rgb(20,20,20)' : 'rgb(246,246,246)') : 'transparent'};
     box-shadow: 0px 0px 0px 1px ${showBackground ? 'var(--borderColor)' : 'transparent'};
   `};
 
@@ -33,6 +32,13 @@ const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
     padding-left: 16px;
     padding-right: 16px;
   `};
+
+  @supports (backdrop-filter: blur(0px)) {
+    ${({ theme, showBackground }) => css`
+      background: ${showBackground ? (theme.darkMode ? 'rgba(20,20,20,0.3)' : 'rgba(246,246,246,0.3)') : 'transparent'};
+      backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
+    `};
+  }
 `
 
 const NavItemRow = styled(M.Row)`
