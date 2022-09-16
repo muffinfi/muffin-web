@@ -16,5 +16,5 @@ const gpuTierAtom = loadable(
 
 export const useGPUAccelerated = () => {
   const value = useAtomValue(gpuTierAtom)
-  return value.state === 'hasData' ? value.data : false
+  return value.state === 'hasData' ? value.data : true
 }
