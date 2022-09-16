@@ -1,9 +1,8 @@
 import { Trans } from '@lingui/macro'
 import * as M from '@muffinfi-ui'
-import { YellowCard } from 'components/Card'
 import { MouseoverTooltip } from 'components/Tooltip'
 import type { ReactNode } from 'react'
-import { AlertTriangle, HelpCircle } from 'react-feather'
+import { HelpCircle } from 'react-feather'
 import styled from 'styled-components/macro'
 
 const Wrapper = styled(M.TextDiv).attrs((props) => ({
@@ -45,14 +44,16 @@ export default function SubgraphIndexingNote({
 }
 
 export function SubgraphIndexingAlertCard({ blockNumber, children }: { blockNumber?: number; children?: ReactNode }) {
-  return (
-    <YellowCard>
-      <M.Row gap="12px">
-        <AlertTriangle stroke="#d39000" size="1rem" style={{ flexShrink: 0 }} />
-        <SubgraphIndexingNote blockNumber={blockNumber} color="alert-text">
-          {children}
-        </SubgraphIndexingNote>
-      </M.Row>
-    </YellowCard>
-  )
+  // TODO: if the pull data from logs works, can totally remove this component
+  // return (
+  //   <YellowCard>
+  //     <M.Row gap="12px">
+  //       <AlertTriangle stroke="#d39000" size="1rem" style={{ flexShrink: 0 }} />
+  //       <SubgraphIndexingNote blockNumber={blockNumber} color="alert-text">
+  //         {children}
+  //       </SubgraphIndexingNote>
+  //     </M.Row>
+  //   </YellowCard>
+  // )
+  return null
 }
