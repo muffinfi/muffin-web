@@ -6,6 +6,7 @@ import useScrollPosition from '@react-hook/window-scroll'
 import { CHAIN_INFO } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useGPUAccelerated } from 'hooks/useGPUAccelerated'
 import { ExternalLink } from 'react-feather'
 import { match } from 'react-router-dom'
 import { useNativeCurrencyBalances } from 'state/wallet/hooks'
@@ -19,7 +20,7 @@ import Web3Status from '../Web3Status'
 import HeaderButton from './HeaderButton'
 import NetworkSelector from './NetworkSelector'
 
-const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
+const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean; isGPUAccelerated: boolean }>`
   padding: 12px 28px;
   transition: background-color 100ms, box-shadow 100ms;
 
@@ -34,10 +35,17 @@ const HeaderWrapper = styled(M.RowBetween)<{ showBackground: boolean }>`
   `};
 
   @supports (backdrop-filter: blur(0px)) {
-    ${({ theme, showBackground }) => css`
-      background: ${showBackground ? (theme.darkMode ? 'rgba(20,20,20,0.3)' : 'rgba(246,246,246,0.3)') : 'transparent'};
-      backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
-    `};
+    ${({ theme, showBackground, isGPUAccelerated }) =>
+      isGPUAccelerated
+        ? css`
+            background: ${showBackground
+              ? theme.darkMode
+                ? 'rgba(20,20,20,0.3)'
+                : 'rgba(246,246,246,0.3)'
+              : 'transparent'};
+            backdrop-filter: ${showBackground ? 'blur(22px)' : 'blur(0px)'};
+          `
+        : ''};
   }
 `
 
@@ -140,6 +148,7 @@ export default function Header() {
   const userEthBalance = useNativeCurrencyBalances(account ? [account] : [])?.[account ?? '']
 
   const scrollY = useScrollPosition()
+  const isGPUAccelerated = useGPUAccelerated()
 
   // // link to info site
   const {
@@ -148,7 +157,7 @@ export default function Header() {
   } = CHAIN_INFO[chainId ?? SupportedChainId.MAINNET]
 
   return (
-    <HeaderWrapper showBackground={scrollY > 45}>
+    <HeaderWrapper showBackground={scrollY > 45} isGPUAccelerated={isGPUAccelerated}>
       <M.Row gap="48px">
         <LogoLink to=".">
           <LogoText width="110px" height={undefined} />
