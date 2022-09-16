@@ -3,12 +3,13 @@ import { ADDRESS_ZERO, LimitOrderType } from '@muffinfi/muffin-sdk'
 import type { ILens } from '@muffinfi/typechain'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useSingleContractMultipleData } from 'lib/hooks/multicall'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { usePositionTokenIdsQuery } from 'state/data/enhanced'
 import { PositionTokenIdsQuery } from 'state/data/generated'
 
-import { useLensContract } from './useContract'
+import { useLensContract, useManagerContract } from './useContract'
 
 export interface MuffinPositionDetail {
   tokenId: BigNumber
@@ -86,6 +87,32 @@ export function useMuffinPositionDetailFromTokenId(tokenId: BigNumberish | undef
 }
 
 export function useMuffinPositionTokenIds(account: string | null | undefined) {
+  const { isLoading, subgraphBlockNumber, tokenIds: subgraphTokenIds } = useMuffinPositionTokenIdsFromSubgraph(account)
+  const tokenIdsFromLogs = useMuffinPositionTokenIdsFromLogs(account, subgraphBlockNumber)
+
+  const tokenIds = useMemo(() => {
+    if (tokenIdsFromLogs.length === 0) return subgraphTokenIds
+    const res: string[] = []
+    for (let i = 0; i < tokenIdsFromLogs.length; i++) {
+      const tokenIdsFromLog = tokenIdsFromLogs[i]
+      if (!subgraphTokenIds?.includes(tokenIdsFromLog)) {
+        res.push(tokenIdsFromLog)
+      }
+    }
+    return [...res, ...(subgraphTokenIds ?? [])]
+  }, [subgraphTokenIds, tokenIdsFromLogs])
+
+  return useMemo(
+    () => ({
+      isLoading,
+      subgraphBlockNumber,
+      tokenIds,
+    }),
+    [isLoading, subgraphBlockNumber, tokenIds]
+  )
+}
+
+export function useMuffinPositionTokenIdsFromSubgraph(account: string | null | undefined) {
   const { isLoading, data } = usePositionTokenIdsQuery(account ? { owner: account, skip: 0 } : skipToken, {
     pollingInterval: ms`30s`,
   })
@@ -96,10 +123,39 @@ export function useMuffinPositionTokenIds(account: string | null | undefined) {
     () => ({
       isLoading,
       subgraphBlockNumber: queryData?._meta?.block.number,
-      tokenIds: queryData?.positions.map((position) => position.tokenId),
+      tokenIds: queryData?.positions.map((position) => position.tokenId as string),
     }),
     [isLoading, queryData]
   )
+}
+
+export function useMuffinPositionTokenIdsFromLogs(account: string | null | undefined, fromBlock: number | undefined) {
+  const blockNumber = useBlockNumber()
+  const manager = useManagerContract()
+  const [tokenIds, setTokenIds] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!account || !blockNumber || !fromBlock || !manager || blockNumber === fromBlock) return
+    let ignore = false
+    const filter = manager.filters.Transfer(null, account)
+    manager
+      .queryFilter(filter, fromBlock)
+      .then((events) => {
+        if (ignore) return
+        setTokenIds((prev) => {
+          const pending = events.map((event) => event.args.tokenId.toString())
+          return JSON.stringify(prev) === JSON.stringify(pending) ? prev : pending
+        })
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [account, blockNumber, fromBlock, manager])
+
+  return tokenIds
 }
 
 export function useMuffinPositionDetails(account: string | null | undefined) {
