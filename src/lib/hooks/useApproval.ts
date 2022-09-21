@@ -14,6 +14,7 @@ import { useMultipleContractSingleData } from './multicall'
 import { usePendingApprovals } from './transactions'
 
 const ERC20Interface = new Interface(ERC20ABI) as Erc20Interface
+const ALLOWANCE_NON_UPDATEABLE_ERC20 = ['0xdAC17F958D2ee523a2206206994597C13D831ec7']
 
 export enum ApprovalState {
   UNKNOWN = 'UNKNOWN',
@@ -130,16 +131,38 @@ export function useApproval(
     }
 
     let useExact = false
-    const estimatedGas = await tokenContract.estimateGas.approve(spender, MaxUint256).catch(() => {
-      // general fallback for tokens which restrict approval amounts
-      useExact = true
-      return tokenContract.estimateGas.approve(spender, amountToApprove.quotient.toString())
-    })
-
-    return tokenContract
-      .approve(spender, useExact ? amountToApprove.quotient.toString() : MaxUint256, {
-        gasLimit: calculateGasMargin(estimatedGas),
+    let resetZero = false
+    const estimatedGas = await tokenContract.estimateGas
+      .approve(spender, MaxUint256)
+      .catch(() => {
+        // general fallback for tokens which restrict approval amounts
+        useExact = true
+        return tokenContract.estimateGas.approve(spender, amountToApprove.quotient.toString())
       })
+      .catch((error) => {
+        if (ALLOWANCE_NON_UPDATEABLE_ERC20.includes(token.address)) {
+          // USDT need reset to zero before update to a new limit
+          resetZero = true
+          return tokenContract.estimateGas.approve(spender, 0)
+        }
+        throw error
+      })
+
+    return new Promise<void>((resolve, reject) => {
+      const msg = `You have approved Muffin to spend USDT but the allowance is currently not enough. Since ${
+        token.symbol ?? 'the token'
+      } does not support updating transfer allowance directly, you will first revoke the approval then approve again with a higher limit.`
+      if (!resetZero || window.confirm(msg)) {
+        resolve()
+      } else {
+        reject(new Error('User rejected'))
+      }
+    })
+      .then(() =>
+        tokenContract.approve(spender, resetZero ? 0 : useExact ? amountToApprove.quotient.toString() : MaxUint256, {
+          gasLimit: calculateGasMargin(estimatedGas),
+        })
+      )
       .then((response) => ({
         response,
         tokenAddress: token.address,
