@@ -9,6 +9,7 @@ import AlertHelper from '@muffinfi-ui/components/AlertHelper'
 import RangeBadge from 'components/Badge/RangeBadge'
 import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
+import Loader from 'components/Loader'
 import { useToken } from 'hooks/useCurrency'
 import { usePricesFromPositionForUI } from 'hooks/usePricesFromPositionForUI'
 import { memo, useMemo } from 'react'
@@ -25,6 +26,10 @@ export const BasePositionRow = css`
   gap: 1rem;
   padding: 24px 16px;
   border-bottom: 1px solid var(--borderColor);
+
+  &:last-child {
+    border-bottom: 0;
+  }
 
   ${({ theme }) => theme.mediaWidth.upToMedium`
     padding: 24px 8px;
@@ -62,6 +67,12 @@ const PositionRow = styled(M.Link)`
   :hover {
     background: var(--layer2);
   }
+`
+
+const LoaderWrapper = styled(M.Row)`
+  justify-content: center;
+  padding-right: 2.5em;
+  grid-column: 2 / 8;
 `
 
 const PositionPriceRangeBar = ({
@@ -159,8 +170,6 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
 
   const { valueETH, valueUSD, missingToken0Value, missingToken1Value } = usePositionValue(position, positionDetails)
 
-  if (!(currencyBase && currencyQuote && priceLower && priceUpper && tier)) return null
-
   return (
     <PositionRow to={positionSummaryLink}>
       {/* 1 */}
@@ -168,90 +177,98 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
         #{tokenId.toString()}
       </M.Text>
 
-      {/* 2 */}
-      <M.Row gap="0.5em">
-        <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin={false} em={1.4} />
-        <M.Text weight="semibold">
-          {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
-        </M.Text>
-      </M.Row>
+      {currencyBase && currencyQuote && priceLower && priceUpper && tier ? (
+        <>
+          {/* 2 */}
+          <M.Row gap="0.5em">
+            <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin={false} em={1.4} />
+            <M.Text weight="semibold">
+              {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+            </M.Text>
+          </M.Row>
 
-      {/* 3 */}
-      <M.Text weight="semibold">
-        <Trans>{formatFeePercent(tier.feePercent)}%</Trans>
-      </M.Text>
+          {/* 3 */}
+          <M.Text weight="semibold">
+            <Trans>{formatFeePercent(tier.feePercent)}%</Trans>
+          </M.Text>
 
-      {/* 4 */}
-      <M.Column gap="0.15em">
-        <M.Text weight="medium">
-          <M.PriceRangeExpr
-            priceLower={priceLower}
-            priceUpper={priceUpper}
-            tickAtLimit={tickAtLimit}
-            // style={{ flexDirection: 'column', rowGap: '0.15em' }}
-          />
-        </M.Text>
-        <M.TextDiv size="xs" color="text2">
-          <Trans>Current:</Trans>{' '}
-          {(invertPrice ? position?.poolTier.token1Price : position?.poolTier.token0Price)?.toSignificant(5)}
-        </M.TextDiv>
-        {/* <div style={{ marginTop: 3, marginBottom: -3, lineHeight: 0 }}>
+          {/* 4 */}
+          <M.Column gap="0.15em">
+            <M.Text weight="medium">
+              <M.PriceRangeExpr
+                priceLower={priceLower}
+                priceUpper={priceUpper}
+                tickAtLimit={tickAtLimit}
+                // style={{ flexDirection: 'column', rowGap: '0.15em' }}
+              />
+            </M.Text>
+            <M.TextDiv size="xs" color="text2">
+              <Trans>Current:</Trans>{' '}
+              {(invertPrice ? position?.poolTier.token1Price : position?.poolTier.token0Price)?.toSignificant(5)}
+            </M.TextDiv>
+            {/* <div style={{ marginTop: 3, marginBottom: -3, lineHeight: 0 }}>
           {position ? (
             <PositionPriceRangeBar position={position} invertPrice={invertPrice} height={3} width={160} />
           ) : null}
         </div> */}
-      </M.Column>
+          </M.Column>
 
-      {/* 5 */}
-      <PriceRangeBarWrapper>
-        {isFullRange ? (
-          <M.TextDiv size="sm" color="text2" style={{ width: 80, textAlign: 'center' }}>
-            ---
-          </M.TextDiv>
-        ) : position ? (
-          <PositionPriceRangeBar position={position} invertPrice={invertPrice} width={80} />
-        ) : null}
+          {/* 5 */}
+          <PriceRangeBarWrapper>
+            {isFullRange ? (
+              <M.TextDiv size="sm" color="text2" style={{ width: 80, textAlign: 'center' }}>
+                ---
+              </M.TextDiv>
+            ) : position ? (
+              <PositionPriceRangeBar position={position} invertPrice={invertPrice} width={80} />
+            ) : null}
 
-        {/* <M.PriceExpr
+            {/* <M.PriceExpr
           price={position?.poolTier.token1Price}
           invert={invertPrice}
           style={{ flexDirection: 'column', rowGap: '0.15em' }}
         /> */}
-      </PriceRangeBarWrapper>
+          </PriceRangeBarWrapper>
 
-      {/* 6 */}
-      <M.Column gap="0.15em">
-        <M.TextDiv weight="semibold">
-          ${valueUSD.toLocaleString(undefined, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}{' '}
-          {missingToken0Value || missingToken1Value ? (
-            <AlertHelper
-              text={
-                <Trans>
-                  We are unable to evaluate {missingToken0Value ? `${position?.pool.token0.symbol ?? '---'}` : ''}{' '}
-                  {missingToken0Value && missingToken1Value ? 'and' : ''}{' '}
-                  {missingToken1Value ? `${position?.pool.token1.symbol ?? '---'}` : ''} value.
-                </Trans>
-              }
-            />
-          ) : null}
-        </M.TextDiv>
-        <M.TextDiv size="xs" color="text2">
-          Ξ{valueETH.toLocaleString(undefined, { maximumFractionDigits: 3, minimumFractionDigits: 3 })}
-        </M.TextDiv>
-      </M.Column>
+          {/* 6 */}
+          <M.Column gap="0.15em">
+            <M.TextDiv weight="semibold">
+              ${valueUSD.toLocaleString(undefined, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}{' '}
+              {missingToken0Value || missingToken1Value ? (
+                <AlertHelper
+                  text={
+                    <Trans>
+                      We are unable to evaluate {missingToken0Value ? `${position?.pool.token0.symbol ?? '---'}` : ''}{' '}
+                      {missingToken0Value && missingToken1Value ? 'and' : ''}{' '}
+                      {missingToken1Value ? `${position?.pool.token1.symbol ?? '---'}` : ''} value.
+                    </Trans>
+                  }
+                />
+              ) : null}
+            </M.TextDiv>
+            <M.TextDiv size="xs" color="text2">
+              Ξ{valueETH.toLocaleString(undefined, { maximumFractionDigits: 3, minimumFractionDigits: 3 })}
+            </M.TextDiv>
+          </M.Column>
 
-      {/* 7 */}
-      <LastColumn>
-        <M.Column gap="0.5em">
-          <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
-          <RangeBadge
-            removed={removed}
-            inRange={!outOfRange}
-            settled={settled}
-            isLimit={limitOrderType !== LimitOrderType.NotLimitOrder}
-          />
-        </M.Column>
-      </LastColumn>
+          {/* 7 */}
+          <LastColumn>
+            <M.Column gap="0.5em">
+              <RangeOrderBadge limitOrderType={limitOrderType} token0={token0} token1={token1} />
+              <RangeBadge
+                removed={removed}
+                inRange={!outOfRange}
+                settled={settled}
+                isLimit={limitOrderType !== LimitOrderType.NotLimitOrder}
+              />
+            </M.Column>
+          </LastColumn>
+        </>
+      ) : (
+        <LoaderWrapper>
+          <Loader />
+        </LoaderWrapper>
+      )}
     </PositionRow>
   )
 })
