@@ -62,7 +62,7 @@ const LastColumn = styled.div`
 
 const PositionRow = styled(M.Link)`
   ${BasePositionRow}
-  min-height: 4.5em;
+  min-height: 83px;
   transition: background-color 100ms;
   :hover {
     background: var(--layer2);
