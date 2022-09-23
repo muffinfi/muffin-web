@@ -56,7 +56,7 @@ export const PriceExpr = memo(function PriceExpr({
 
   return (
     <RowBaseline wrap="wrap" columnGap="0.666em" rowGap="0.25em" {...rest}>
-      <Text>{price?.toSignificant(6, undefined, rounding)}</Text>
+      <Text>{price?.toSignificant(5, undefined, rounding)}</Text>
       <PriceUnit style={{ fontSize: '0.875em' }} currencyBase={currencyBase} currencyQuote={currencyQuote} />
     </RowBaseline>
   )

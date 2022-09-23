@@ -1,15 +1,17 @@
 import { Trans } from '@lingui/macro'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
+import { QuestionHelperInline } from 'components/QuestionHelper'
 import styled from 'styled-components/macro'
 
-import PositionListItem, { BasePositionRow } from './PositionListItem'
+// import PositionListItem from './PositionListItem'
+import PositionListRow, { BasePositionRow, PriceRangeBarWrapper } from './PositionListRow'
+import { TokenPricesQueryUpdater } from './usePositionValues'
 
 const PositionListHeader = styled.div`
   ${BasePositionRow}
-  padding-top: 16px;
-  padding-bottom: 8px;
-  color: var(--text2);
+  padding-top: 24px;
+  padding-bottom: 16px;
   font-size: var(--text-sm);
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -28,11 +30,12 @@ export default function PositionList({
 }) {
   return (
     <>
+      <TokenPricesQueryUpdater positions={positions} />
+
       <M.Column stretch gap="16px">
         <M.RowBetween>
           <M.Text size="sm" weight="semibold">
             <Trans>Your positions</Trans>
-            {positions && ` (${positions.length})`}
           </M.Text>
 
           <M.TextDiv size="xs" color="text2">
@@ -47,17 +50,44 @@ export default function PositionList({
           </M.TextDiv>
         </M.RowBetween>
 
-        <PositionListHeader>
-          <span>ID</span>
-          <span>Token Pair</span>
-          <span>Fee tier</span>
-          <span>Price range</span>
-          <span>Status</span>
-        </PositionListHeader>
+        <M.TextDiv size="sm">
+          <PositionListHeader>
+            <div>
+              <Trans>ID</Trans>
+            </div>
+            <div>
+              <Trans>Token pair</Trans>
+            </div>
+            <div>
+              <Trans>Fee tier</Trans>
+            </div>
+            <div>
+              <Trans>Price range</Trans>
+            </div>
+            <PriceRangeBarWrapper></PriceRangeBarWrapper>
+            <div>
+              <Trans>Value</Trans>{' '}
+              <QuestionHelperInline
+                text={
+                  <Trans>
+                    The estimated value of your position&apos;s assets, including the unclaimed fees.
+                    <br />
+                    <br />
+                    The asset prices used in the estimation are fetched from Muffin subgraph, or if missing, fall back
+                    to using DefiLlama API.
+                  </Trans>
+                }
+              />
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <Trans>Status</Trans>
+            </div>
+          </PositionListHeader>
 
-        {positions.map((p) => (
-          <PositionListItem key={p.tokenId.toString()} positionDetails={p} />
-        ))}
+          {positions.map((p) => (
+            <PositionListRow key={p.tokenId.toString()} positionDetails={p} />
+          ))}
+        </M.TextDiv>
       </M.Column>
     </>
   )

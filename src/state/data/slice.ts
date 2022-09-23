@@ -136,6 +136,31 @@ export const api = createApi({
         },
       }),
     }),
+    tokenPricesInEth: builder.query({
+      query: ({ ids, skip = 0 }) => ({
+        document: gql`
+          query tokenPricesInEth($ids: [ID!]!, $skip: Int!) {
+            _meta {
+              block {
+                number
+              }
+            }
+            tokens(first: 1000, skip: $skip, where: { id_in: $ids }) {
+              id
+              symbol
+              derivedETH
+            }
+            bundle(id: "1") {
+              ethPriceUSD
+            }
+          }
+        `,
+        variables: {
+          ids,
+          skip,
+        },
+      }),
+    }),
   }),
 })
 

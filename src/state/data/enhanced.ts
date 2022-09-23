@@ -19,6 +19,9 @@ export const api = generatedApi.enhanceEndpoints({
     accountTokens: {
       providesTags: [CHAIN_TAG],
     },
+    tokenPricesInEth: {
+      providesTags: [CHAIN_TAG],
+    },
     subgraphState: {
       providesTags: [CHAIN_TAG],
     },
@@ -31,4 +34,5 @@ export const {
   useFeeTierDistributionQuery,
   usePositionTokenIdsQuery,
   useAccountTokensQuery,
+  useTokenPricesInEthQuery,
 } = api
