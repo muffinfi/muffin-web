@@ -13,6 +13,7 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
+import PageTitle from 'components/PageTitle/PageTitle'
 import QuestionHelper from 'components/QuestionHelper'
 import { RowBetween } from 'components/Row'
 import SettingsTab from 'components/Settings'
@@ -375,6 +376,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   return (
     <>
+      <PageTitle title={`#${tokenId} - Remove Liquidity`} />
+
       {makeTransactionModal()}
 
       <M.Container maxWidth="24rem">

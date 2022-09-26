@@ -1,4 +1,5 @@
 import Loader from 'components/Loader'
+import PageTitle from 'components/PageTitle/PageTitle'
 import ApeModeQueryParamReader from 'hooks/useApeModeQueryParamReader'
 // import { lazy, Suspense } from 'react'
 import { Suspense } from 'react'
@@ -69,6 +70,7 @@ const HeaderWrapper = styled.div`
 export default function App() {
   return (
     <ErrorBoundary>
+      <PageTitle />
       <Route component={GoogleAnalyticsReporter} />
       <Route component={DarkModeQueryParamReader} />
       <Route component={ApeModeQueryParamReader} />

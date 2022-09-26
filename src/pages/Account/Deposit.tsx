@@ -9,6 +9,7 @@ import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import PageTitle from 'components/PageTitle/PageTitle'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import TokenWarningModal from 'components/TokenWarningModal'
@@ -418,6 +419,8 @@ export default function Deposit({ history }: RouteComponentProps) {
 
   return (
     <>
+      <PageTitle title="Despoit" />
+
       {makeTransactionModal()}
       {makeTokenWarningModal()}
       <M.Container maxWidth="27rem">

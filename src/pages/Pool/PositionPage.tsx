@@ -15,6 +15,7 @@ import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
 import RangeOrderBadge from 'components/Badge/RangeOrderBadge'
 import CurrencyLogo from 'components/CurrencyLogo'
+import PageTitle from 'components/PageTitle/PageTitle'
 import CollectConfirmModalContent from 'components/positions/CollectConfirmModalContent'
 import { Dots } from 'components/swap/styleds'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
@@ -603,8 +604,18 @@ export function PositionPage({
     </M.SectionCard>
   )
 
+  let pageTitle = ''
+  if (parsedTokenId) {
+    pageTitle = `#${parsedTokenId.toString()}`
+    if (currencyBase && currencyQuote && tier) {
+      pageTitle += ` - ${currencyQuote.symbol}/${currencyBase.symbol} (${formatFeePercent(tier.feePercent)}%)`
+    }
+  }
+
   return (
     <>
+      <PageTitle title={pageTitle} />
+
       <M.Container maxWidth="45rem">
         <TransactionConfirmationModal
           isOpen={showConfirm}

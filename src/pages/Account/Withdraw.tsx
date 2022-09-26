@@ -9,6 +9,7 @@ import { LightCard } from 'components/Card'
 import CurrencyLogo from 'components/CurrencyLogo'
 import Loader from 'components/Loader'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import PageTitle from 'components/PageTitle/PageTitle'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import TokenWarningModal from 'components/TokenWarningModal'
 import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
@@ -333,6 +334,8 @@ export default function Withdraw({ history }: RouteComponentProps) {
 
   return (
     <>
+      <PageTitle title="Withdraw" />
+
       {makeTransactionModal()}
       {makeTokenWarningModal()}
       <M.Container maxWidth="27rem">

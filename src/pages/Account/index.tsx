@@ -4,6 +4,7 @@ import { useUserShowUntrustesTokens, useUserShowZeroBalanceTokens } from '@muffi
 import * as M from '@muffinfi-ui'
 import TokenRow from 'components/account/TokenRow'
 import { LoadingRows } from 'components/Loader/styled'
+import PageTitle from 'components/PageTitle/PageTitle'
 import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -48,6 +49,8 @@ export default function Account(props: RouteComponentProps) {
 
   return (
     <>
+      <PageTitle title="Account" />
+
       <M.Container maxWidth="34rem">
         <M.Column stretch gap="32px">
           <M.RowBetween wrap="wrap" gap="1em">

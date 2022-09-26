@@ -26,6 +26,7 @@ import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
 import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import { LiquidityChart } from 'components/LiquidityChart'
+import PageTitle from 'components/PageTitle/PageTitle'
 import { QuestionHelperInline } from 'components/QuestionHelper'
 import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -1307,6 +1308,8 @@ export default function AddLiquidity({
 
   return (
     <>
+      <PageTitle title={tokenId ? `#${tokenId} - Add Liquidity` : 'Add Liquidity'} />
+
       <TokenWarningModal
         isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
         tokens={importTokensNotInDefault}

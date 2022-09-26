@@ -7,6 +7,7 @@ import { BlockUpdater } from 'lib/hooks/useBlockNumber'
 import { MulticallUpdater } from 'lib/state/multicall'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
 import { createWeb3ReactRoot, Web3ReactProvider } from 'web3-react-core'
@@ -52,16 +53,18 @@ ReactDOM.render(
     <Provider store={store}>
       <HashRouter>
         <LanguageProvider>
-          <Web3ReactProvider getLibrary={getLibrary}>
-            <Web3ProviderNetwork getLibrary={getLibrary}>
-              <Blocklist>
-                <Updaters />
-                <ThemeProvider>
-                  <App />
-                </ThemeProvider>
-              </Blocklist>
-            </Web3ProviderNetwork>
-          </Web3ReactProvider>
+          <HelmetProvider>
+            <Web3ReactProvider getLibrary={getLibrary}>
+              <Web3ProviderNetwork getLibrary={getLibrary}>
+                <Blocklist>
+                  <Updaters />
+                  <ThemeProvider>
+                    <App />
+                  </ThemeProvider>
+                </Blocklist>
+              </Web3ProviderNetwork>
+            </Web3ReactProvider>
+          </HelmetProvider>
         </LanguageProvider>
       </HashRouter>
     </Provider>

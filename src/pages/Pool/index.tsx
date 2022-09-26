@@ -6,6 +6,7 @@ import AlertHelper from '@muffinfi-ui/components/AlertHelper'
 import DowntimeWarning from 'components/DowntimeWarning'
 import Loader from 'components/Loader'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
+import PageTitle from 'components/PageTitle/PageTitle'
 import { SubgraphIndexingAlertCard } from 'components/SubgraphIndexingNote'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { getDefaultCurrencyId } from 'constants/tokens'
@@ -141,6 +142,7 @@ export default function Pool() {
 
   return (
     <>
+      <PageTitle title="Positions" />
       <M.Container maxWidth="1050px">
         <M.Column stretch gap="32px">
           <M.RowBetween wrap="wrap" gap="1em">
