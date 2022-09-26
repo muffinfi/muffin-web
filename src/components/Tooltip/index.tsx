@@ -1,13 +1,14 @@
+import { Placement } from '@popperjs/core'
 import { useSwitch, useSwitchWithDelayedClose } from 'hooks/useSwitch'
-import { ReactNode, useCallback } from 'react'
+import { memo, ReactNode, useCallback } from 'react'
 import { Box, BoxProps } from 'rebass'
 import styled from 'styled-components/macro'
 
 import Popover, { PopoverProps } from '../Popover'
 
-export const TooltipContainer = styled.div`
+export const TooltipContainer = styled.div<{ padding?: string | undefined }>`
   max-width: 300px;
-  padding: 0.6rem 0.8rem;
+  padding: ${({ padding }) => padding ?? '0.6rem 0.8rem'};
   word-break: break-word;
   font-weight: 400;
   font-size: 13px;
@@ -21,6 +22,7 @@ export const TooltipContainer = styled.div`
 
 interface TooltipProps extends Omit<PopoverProps, 'content'> {
   text: ReactNode
+  tooltipPadding?: string
 }
 
 interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
@@ -30,8 +32,8 @@ interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
   disableHover?: boolean // disable the hover and content display
 }
 
-export default function Tooltip({ text, ...rest }: TooltipProps) {
-  return <Popover content={<TooltipContainer>{text}</TooltipContainer>} {...rest} />
+export default function Tooltip({ text, tooltipPadding, ...rest }: TooltipProps) {
+  return <Popover content={<TooltipContainer padding={tooltipPadding}>{text}</TooltipContainer>} {...rest} />
 }
 
 function TooltipContent({ content, wrap = false, ...rest }: TooltipContentProps) {
@@ -88,3 +90,33 @@ export function MouseoverTooltipContent({
     </TooltipContent>
   )
 }
+
+export const MouseoverTooltipText = memo(function MouseoverTooltipText({
+  text,
+  placement,
+  keepOpenWhenHoverTooltip,
+  tooltipPadding,
+  children,
+}: {
+  text: ReactNode
+  placement?: Placement
+  keepOpenWhenHoverTooltip?: boolean
+  tooltipPadding?: string
+  children: ReactNode
+}) {
+  const { state: show, open, close } = useSwitchWithDelayedClose()
+  return (
+    <Tooltip
+      show={show}
+      text={text}
+      onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
+      onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+      placement={placement}
+      tooltipPadding={tooltipPadding}
+    >
+      <span onMouseEnter={open} onMouseLeave={close}>
+        {children}
+      </span>
+    </Tooltip>
+  )
+})

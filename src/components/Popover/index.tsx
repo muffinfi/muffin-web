@@ -55,7 +55,8 @@ const Arrow = styled.div`
     }
   }
 
-  &.arrow-bottom {
+  &.arrow-bottom,
+  &.arrow-bottom-start {
     top: 4px;
     ::before {
       border-bottom: none;
@@ -106,7 +107,7 @@ export default function Popover({
       placement,
       strategy: 'fixed',
       modifiers: [
-        { name: 'offset', options: { offset: [0, 0] } },
+        { name: 'offset', options: { offset: [placement === 'bottom-start' ? -10 : 0, 0] } },
         { name: 'arrow', options: { element: arrowElement } },
         { name: 'preventOverflow', options: { padding: 8 } },
       ],

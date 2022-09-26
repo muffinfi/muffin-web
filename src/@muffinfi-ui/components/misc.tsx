@@ -48,7 +48,19 @@ export const SectionCard = styled.div<{ greedyMargin?: boolean; padding?: string
 
 /////////
 
-export const Toggle = styled(Row).attrs({ role: 'button' })<{ $variant?: string }>`
+export const ToggleElement = styled(Row)<{ $active?: boolean }>`
+  border-radius: 0.71em;
+  padding: 0.5em 0.7em;
+  transition: color 100ms, background-color 100ms;
+  background: ${({ $active }) => ($active ? 'var(--toggle-active-bg)' : 'rgba(255,255,255,0)')};
+  color: ${({ $active }) => ($active ? 'var(--toggle-active-color)' : 'inherit')};
+
+  :hover {
+    color: ${({ $active }) => ($active ? undefined : 'var(--text1)')};
+  }
+`
+
+export const Toggle = styled(Row).attrs({ role: 'button' })<{ $variant?: string; $size?: string }>`
   display: inline-flex;
   width: max-content;
   padding: 4px;
@@ -58,9 +70,9 @@ export const Toggle = styled(Row).attrs({ role: 'button' })<{ $variant?: string 
   user-select: none;
 
   color: var(--text2);
-  :hover {
+  /* :hover {
     color: var(--text1);
-  }
+  } */
 
   ${({ $variant }) =>
     $variant === 'primary'
@@ -74,14 +86,19 @@ export const Toggle = styled(Row).attrs({ role: 'button' })<{ $variant?: string 
           --toggle-active-bg: var(--layer1);
           --toggle-active-color: var(--text1);
         `}
-`
 
-export const ToggleElement = styled(Row)<{ $active?: boolean }>`
-  border-radius: 0.71em;
-  padding: 0.5em 0.7em;
-  transition: color 150ms, background-color 150ms;
-  background: ${({ $active }) => ($active ? 'var(--toggle-active-bg)' : 'rgba(255,255,255,0)')};
-  color: ${({ $active }) => ($active ? 'var(--toggle-active-color)' : 'inherit')};
+  ${({ $size }) =>
+    $size === 'sm'
+      ? css`
+          padding: 3px;
+          gap: 5px;
+
+          ${ToggleElement} {
+            padding: 0.3em 0.5em;
+            border-radius: 0.65em;
+          }
+        `
+      : null}
 `
 
 /////////

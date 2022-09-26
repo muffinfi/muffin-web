@@ -161,6 +161,32 @@ export const api = createApi({
         },
       }),
     }),
+    poolTierFeeGrowth: builder.query({
+      query: ({ pool }) => ({
+        document: gql`
+          query poolTierFeeGrowth($pool: String!) {
+            _meta {
+              block {
+                number
+              }
+            }
+            tiers(first: 16, where: { pool: $pool }) {
+              id
+              tierId
+              sqrtPrice
+              tierDayData(first: 3, orderBy: id, orderDirection: desc) {
+                date
+                feeGrowthGlobal0X64
+                feeGrowthGlobal1X64
+              }
+            }
+          }
+        `,
+        variables: {
+          pool,
+        },
+      }),
+    }),
   }),
 })
 

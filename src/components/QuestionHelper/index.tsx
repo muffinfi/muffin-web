@@ -1,3 +1,4 @@
+import { Placement } from '@popperjs/core'
 import { useSwitchWithDelayedClose } from 'hooks/useSwitch'
 import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
@@ -33,9 +34,11 @@ const QuestionMark = styled.span`
 export default function QuestionHelper({
   text,
   keepOpenWhenHoverTooltip,
+  placement,
 }: {
   text: ReactNode
   keepOpenWhenHoverTooltip?: boolean
+  placement?: Placement
 }) {
   const { state: show, open, close } = useSwitchWithDelayedClose()
 
@@ -46,6 +49,7 @@ export default function QuestionHelper({
         show={show}
         onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
         onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+        placement={placement}
       >
         <QuestionWrapper onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <QuestionMark>?</QuestionMark>
@@ -83,9 +87,11 @@ const QuestionMarkInline = styled.span`
 export function QuestionHelperInline({
   text,
   keepOpenWhenHoverTooltip,
+  placement,
 }: {
   text: ReactNode
   keepOpenWhenHoverTooltip?: boolean
+  placement?: Placement
 }) {
   const { state: show, open, close } = useSwitchWithDelayedClose()
 
@@ -96,6 +102,7 @@ export function QuestionHelperInline({
         show={show}
         onMouseEnter={keepOpenWhenHoverTooltip ? open : undefined}
         onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
+        placement={placement}
       >
         <QuestionMarkInline onClick={open} onMouseEnter={open} onMouseLeave={close}>
           <span>?</span>

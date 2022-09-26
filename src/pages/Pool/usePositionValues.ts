@@ -37,7 +37,7 @@ export const TokenPricesQueryUpdater = ({ positions }: { positions: MuffinPositi
   const setTokenPrices = useUpdateAtom(tokenPricesAtom)
   const setPositionValues = useUpdateAtom(positionValuesAtom)
 
-  // result states when chain id change
+  // reset states when chain id changes
   useEffect(() => {
     setTokenPrices({ isLoading: false, ethPriceUSD: undefined, tokenPricesETH: {} })
     setPositionValues({})

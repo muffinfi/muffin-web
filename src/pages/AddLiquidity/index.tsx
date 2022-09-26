@@ -6,6 +6,8 @@ import { usePoolDefaultTickSpacing } from '@muffinfi/hooks/usePoolDefaultTickSpa
 import { PoolState, useMuffinPool } from '@muffinfi/hooks/usePools'
 import {
   encodeSqrtPriceX72,
+  getCapitalEfficiency,
+  getTokenRatio,
   isSqrtPriceSupported,
   isValidSqrtGamma,
   MAX_TICK,
@@ -24,7 +26,7 @@ import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
 import * as M from '@muffinfi-ui'
-import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Fraction, Percent, Price } from '@uniswap/sdk-core'
 import { LiquidityChart } from 'components/LiquidityChart'
 import PageTitle from 'components/PageTitle/PageTitle'
 import { QuestionHelperInline } from 'components/QuestionHelper'
@@ -32,6 +34,7 @@ import SettingsTab from 'components/Settings'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import TierSelector from 'components/TierSelector'
 import TokenWarningModal from 'components/TokenWarningModal'
+import { MouseoverTooltipText } from 'components/Tooltip'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCurrency from 'hooks/useCurrency'
 import useTheme from 'hooks/useTheme'
@@ -78,6 +81,7 @@ import { TransactionType } from '../../state/transactions/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
 import { ThemedText } from '../../theme'
+import { Rate, RateHelpText, RateName, RatePeriodToggle } from './APR'
 import { ColumnDisableable, CurrencyDropdown, LoadingRows, StyledInput } from './styled'
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
@@ -91,44 +95,6 @@ const StyledCard = styled(OutlineCard)`
   border: 1px solid var(--borderColor);
   font-size: 13px;
 `
-
-const getTokenRatio = (
-  priceCurrent: Price<Token, Token>,
-  priceLower: Price<Token, Token>,
-  priceUpper: Price<Token, Token>
-): [number, number] => {
-  if (priceCurrent.greaterThan(priceUpper) || priceCurrent.equalTo(priceUpper)) return [0, 1]
-  if (priceCurrent.lessThan(priceLower) || priceCurrent.equalTo(priceLower)) return [1, 0]
-
-  const a = Number(priceLower.asFraction.multiply(priceUpper).toSignificant(18))
-  const b = Number(priceCurrent.asFraction.multiply(priceUpper).toSignificant(18))
-  const p = Number(priceCurrent.asFraction.toSignificant(18))
-
-  const w0 = 1 / ((Math.sqrt(a) - Math.sqrt(b)) / (p - Math.sqrt(b)) + 1)
-  const w1 = 1 - w0
-  return [w0, w1]
-}
-
-const getCapitalEfficiency = (
-  priceCurrent: Price<Token, Token>,
-  priceLower: Price<Token, Token>,
-  priceUpper: Price<Token, Token>
-): number => {
-  const priceClipped = priceCurrent.greaterThan(priceUpper)
-    ? priceUpper
-    : priceCurrent.lessThan(priceLower)
-    ? priceLower
-    : priceCurrent
-  const sqrtPClipped = Math.sqrt(Number(priceClipped.toSignificant(18)))
-  const sqrtPLower = Math.sqrt(Number(priceLower.toSignificant(18)))
-  const sqrtPUpper = Math.sqrt(Number(priceUpper.toSignificant(18)))
-
-  const pNow = Number(priceCurrent.toSignificant(18))
-
-  const denom = pNow * (1 / sqrtPClipped - 1 / sqrtPUpper) + (sqrtPClipped - sqrtPLower)
-  const num = 2 * Math.sqrt(pNow)
-  return num / denom
-}
 
 /**
  * Show currency amount in the format of "1.23*10^-4 ETH" format
@@ -1093,12 +1059,14 @@ export default function AddLiquidity({
                           This is the ratio of the cash values of the two underlying tokens in this position.
                         </Trans>
                       }
+                      placement="top"
                     />
                   </M.Text>
                   <M.Text>
                     {valueRatio ? `${(valueRatio[0] * 100).toFixed(0)}% : ${(valueRatio[1] * 100).toFixed(0)}%` : '-'}
                   </M.Text>
                 </M.RowBetween>
+
                 <M.RowBetween>
                   <M.Text>
                     <Trans>Capitial Efficiency</Trans>
@@ -1112,6 +1080,7 @@ export default function AddLiquidity({
                           The narrower the price range, the higher the capitial efficiency.
                         </Trans>
                       }
+                      placement="top"
                     />
                   </M.Text>
                   <M.Text>
@@ -1120,6 +1089,26 @@ export default function AddLiquidity({
                     ) : (
                       '-'
                     )}
+                  </M.Text>
+                </M.RowBetween>
+
+                <M.RowBetween>
+                  <M.Text>
+                    <MouseoverTooltipText
+                      text={<RatePeriodToggle />}
+                      keepOpenWhenHoverTooltip
+                      placement="bottom-start"
+                      tooltipPadding="0.3rem"
+                    >
+                      <span style={{ textDecoration: 'underline dotted', cursor: 'pointer' }}>
+                        <RateName />
+                      </span>
+                    </MouseoverTooltipText>{' '}
+                    <Trans>(when in-range; excl. IL)</Trans>
+                    <QuestionHelperInline text={<RateHelpText />} keepOpenWhenHoverTooltip placement="top" />
+                  </M.Text>
+                  <M.Text>
+                    <Rate pool={pool ?? undefined} tierId={mockTierId} capitalEfficiency={capitalEfficiency} />
                   </M.Text>
                 </M.RowBetween>
               </M.Column>
