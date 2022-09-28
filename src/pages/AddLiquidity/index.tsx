@@ -1100,14 +1100,14 @@ export default function AddLiquidity({
                       placement="bottom-start"
                       tooltipPadding="0.3rem"
                     >
-                      <span style={{ textDecoration: 'underline dotted', cursor: 'pointer' }}>
+                      <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted', cursor: 'pointer' }}>
                         <RateName />
                       </span>
                     </MouseoverTooltipText>{' '}
                     <Trans>(when in-range; excl. IL)</Trans>
                     <QuestionHelperInline text={<RateHelpText />} keepOpenWhenHoverTooltip placement="top" />
                   </M.Text>
-                  <M.Text>
+                  <M.Text align="right">
                     <Rate pool={pool ?? undefined} tierId={mockTierId} capitalEfficiency={capitalEfficiency} />
                   </M.Text>
                 </M.RowBetween>
