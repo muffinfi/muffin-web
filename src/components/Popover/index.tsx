@@ -105,7 +105,7 @@ export default function Popover({
   const options: Options = useMemo(
     () => ({
       placement,
-      strategy: 'fixed',
+      strategy: 'absolute', // 'fixed',
       modifiers: [
         { name: 'offset', options: { offset: [placement === 'bottom-start' ? -10 : 0, 0] } },
         { name: 'arrow', options: { element: arrowElement } },
