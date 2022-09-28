@@ -61,7 +61,7 @@ export const RateHelpText = memo(function RateHelpText() {
       <br />
       <br />
       <Trans>
-        This value does not include the risk of divengence loss (IL), and assumes the position is &ldquo;in-range&rdquo;
+        This value does not include the risk of divergence loss (IL), and assumes the position is &ldquo;in-range&rdquo;
         all the time.
       </Trans>{' '}
       {more}
