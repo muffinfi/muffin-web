@@ -22,8 +22,8 @@ import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
 
 import PositionList from './PositionList'
+import { PositionValuesUpdater, usePositionValues } from './PositionValuesUpdater'
 import { LoadingRows } from './styleds'
-import { usePositionValues } from './usePositionValues'
 
 const NoLiquidity = styled(M.ColumnCenter)`
   margin: auto;
@@ -165,11 +165,14 @@ export default function Pool() {
             {positionsLoading ? (
               <PositionsLoadingPlaceholder />
             ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
-              <PositionList
-                positions={filteredPositions}
-                setUserHideClosedPositions={setUserHideClosedPositions}
-                userHideClosedPositions={userHideClosedPositions}
-              />
+              <>
+                <PositionValuesUpdater positionDetails={filteredPositions} />
+                <PositionList
+                  positions={filteredPositions}
+                  setUserHideClosedPositions={setUserHideClosedPositions}
+                  userHideClosedPositions={userHideClosedPositions}
+                />
+              </>
             ) : (
               <NoLiquidity>
                 <div>

@@ -4,9 +4,7 @@ import * as M from '@muffinfi-ui'
 import { QuestionHelperInline } from 'components/QuestionHelper'
 import styled from 'styled-components/macro'
 
-// import PositionListItem from './PositionListItem'
 import PositionListRow, { BasePositionRow, PriceRangeBarWrapper } from './PositionListRow'
-import { TokenPricesQueryUpdater } from './usePositionValues'
 
 const PositionListHeader = styled.div`
   ${BasePositionRow}
@@ -30,8 +28,6 @@ export default function PositionList({
 }) {
   return (
     <>
-      <TokenPricesQueryUpdater positions={positions} />
-
       <M.Column stretch gap="16px">
         <M.RowBetween>
           <M.Text size="sm" weight="semibold">

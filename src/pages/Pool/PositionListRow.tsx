@@ -17,7 +17,7 @@ import styled, { css } from 'styled-components/macro'
 import { priceToNumber } from 'utils/fractionToNumber'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
-import { usePositionValue } from './usePositionValues'
+import { usePositionValue } from './PositionValuesUpdater'
 
 export const BasePositionRow = css`
   display: grid;
@@ -168,7 +168,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
 
   const invertPrice = base && position && base.equals(position.poolTier.token1)
 
-  const { valueETH, valueUSD, missingToken0Value, missingToken1Value } = usePositionValue(position, positionDetails)
+  const { valueETH, valueUSD, missingToken0Value, missingToken1Value } = usePositionValue(tokenId.toString())
 
   return (
     <PositionRow to={positionSummaryLink}>
