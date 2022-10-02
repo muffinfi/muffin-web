@@ -8,44 +8,20 @@ import PositionListRow, { BasePositionRow, PriceRangeBarWrapper } from './Positi
 
 const PositionListHeader = styled.div`
   ${BasePositionRow}
-  padding-top: 24px;
+  padding-top: 20px;
   padding-bottom: 16px;
   font-size: var(--text-sm);
+  color: var(--text2);
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     display: none;
   `}
 `
 
-export default function PositionList({
-  positions,
-  setUserHideClosedPositions,
-  userHideClosedPositions,
-}: {
-  positions: MuffinPositionDetail[]
-  setUserHideClosedPositions: any
-  userHideClosedPositions: boolean
-}) {
+export default function PositionList({ positionDetails }: { positionDetails: MuffinPositionDetail[] }) {
   return (
-    <>
+    <M.SectionCard padding="0">
       <M.Column stretch gap="16px">
-        <M.RowBetween>
-          <M.Text size="sm" weight="semibold">
-            <Trans>Your positions</Trans>
-          </M.Text>
-
-          <M.TextDiv size="xs" color="text2">
-            <M.Row gap="0.5em" as="label">
-              <input
-                type="checkbox"
-                checked={!userHideClosedPositions}
-                onChange={(event) => setUserHideClosedPositions(!event.target.checked)}
-              />
-              <Trans>Show closed positions</Trans>
-            </M.Row>
-          </M.TextDiv>
-        </M.RowBetween>
-
         <M.TextDiv size="sm">
           <PositionListHeader>
             <div>
@@ -80,11 +56,11 @@ export default function PositionList({
             </div>
           </PositionListHeader>
 
-          {positions.map((p) => (
+          {positionDetails.map((p) => (
             <PositionListRow key={p.tokenId.toString()} positionDetails={p} />
           ))}
         </M.TextDiv>
       </M.Column>
-    </>
+    </M.SectionCard>
   )
 }

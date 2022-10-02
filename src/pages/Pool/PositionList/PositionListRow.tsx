@@ -24,7 +24,7 @@ export const BasePositionRow = css`
   align-items: center;
   grid-template-columns: 1.5rem 10rem 80px 1fr 110px 100px 100px;
   gap: 1rem;
-  padding: 24px 16px;
+  padding: 24px 24px;
   border-bottom: 1px solid var(--borderColor);
 
   &:last-child {
@@ -32,11 +32,14 @@ export const BasePositionRow = css`
   }
 
   ${({ theme }) => theme.mediaWidth.upToMedium`
-    padding: 24px 8px;
+    padding-left: 16px;
+    padding-right: 16px;
     grid-template-columns: 1.5rem 10rem 72px 1fr 80px 80px;
   `}
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
+    padding-left: 0;
+    padding-right: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -173,7 +176,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
   return (
     <PositionRow to={positionSummaryLink}>
       {/* 1 */}
-      <M.Text size="sm" color="text2">
+      <M.Text size="xs" color="text2">
         #{tokenId.toString()}
       </M.Text>
 

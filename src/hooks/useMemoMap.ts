@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 
 const isSameMap = <T extends { [k: string]: any }>(a: T, b: T) => {
+  if (a === b) return true
   if (Object.keys(a).length !== Object.keys(b).length) return false
   for (const key in a) if (a[key] !== b[key]) return false
   return true

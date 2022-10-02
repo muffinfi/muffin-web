@@ -48,7 +48,7 @@ const Arrow = styled.div`
   }
 
   &.arrow-top {
-    bottom: 4px;
+    bottom: 5px;
     ::before {
       border-top: none;
       border-left: none;

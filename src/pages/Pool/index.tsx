@@ -21,8 +21,8 @@ import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
 
-import PositionList from './PositionList'
-import { PositionValuesUpdater, usePositionValues } from './PositionValuesUpdater'
+import { PositionListSection } from './PositionList/PositionListSection'
+import { PositionValuesUpdater, usePositionValues } from './PositionList/PositionValuesUpdater'
 import { LoadingRows } from './styleds'
 
 const NoLiquidity = styled(M.ColumnCenter)`
@@ -161,19 +161,17 @@ export default function Pool() {
 
           <PositionsSummary positionsLoading={positionsLoading} positions={filteredPositions} />
 
-          <M.SectionCard>
-            {positionsLoading ? (
+          {positionsLoading ? (
+            <M.SectionCard>
               <PositionsLoadingPlaceholder />
-            ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
-              <>
-                <PositionValuesUpdater positionDetails={filteredPositions} />
-                <PositionList
-                  positions={filteredPositions}
-                  setUserHideClosedPositions={setUserHideClosedPositions}
-                  userHideClosedPositions={userHideClosedPositions}
-                />
-              </>
-            ) : (
+            </M.SectionCard>
+          ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
+            <>
+              <PositionValuesUpdater positionDetails={filteredPositions} />
+              <PositionListSection positionDetails={filteredPositions} />
+            </>
+          ) : (
+            <M.SectionCard>
               <NoLiquidity>
                 <div>
                   <Inbox size={48} strokeWidth={1} />
@@ -192,8 +190,8 @@ export default function Pool() {
                   </M.ButtonSecondary>
                 )}
               </NoLiquidity>
-            )}
-          </M.SectionCard>
+            </M.SectionCard>
+          )}
 
           <SubgraphIndexingAlertCard blockNumber={subgraphBlockNumber}>
             <Trans>

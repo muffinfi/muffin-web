@@ -1,7 +1,5 @@
-import { useMuffinPool } from '@muffinfi/hooks/usePools'
 import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import { PriceQueryResult, useTokenPrices } from '@muffinfi/hooks/useTokenPrices'
-import { Position } from '@muffinfi/muffin-sdk'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useToken } from 'hooks/useCurrency'
 import { useMemoMap } from 'hooks/useMemoMap'
@@ -9,7 +7,6 @@ import { useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
 import { atom } from 'jotai'
 import { selectAtom, useAtomValue, useUpdateAtom } from 'jotai/utils'
 import { memo, useCallback, useEffect, useMemo } from 'react'
-import { currencyAmountToNumber } from 'utils/fractionToNumber'
 
 const tokenPricesAtom = atom<PriceQueryResult>({
   isLoading: false,
@@ -132,60 +129,24 @@ const PositionValueUpdater = memo(function PositionValueUpdater({
 }: {
   positionDetail: MuffinPositionDetail
 }) {
-  const {
-    tokenId,
-    token0: token0Address,
-    token1: token1Address,
-    tierId,
-    liquidityD8,
-    tickLower,
-    tickUpper,
-    limitOrderType,
-    settlementSnapshotId,
-    settled,
-    feeAmount0,
-    feeAmount1,
-  } = positionDetail
+  const { tokenId } = positionDetail
   const tokenIdStr = useMemo(() => tokenId.toString(), [tokenId])
-  const liquidityD8Str = useMemo(() => liquidityD8.toString(), [liquidityD8])
-  const feeAmt0Str = useMemo(() => feeAmount0.toString(), [feeAmount0])
-  const feeAmt1Str = useMemo(() => feeAmount1.toString(), [feeAmount1])
 
-  // load tokens and pool from chain
-  const token0 = useToken(token0Address)
-  const token1 = useToken(token1Address)
-  const [, pool] = useMuffinPool(token0 ?? undefined, token1 ?? undefined)
+  // load tokens from chain
+  const token0 = useToken(positionDetail.token0)
+  const token1 = useToken(positionDetail.token1)
+  const token0Decimals = token0?.decimals
+  const token1Decimals = token1?.decimals
 
   // compute underlying token amounts
   const [amount0, amount1] = useMemo(() => {
-    if (!pool) return [undefined, undefined]
-    const position = new Position({
-      pool,
-      tierId,
-      tickLower,
-      tickUpper,
-      liquidityD8: liquidityD8Str,
-      limitOrderType,
-      settlementSnapshotId,
-      settled,
-    })
-    const amt0 = currencyAmountToNumber(position.amount0)
-    const amt1 = currencyAmountToNumber(position.amount1)
-    const feeAmt0 = Number(feeAmt0Str) / 10 ** pool.token0.decimals
-    const feeAmt1 = Number(feeAmt1Str) / 10 ** pool.token1.decimals
+    if (token0Decimals == null || token1Decimals == null) return [undefined, undefined]
+    const amt0 = Number(positionDetail.underlyingAmount0.toString()) / 10 ** token0Decimals
+    const amt1 = Number(positionDetail.underlyingAmount1.toString()) / 10 ** token1Decimals
+    const feeAmt0 = Number(positionDetail.feeAmount0.toString()) / 10 ** token0Decimals
+    const feeAmt1 = Number(positionDetail.feeAmount1.toString()) / 10 ** token1Decimals
     return [amt0 + feeAmt0, amt1 + feeAmt1]
-  }, [
-    liquidityD8Str,
-    pool,
-    tickLower,
-    tickUpper,
-    tierId,
-    limitOrderType,
-    settlementSnapshotId,
-    settled,
-    feeAmt0Str,
-    feeAmt1Str,
-  ])
+  }, [positionDetail, token0Decimals, token1Decimals])
 
   // load token prices
   const { ethPriceUSD, tokenPricesETH } = useAtomValue(tokenPricesAtom)

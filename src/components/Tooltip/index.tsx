@@ -2,11 +2,11 @@ import { Placement } from '@popperjs/core'
 import { useSwitch, useSwitchWithDelayedClose } from 'hooks/useSwitch'
 import { memo, ReactNode, useCallback } from 'react'
 import { Box, BoxProps } from 'rebass'
-import styled from 'styled-components/macro'
+import styled, { css } from 'styled-components/macro'
 
 import Popover, { PopoverProps } from '../Popover'
 
-export const TooltipContainer = styled.div<{ padding?: string | undefined }>`
+export const TooltipContainer = styled.div<{ padding?: string | undefined; size?: string | undefined }>`
   max-width: 300px;
   padding: ${({ padding }) => padding ?? '0.6rem 0.8rem'};
   word-break: break-word;
@@ -18,11 +18,22 @@ export const TooltipContainer = styled.div<{ padding?: string | undefined }>`
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
   background: var(--layer1);
   border: 1px solid var(--borderColor);
+
+  ${({ size }) =>
+    size === 'xs'
+      ? css`
+          padding: 0.3rem 0.6rem;
+          font-size: 12px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+        `
+      : null}
 `
 
 interface TooltipProps extends Omit<PopoverProps, 'content'> {
   text: ReactNode
   tooltipPadding?: string
+  tooltipSize?: string
 }
 
 interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
@@ -32,8 +43,17 @@ interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
   disableHover?: boolean // disable the hover and content display
 }
 
-export default function Tooltip({ text, tooltipPadding, ...rest }: TooltipProps) {
-  return <Popover content={<TooltipContainer padding={tooltipPadding}>{text}</TooltipContainer>} {...rest} />
+export default function Tooltip({ text, tooltipPadding, tooltipSize, ...rest }: TooltipProps) {
+  return (
+    <Popover
+      content={
+        <TooltipContainer padding={tooltipPadding} size={tooltipSize}>
+          {text}
+        </TooltipContainer>
+      }
+      {...rest}
+    />
+  )
 }
 
 function TooltipContent({ content, wrap = false, ...rest }: TooltipContentProps) {
@@ -96,12 +116,14 @@ export const MouseoverTooltipText = memo(function MouseoverTooltipText({
   placement,
   keepOpenWhenHoverTooltip,
   tooltipPadding,
+  tooltipSize,
   children,
 }: {
   text: ReactNode
   placement?: Placement
   keepOpenWhenHoverTooltip?: boolean
   tooltipPadding?: string
+  tooltipSize?: string
   children: ReactNode
 }) {
   const { state: show, open, close } = useSwitchWithDelayedClose()
@@ -113,6 +135,7 @@ export const MouseoverTooltipText = memo(function MouseoverTooltipText({
       onMouseLeave={keepOpenWhenHoverTooltip ? close : undefined}
       placement={placement}
       tooltipPadding={tooltipPadding}
+      tooltipSize={tooltipSize}
     >
       <span onMouseEnter={open} onMouseLeave={close}>
         {children}
