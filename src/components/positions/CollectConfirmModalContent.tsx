@@ -11,10 +11,7 @@ import CurrencyLogo from 'components/CurrencyLogo'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import { useCallback, useMemo } from 'react'
-import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-
-const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
 export default function CollectConfirmModalContent({
   tokenId,
@@ -62,7 +59,6 @@ export default function CollectConfirmModalContent({
   const managerAddress = useManagerAddress()
 
   const [storeInInternalAccount, toggleStoreInInternalAccount] = useUserStoreIntoInternalAccount()
-  const slippageTolerance = useUserSlippageToleranceWithDefault(DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE)
 
   const collect = useCallback(() => {
     if (!chainId || !token0 || !token1 || !managerAddress || !account || !tokenId || !library || !position) return
@@ -70,7 +66,7 @@ export default function CollectConfirmModalContent({
     const { calldata, value } = PositionManager.removeCallParameters(position, {
       tokenId: tokenId.toString(),
       liquidityPercentage: position.settled ? new Percent(1) : new Percent(0),
-      slippageTolerance: position.settled ? slippageTolerance : new Percent(0),
+      slippageTolerance: new Percent(0),
       withdrawalRecipient: storeInInternalAccount ? ADDRESS_ZERO : account,
       collectAllFees: true,
     })
@@ -103,7 +99,6 @@ export default function CollectConfirmModalContent({
     tokenId,
     library,
     position,
-    slippageTolerance,
     storeInInternalAccount,
     onBeforeCollect,
     onCollectSuccess,
