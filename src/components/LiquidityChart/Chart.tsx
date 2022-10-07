@@ -8,7 +8,7 @@ import { useIsChanging } from './hooks/useIsChanging'
 import { useZoom } from './hooks/useZoom'
 import { MidLine } from './MidLine'
 import { clipData, stackDataList } from './utils/processData'
-import { Datum, SizeInfo, ZoomLevel } from './utils/types'
+import { Datum, HandleType, SizeInfo, ZoomLevel } from './utils/types'
 import { XAxis } from './XAxis'
 // import { YAxis } from './YAxis'
 
@@ -27,6 +27,7 @@ export const Chart = ({
   hideData,
   snappedSelectedRange,
   handleSelectedRangeChange,
+  getNewRangeWhenBrushing,
   zoomInNonce,
   zoomOutNonce,
   zoomToFitSelectedRangeNonce,
@@ -40,7 +41,8 @@ export const Chart = ({
   midPoint: number
   hideData: Record<number, boolean>
   snappedSelectedRange: [number, number] | null
-  handleSelectedRangeChange: (range: [number, number] | null) => void
+  handleSelectedRangeChange: (range: [number, number] | null, lastMovingHandle: HandleType | undefined) => void
+  getNewRangeWhenBrushing: (range: [number, number], movingHandle: HandleType | undefined) => [number, number] | undefined // prettier-ignore
   //
   zoomInNonce: number | undefined
   zoomOutNonce: number | undefined
@@ -157,6 +159,7 @@ export const Chart = ({
           x={xz}
           snappedSelectedRange={snappedSelectedRange}
           handleSelectedRangeChange={handleSelectedRangeChange}
+          getNewRangeWhenBrushing={getNewRangeWhenBrushing}
           handleColors={brushHandleColors}
           getHandleLabelText={getHandleLabelText}
         />

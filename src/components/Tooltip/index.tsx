@@ -6,7 +6,7 @@ import styled, { css } from 'styled-components/macro'
 
 import Popover, { PopoverProps } from '../Popover'
 
-export const TooltipContainer = styled.div<{ padding?: string | undefined; size?: string | undefined }>`
+export const TooltipContainer = styled.div<{ padding?: string | undefined; size?: 'xs' | undefined }>`
   max-width: 300px;
   padding: ${({ padding }) => padding ?? '0.6rem 0.8rem'};
   word-break: break-word;
@@ -33,7 +33,7 @@ export const TooltipContainer = styled.div<{ padding?: string | undefined; size?
 interface TooltipProps extends Omit<PopoverProps, 'content'> {
   text: ReactNode
   tooltipPadding?: string
-  tooltipSize?: string
+  tooltipSize?: 'xs' | undefined
 }
 
 interface TooltipContentProps extends Omit<PopoverProps, 'content'> {
@@ -123,7 +123,7 @@ export const MouseoverTooltipText = memo(function MouseoverTooltipText({
   placement?: Placement
   keepOpenWhenHoverTooltip?: boolean
   tooltipPadding?: string
-  tooltipSize?: string
+  tooltipSize?: 'xs' | undefined
   children: ReactNode
 }) {
   const { state: show, open, close } = useSwitchWithDelayedClose()

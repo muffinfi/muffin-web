@@ -1,6 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { PoolState } from '@muffinfi/hooks/usePools'
+import { priceToNumber } from '@muffinfi/muffin-sdk'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
+import { getPriceRangeWithTokenRatio } from '@muffinfi/utils/getPriceRangeWithTokenRatio'
 import * as M from '@muffinfi-ui'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
 import Loader from 'components/Loader'
@@ -19,7 +21,7 @@ import { useLiquidityChartData } from './hooks/useLiquidityChartData'
 import { VisiblilitySelector } from './periphery/VisibilitySelector'
 import { ZoomControl } from './periphery/ZoomControl'
 import { toFixed } from './utils/processData'
-import { ZoomLevel } from './utils/types'
+import { HandleType, ZoomLevel } from './utils/types'
 
 const SIZE = {
   width: 464,
@@ -71,8 +73,9 @@ const Wrapper = styled(M.Column)`
   position: relative;
 `
 
-const priceToNumber = (price: Price<Token, Token>) => {
-  return parseFloat(price.toSignificant(12))
+const brushKeyToFieldKey: Record<HandleType, 'LOWER' | 'UPPER'> = {
+  e: 'LOWER',
+  w: 'UPPER',
 }
 
 export const LiquidityChart = ({
@@ -82,7 +85,9 @@ export const LiquidityChart = ({
   priceLower,
   priceUpper,
   onLeftRangeInput,
+  weightLockedCurrencyBase,
   onRightRangeInput,
+  setIndependentRangeField,
   resetRangeNonce,
 }: {
   currencyBase: Currency | undefined
@@ -90,8 +95,10 @@ export const LiquidityChart = ({
   tierId: number | undefined
   priceLower: Price<Token, Token> | undefined
   priceUpper: Price<Token, Token> | undefined
+  weightLockedCurrencyBase: number | undefined
   onLeftRangeInput: (typedValue: string) => void
   onRightRangeInput: (typedValue: string) => void
+  setIndependentRangeField: (field: 'LOWER' | 'UPPER') => void
   resetRangeNonce?: any
 }) => {
   const tokenAColor = useColor(currencyBase?.wrapped)
@@ -112,13 +119,14 @@ export const LiquidityChart = ({
   }, [pool, tierId, invertPrice])
 
   const onSelectedRangeChange = useCallback(
-    (rawRange: [number, number] | null) => {
+    (rawRange: [number, number] | null, lastMovingHandle: HandleType | undefined) => {
       batch(() => {
+        if (lastMovingHandle) setIndependentRangeField(brushKeyToFieldKey[lastMovingHandle])
         onLeftRangeInput(rawRange ? toFixed(Math.max(rawRange[0], MIN_PRICE_INPUT)) : '')
         onRightRangeInput(rawRange ? toFixed(Math.max(rawRange[1], MIN_PRICE_INPUT)) : '')
       })
     },
-    [onLeftRangeInput, onRightRangeInput]
+    [onLeftRangeInput, onRightRangeInput, setIndependentRangeField]
   )
 
   const getHandleLabelText = useCallback(
@@ -148,7 +156,7 @@ export const LiquidityChart = ({
   const resetRange = useCallback(() => {
     if (priceCurrent != null) {
       const zoomLevel = getZoomLevel(pool?.tickSpacing)
-      onSelectedRangeChange([priceCurrent * zoomLevel.initialMin, priceCurrent * zoomLevel.initialMax])
+      onSelectedRangeChange([priceCurrent * zoomLevel.initialMin, priceCurrent * zoomLevel.initialMax], undefined)
     }
   }, [priceCurrent, pool?.tickSpacing, onSelectedRangeChange])
 
@@ -167,6 +175,24 @@ export const LiquidityChart = ({
   }, [poolIdChanged, tierIdChanged, resetRangeNonceChanged, resetRange])
 
   const sqrtGammas = useMemo(() => pool?.tiers.map((tier) => `${formatFeePercent(tier.feePercent)}%`) ?? [], [pool])
+
+  /**
+   * If user locked a desired token weight, we need to compute a correct price range when user is brushing.
+   * Note that when brushing, the `range` given from the brush event is NOT necessarily equal to what is displayed on the screen.
+   */
+  const getNewRangeWhenBrushing = useCallback(
+    (range: [number, number], movingHandle: HandleType | undefined): [number, number] | undefined => {
+      if (priceCurrent == null || movingHandle == null || weightLockedCurrencyBase == null) return undefined
+      return getPriceRangeWithTokenRatio(
+        priceCurrent,
+        range[0],
+        range[1],
+        brushKeyToFieldKey[movingHandle],
+        weightLockedCurrencyBase
+      )
+    },
+    [priceCurrent, weightLockedCurrencyBase]
+  )
 
   return (
     <Wrapper>
@@ -196,6 +222,7 @@ export const LiquidityChart = ({
             hideData={hideTiers}
             snappedSelectedRange={priceRange}
             handleSelectedRangeChange={onSelectedRangeChange}
+            getNewRangeWhenBrushing={getNewRangeWhenBrushing}
             zoomInNonce={zoomInNonce}
             zoomOutNonce={zoomOutNonce}
             zoomToFitSelectedRangeNonce={zoomToFitRangeNonce}

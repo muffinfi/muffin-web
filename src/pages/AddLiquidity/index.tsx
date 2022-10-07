@@ -1,3 +1,5 @@
+import { faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Trans } from '@lingui/macro'
 import { useManagerContract } from '@muffinfi/hooks/useContract'
 import { useDerivedMuffinPositionByTokenId } from '@muffinfi/hooks/useDerivedPosition'
@@ -17,15 +19,19 @@ import {
   Position,
   PositionManager,
   priceToClosestTick,
+  priceToNumber,
   TickMath,
   tickToPrice,
   Tier,
+  withoutScientificNotation,
   ZERO,
 } from '@muffinfi/muffin-sdk'
 import { useIsUsingInternalAccount } from '@muffinfi/state/user/hooks'
 import { BalanceSource } from '@muffinfi/state/wallet/hooks'
 import { decodeManagerFunctionData } from '@muffinfi/utils/decodeFunctionData'
+import { getPriceRangeWithTokenRatio } from '@muffinfi/utils/getPriceRangeWithTokenRatio'
 import * as M from '@muffinfi-ui'
+import AlertHelper from '@muffinfi-ui/components/AlertHelper'
 import { Currency, CurrencyAmount, Fraction, Percent, Price } from '@uniswap/sdk-core'
 import { LiquidityChart } from 'components/LiquidityChart'
 import PageTitle from 'components/PageTitle/PageTitle'
@@ -80,7 +86,7 @@ import { Bound, Field } from '../../state/mint/v3/actions'
 import { TransactionType } from '../../state/transactions/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
-import { ThemedText } from '../../theme'
+import { HideExtraSmall, ThemedText } from '../../theme'
 import { Rate, RateHelpText, RateName, RatePeriodToggle } from './APR'
 import { ColumnDisableable, CurrencyDropdown, LoadingRows, StyledInput } from './styled'
 
@@ -94,6 +100,14 @@ const StyledCard = styled(OutlineCard)`
   padding: 12px;
   border: 1px solid var(--borderColor);
   font-size: 13px;
+`
+
+const LockButton = styled(M.Button).attrs((props) => ({ size: 'badge', color: props.color }))`
+  display: inline-flex;
+  padding: 2px 0;
+  min-width: 22px;
+  line-height: 0;
+  font-weight: var(--regular);
 `
 
 /**
@@ -207,10 +221,33 @@ export default function AddLiquidity({
   )
 
   /*=====================================================================
-   *                               TICKS
+   *                         PATCH RANGE INPUT
    *====================================================================*/
 
+  const [independentRangeField, setIndependentRangeField] = useState<'LOWER' | 'UPPER'>('LOWER')
+  const [weightLockedCurrencyBase, setWeightLockedCurrencyBase] = useState<number | undefined>(undefined)
   const { leftRangeTypedValue, rightRangeTypedValue } = useV3MintState()
+
+  const [leftBoundInput, rightBoundInput] = useMemo((): [string | true, string | true] => {
+    if (weightLockedCurrencyBase != null && price && leftRangeTypedValue !== '' && rightRangeTypedValue !== '') {
+      const newRange = getPriceRangeWithTokenRatio(
+        priceToNumber(invertPrice ? price.invert() : price),
+        leftRangeTypedValue === true ? 2 ** -144 : Number(leftRangeTypedValue),
+        rightRangeTypedValue === true ? 2 ** 144 : Number(rightRangeTypedValue),
+        independentRangeField,
+        weightLockedCurrencyBase
+      )?.map((x) => withoutScientificNotation(x.toString()))
+
+      if (newRange && newRange[0] != null && newRange[1] != null) {
+        return [newRange[0], newRange[1]]
+      }
+    }
+    return [leftRangeTypedValue, rightRangeTypedValue]
+  }, [weightLockedCurrencyBase, leftRangeTypedValue, rightRangeTypedValue, independentRangeField, price, invertPrice])
+
+  /*=====================================================================
+   *                               TICKS
+   *====================================================================*/
 
   const { ticks, areTicksAtLimit, tickPrices } = useMemo(() => {
     const tickLimits = {
@@ -220,18 +257,18 @@ export default function AddLiquidity({
     const ticks = {
       LOWER:
         existingPosition?.tickLower ??
-        ((invertPrice && rightRangeTypedValue === true) || (!invertPrice && leftRangeTypedValue === true)
+        ((invertPrice && rightBoundInput === true) || (!invertPrice && leftBoundInput === true)
           ? tickLimits.LOWER
           : invertPrice
-          ? tryParseTick(token1, token0, tickSpacing, rightRangeTypedValue.toString())
-          : tryParseTick(token0, token1, tickSpacing, leftRangeTypedValue.toString())),
+          ? tryParseTick(token1, token0, tickSpacing, rightBoundInput.toString())
+          : tryParseTick(token0, token1, tickSpacing, leftBoundInput.toString())),
       UPPER:
         existingPosition?.tickUpper ??
-        ((invertPrice && leftRangeTypedValue === true) || (!invertPrice && rightRangeTypedValue === true)
+        ((invertPrice && leftBoundInput === true) || (!invertPrice && rightBoundInput === true)
           ? tickLimits.UPPER
           : invertPrice
-          ? tryParseTick(token1, token0, tickSpacing, leftRangeTypedValue.toString())
-          : tryParseTick(token0, token1, tickSpacing, rightRangeTypedValue.toString())),
+          ? tryParseTick(token1, token0, tickSpacing, leftBoundInput.toString())
+          : tryParseTick(token0, token1, tickSpacing, rightBoundInput.toString())),
     }
     const areTicksAtLimit = {
       LOWER: tickLimits.LOWER != null && ticks.LOWER != null && ticks.LOWER <= tickLimits.LOWER,
@@ -242,7 +279,7 @@ export default function AddLiquidity({
       UPPER: token0 && token1 && ticks.UPPER != null ? tickToPrice(token0, token1, ticks.UPPER) : undefined,
     }
     return { tickLimits, ticks, areTicksAtLimit, tickPrices }
-  }, [token0, token1, invertPrice, tickSpacing, existingPosition, leftRangeTypedValue, rightRangeTypedValue])
+  }, [token0, token1, invertPrice, tickSpacing, existingPosition, leftBoundInput, rightBoundInput])
 
   const tickLower = ticks.LOWER
   const tickUpper = ticks.UPPER
@@ -557,7 +594,23 @@ export default function AddLiquidity({
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(isCreatingPool)
 
+  const onLeftRangeInputViaField = useCallback(
+    (typedValue: string) => {
+      setIndependentRangeField('LOWER')
+      onLeftRangeInput(typedValue)
+    },
+    [onLeftRangeInput]
+  )
+  const onRightRangeInputViaField = useCallback(
+    (typedValue: string) => {
+      setIndependentRangeField('UPPER')
+      onRightRangeInput(typedValue)
+    },
+    [onRightRangeInput]
+  )
+
   // const clearAll = useCallback(() => {
+  //   setWeightLockedCurrencyBase(undefined)
   //   onFieldAInput('')
   //   onFieldBInput('')
   //   onLeftRangeInput('')
@@ -634,6 +687,7 @@ export default function AddLiquidity({
 
   const handleTierSelect = useCallback(
     (sqrtGamma: number) => {
+      setWeightLockedCurrencyBase(undefined)
       onLeftRangeInput('')
       onRightRangeInput('')
       history.push(`/add/${currencyIdA}/${currencyIdB}/${sqrtGamma}`)
@@ -644,6 +698,8 @@ export default function AddLiquidity({
   const handleRateToggle = () => {
     if (!areTicksAtLimit[Bound.LOWER] && !areTicksAtLimit[Bound.UPPER]) {
       // switch price
+      if (weightLockedCurrencyBase != null) setWeightLockedCurrencyBase(1 - weightLockedCurrencyBase)
+      setIndependentRangeField((field) => (field === 'LOWER' ? 'UPPER' : 'LOWER'))
       onLeftRangeInput((invertPrice ? priceLower : priceUpper?.invert())?.toSignificant(6) ?? '')
       onRightRangeInput((invertPrice ? priceUpper : priceLower?.invert())?.toSignificant(6) ?? '')
       if (independentField === Field.CURRENCY_A) {
@@ -666,8 +722,13 @@ export default function AddLiquidity({
   }, [history, onFieldAInput, txHash])
 
   // for RangeSelector. will not change state (only view functions)
-  const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper, getSetFullRange } =
-    useRangeHopCallbacks(baseCurrency, quoteCurrency, tickLower, tickUpper, tickSpacing, mockTier)
+  const {
+    getDecrementLower,
+    getIncrementLower,
+    getDecrementUpper,
+    getIncrementUpper,
+    getSetFullRange: setFullRange,
+  } = useRangeHopCallbacks(baseCurrency, quoteCurrency, tickLower, tickUpper, tickSpacing, mockTier)
 
   /*=====================================================================
    *                    ADD LIQUIDITY CHAIN ACTION
@@ -813,6 +874,7 @@ export default function AddLiquidity({
       if (!price) return
       const newPriceLower = price.asFraction.multiply(price.scalar).divide(multiplier)
       const newPriceUpper = price.asFraction.multiply(price.scalar).multiply(multiplier)
+      setWeightLockedCurrencyBase(undefined)
       if (invertPrice) {
         onLeftRangeInput(newPriceUpper.invert().toFixed(6))
         onRightRangeInput(newPriceLower.invert().toFixed(6))
@@ -824,9 +886,31 @@ export default function AddLiquidity({
     [onLeftRangeInput, onRightRangeInput, price, invertPrice]
   )
 
+  const handleSetFullRange = useCallback(() => {
+    setWeightLockedCurrencyBase(undefined)
+    setFullRange()
+  }, [setFullRange])
   const handleSetPriceRange20000Bps = useCallback(() => setPriceRange(new Fraction(20000, 10000)), [setPriceRange])
   const handleSetPriceRange12000Bps = useCallback(() => setPriceRange(new Fraction(12000, 10000)), [setPriceRange])
   const handleSetPriceRange10100Bps = useCallback(() => setPriceRange(new Fraction(10100, 10000)), [setPriceRange])
+
+  const currentWeight0 = valueRatio?.[0]
+  const handleToggleWeightLock = useCallback(() => {
+    if (weightLockedCurrencyBase == null) {
+      setWeightLockedCurrencyBase(currentWeight0)
+    } else {
+      if (typeof leftBoundInput === 'string') onLeftRangeInput(leftBoundInput)
+      if (typeof rightBoundInput === 'string') onRightRangeInput(rightBoundInput)
+      setWeightLockedCurrencyBase(undefined)
+    }
+  }, [leftBoundInput, rightBoundInput, onLeftRangeInput, onRightRangeInput, currentWeight0, weightLockedCurrencyBase])
+
+  const isTokenWeightUnmatched = useMemo(() => {
+    if (weightLockedCurrencyBase == null || currentWeight0 == null) return false
+    const absDiff = Math.abs(currentWeight0 - weightLockedCurrencyBase)
+    const pctDiff = Math.abs(currentWeight0 / weightLockedCurrencyBase - 1)
+    return absDiff > 0.01 && pctDiff > 0.03 // threshold: 1% abs diff and 3% pct diff
+  }, [weightLockedCurrencyBase, currentWeight0])
 
   /*=====================================================================
    *                          REACT COMPONENTS
@@ -996,8 +1080,10 @@ export default function AddLiquidity({
                   tierId={mockTierId}
                   priceLower={invertPrice ? priceUpper?.invert() : priceLower}
                   priceUpper={invertPrice ? priceLower?.invert() : priceUpper}
+                  weightLockedCurrencyBase={weightLockedCurrencyBase}
                   onLeftRangeInput={onLeftRangeInput}
                   onRightRangeInput={onRightRangeInput}
+                  setIndependentRangeField={setIndependentRangeField}
                   resetRangeNonce={sqrtGamma}
                 />
                 {/* <LiquidityChartRangeInput
@@ -1026,15 +1112,15 @@ export default function AddLiquidity({
               getIncrementLower={getIncrementLower}
               getDecrementUpper={getDecrementUpper}
               getIncrementUpper={getIncrementUpper}
-              onLeftRangeInput={onLeftRangeInput}
-              onRightRangeInput={onRightRangeInput}
+              onLeftRangeInput={onLeftRangeInputViaField}
+              onRightRangeInput={onRightRangeInputViaField}
               currencyA={baseCurrency}
               currencyB={quoteCurrency}
               ticksAtLimit={areTicksAtLimit}
             />
 
             <M.Row gap="1em">
-              <M.Button color="outline" size="xs" onClick={getSetFullRange}>
+              <M.Button color="outline" size="xs" onClick={handleSetFullRange}>
                 Full range
               </M.Button>
               <M.Button color="outline" size="xs" onClick={handleSetPriceRange20000Bps}>
@@ -1062,9 +1148,49 @@ export default function AddLiquidity({
                       placement="top"
                     />
                   </M.Text>
-                  <M.Text>
-                    {valueRatio ? `${(valueRatio[0] * 100).toFixed(0)}% : ${(valueRatio[1] * 100).toFixed(0)}%` : '-'}
-                  </M.Text>
+
+                  <M.Row gap="6px" justifyEnd>
+                    <M.Text>
+                      {valueRatio ? `${(valueRatio[0] * 100).toFixed(0)}% : ${(valueRatio[1] * 100).toFixed(0)}%` : '-'}
+                    </M.Text>
+                    {weightLockedCurrencyBase != null && isTokenWeightUnmatched ? (
+                      <AlertHelper
+                        text={
+                          <Trans>
+                            We failed to adjust the price range to your wanted token ratio (
+                            {(weightLockedCurrencyBase * 100).toFixed(0)}%:
+                            {((1 - weightLockedCurrencyBase) * 100).toFixed(0)}%). Maybe because the price range is too
+                            narrow or too wide.
+                          </Trans>
+                        }
+                        placement="top"
+                        tooltipSize="xs"
+                      />
+                    ) : null}
+                    {valueRatio ? (
+                      <MouseoverTooltipText
+                        text={
+                          <Trans>
+                            Lock the token ratio such that your price range automatically adjusts when changing price
+                            boundary.
+                          </Trans>
+                        }
+                        tooltipSize="xs"
+                        placement="top"
+                      >
+                        <LockButton
+                          color={weightLockedCurrencyBase == null ? 'tertiary' : 'secondary'}
+                          onClick={handleToggleWeightLock}
+                        >
+                          {weightLockedCurrencyBase == null ? (
+                            <FontAwesomeIcon icon={faLockOpen} fontSize={10} />
+                          ) : (
+                            <FontAwesomeIcon icon={faLock} fontSize={10} />
+                          )}
+                        </LockButton>
+                      </MouseoverTooltipText>
+                    ) : null}
+                  </M.Row>
                 </M.RowBetween>
 
                 <M.RowBetween>
@@ -1103,8 +1229,11 @@ export default function AddLiquidity({
                       <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted', cursor: 'pointer' }}>
                         <RateName />
                       </span>
-                    </MouseoverTooltipText>{' '}
-                    <Trans>(when in-range; excl. IL)</Trans>
+                    </MouseoverTooltipText>
+                    <HideExtraSmall>
+                      {' '}
+                      <Trans>(when in-range; excl. IL)</Trans>
+                    </HideExtraSmall>
                     <QuestionHelperInline text={<RateHelpText />} keepOpenWhenHoverTooltip placement="top" />
                   </M.Text>
                   <M.Text align="right">

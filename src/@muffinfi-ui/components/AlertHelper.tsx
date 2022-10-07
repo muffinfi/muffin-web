@@ -1,10 +1,19 @@
+import { Placement } from '@popperjs/core'
 import Tooltip from 'components/Tooltip'
 import { useSwitchWithDelayedClose } from 'hooks/useSwitch'
 import { memo, ReactNode } from 'react'
 
 import { Text } from '../core'
 
-export default memo(function AlertHelper({ text }: { text: ReactNode }) {
+export default memo(function AlertHelper({
+  text,
+  placement,
+  tooltipSize,
+}: {
+  text: ReactNode
+  placement?: Placement
+  tooltipSize?: 'xs' | undefined
+}) {
   const { state: show, open, close } = useSwitchWithDelayedClose()
   return (
     <Tooltip
@@ -12,7 +21,8 @@ export default memo(function AlertHelper({ text }: { text: ReactNode }) {
       text={text}
       onMouseEnter={open}
       onMouseLeave={close}
-      placement="bottom" //
+      placement={placement}
+      tooltipSize={tooltipSize}
     >
       <span onMouseEnter={open} onMouseLeave={close}>
         <Text color="alert">⚠️</Text>

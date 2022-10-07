@@ -15,3 +15,8 @@ export type ZoomLevel = {
   min: number
   max: number
 }
+
+export enum HandleType {
+  e = 'e',
+  w = 'w',
+}

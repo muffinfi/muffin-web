@@ -38,6 +38,10 @@ export function tryParseTick(
   const price = tryParsePrice(baseToken, quoteToken, value)
   if (!price) return undefined
 
+  if (JSBI.equal(price.numerator, JSBI.BigInt(0))) {
+    return baseToken.sortsBefore(quoteToken) ? MIN_TICK : MAX_TICK
+  }
+
   const sqrtPriceX72 = baseToken.sortsBefore(quoteToken)
     ? encodeSqrtPriceX72(price.numerator, price.denominator)
     : encodeSqrtPriceX72(price.denominator, price.numerator)

@@ -2,7 +2,7 @@ import * as d3 from 'd3'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
 
-import { SizeInfo } from './utils/types'
+import { HandleType, SizeInfo } from './utils/types'
 
 const LabelGroup = styled.g<{ visible: boolean }>`
   /* opacity: ${({ visible }) => (visible ? '1' : '0')}; */
@@ -42,6 +42,7 @@ export const Brush = ({
   x,
   snappedSelectedRange,
   handleSelectedRangeChange,
+  getNewRangeWhenBrushing,
   //
   handleColors,
   getHandleLabelText,
@@ -49,7 +50,8 @@ export const Brush = ({
   size: SizeInfo //
   x: d3.ScaleLinear<number, number>
   snappedSelectedRange: [number, number] | null
-  handleSelectedRangeChange: (range: [number, number] | null) => void
+  handleSelectedRangeChange: (range: [number, number] | null, lastMovingHandle: HandleType | undefined) => void
+  getNewRangeWhenBrushing: (range: [number, number], movingHandle: HandleType | undefined) => [number, number] | undefined // prettier-ignore
   //
   handleColors: { w: string; e: string }
   getHandleLabelText: (range: [number, number] | null) => [string, string]
@@ -68,6 +70,7 @@ export const Brush = ({
   // state
   const isBrushingRef = useRef(false)
   const lastSelectionRef = useRef<[number, number] | null>(null) // TODO: when initial xScale sudden changes, this is buggy
+  const lastMovingHandleRef = useRef<HandleType | undefined>()
 
   /**
    * Snap selection after brushing, or draw selection after a manual change
@@ -91,10 +94,17 @@ export const Brush = ({
   /**
    * Passing data into brushEnded without re-trigger and no warning
    */
-  const varRef = useRef({ x, handleSelectedRangeChange, snappedSelectedRange, brushExtentLeft })
+  const varRef = useRef({
+    x,
+    handleSelectedRangeChange,
+    snappedSelectedRange,
+    getNewRangeWhenBrushing,
+    brushExtentLeft,
+  })
   varRef.current.x = x
   varRef.current.handleSelectedRangeChange = handleSelectedRangeChange
   varRef.current.snappedSelectedRange = snappedSelectedRange
+  varRef.current.getNewRangeWhenBrushing = getNewRangeWhenBrushing
   varRef.current.brushExtentLeft = brushExtentLeft
 
   /**
@@ -103,6 +113,14 @@ export const Brush = ({
   useLayoutEffect(() => {
     if (!gBrushRef.current) return
 
+    const getMovingHandle = (event: d3.D3BrushEvent<undefined>) => {
+      if (event.selection && lastSelectionRef.current) {
+        if (event.selection[0] !== lastSelectionRef.current[0]) return HandleType.e
+        if (event.selection[1] !== lastSelectionRef.current[1]) return HandleType.w
+      }
+      return lastMovingHandleRef.current
+    }
+
     function brushStarted(event: d3.D3BrushEvent<undefined>) {
       if (isBrushingTimeoutRef.current != null) clearTimeout(isBrushingTimeoutRef.current)
       setIsBrushing(true)
@@ -110,17 +128,20 @@ export const Brush = ({
       if (!event.sourceEvent) return
       isBrushingRef.current = true
 
+      lastSelectionRef.current = event.selection as [number, number] | null
+
       // stop triggering zoom event
       event.sourceEvent.stopPropagation?.()
     }
 
     function brushed(event: d3.D3BrushEvent<undefined>) {
+      const selection = event.selection as [number, number] | null
+
       // sync custom handle's position
-      setLocalSelection(event.selection as [number, number] | null)
+      setLocalSelection(selection)
 
       // sync handle padding's position
       if (gBrushRef.current) {
-        const selection = event.selection
         const inView = [
           selection && selection[0] >= -100 && selection[0] <= size.width + 100, // arbitrary 100px extra margin
           selection && selection[1] >= -100 && selection[1] <= size.width + 100,
@@ -136,8 +157,24 @@ export const Brush = ({
       if (!event.sourceEvent) return
       isBrushingRef.current = true
 
-      // cache last selection
-      if (event.selection) lastSelectionRef.current = event.selection as [number, number]
+      // cache last selection and moving handle
+      const movingHandle = getMovingHandle(event)
+      if (movingHandle) lastMovingHandleRef.current = movingHandle
+      if (selection) lastSelectionRef.current = selection
+
+      // forcefully set a new brush selection when user is brushing.
+      // enabled when user "locked" a desired token weight before brushing.
+      if (selection && gBrushRef.current && brushRef.current) {
+        const range = selection.map(varRef.current.x.invert) as [number, number]
+        const newRange = varRef.current.getNewRangeWhenBrushing(range, movingHandle)
+        if (newRange) {
+          // `brush.move` will actually fire this `brushed` callback again, redrawing the handles.
+          brushRef.current.move(d3.select(gBrushRef.current), [
+            newRange[0] === range[0] ? selection[0] : varRef.current.x(newRange[0]),
+            newRange[1] === range[1] ? selection[1] : varRef.current.x(newRange[1]),
+          ])
+        }
+      }
     }
 
     function brushEnded(event: d3.D3BrushEvent<undefined>) {
@@ -152,7 +189,10 @@ export const Brush = ({
       // if user attempts to clear selection, reset to last selection (if there is)
       const selection = (event.selection ?? lastSelectionRef.current) as [number, number] | null
       const range = (selection?.map(varRef.current.x.invert) ?? null) as [number, number] | null
-      varRef.current.handleSelectedRangeChange(range)
+      varRef.current.handleSelectedRangeChange(
+        range,
+        lastMovingHandleRef.current // use the cached moving handle because `event.selection` is post-reset
+      )
       /**
        * NOTE:
        * We expect `snappedSelectedRange` must be updated such that the brushed area is redrawn.
