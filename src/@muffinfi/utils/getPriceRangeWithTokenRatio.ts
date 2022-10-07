@@ -1,11 +1,5 @@
-import { MAX_SQRT_PRICE, MIN_SQRT_PRICE } from '@muffinfi/muffin-sdk'
-
-/**
- * Min and max sqrt prices, *2 and /2 to ensure it is lower/higher than minimum/maximum.
- * We don't mind they pass the min and max because we can clamp the resulted price when fitting into tick spacing.
- */
-const MIN_SQRT_PRICE_APPROX = Number(MIN_SQRT_PRICE) / 2 // / 1.2 just to ensure it is lower than minimum
-const MAX_SQRT_PRICE_APPROX = Number(MAX_SQRT_PRICE) * 2 // * 1.2 just to ensure it is higher than maximum
+const MIN_SQRT_PRICE_APPROX = 2 ** -56
+const MAX_SQRT_PRICE_APPROX = 2 ** 56
 
 const getPriceLowerWithTokenRatio = (priceCurrent: number, priceUpper: number, weight0: number): number => {
   if (priceCurrent >= priceUpper) throw new Error('invalid inputs')
