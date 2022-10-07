@@ -232,8 +232,8 @@ export default function AddLiquidity({
     if (weightLockedCurrencyBase != null && price && leftRangeTypedValue !== '' && rightRangeTypedValue !== '') {
       const newRange = getPriceRangeWithTokenRatio(
         priceToNumber(invertPrice ? price.invert() : price),
-        leftRangeTypedValue === true ? 2 ** -144 : Number(leftRangeTypedValue),
-        rightRangeTypedValue === true ? 2 ** 144 : Number(rightRangeTypedValue),
+        leftRangeTypedValue === true ? 2 ** -112 : Number(leftRangeTypedValue),
+        rightRangeTypedValue === true ? 2 ** 112 : Number(rightRangeTypedValue),
         independentRangeField,
         weightLockedCurrencyBase
       )?.map((x) => withoutScientificNotation(x.toString()))
