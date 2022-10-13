@@ -1,5 +1,6 @@
 import { Position } from '@muffinfi/muffin-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
+import { Position as UniV3Position } from '@uniswap/v3-sdk'
 import { useMemo } from 'react'
 
 import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../constants/tokens'
@@ -10,7 +11,7 @@ const STABLES_MAINNET = [DAI, USDC_MAINNET, USDT]
  * Get the upper and lower tick prices of the position
  */
 export function usePricesFromPositionForUI(
-  position: Position | undefined,
+  position: Position | UniV3Position | undefined,
   invert?: boolean
 ): {
   priceLower?: Price<Token, Token>
