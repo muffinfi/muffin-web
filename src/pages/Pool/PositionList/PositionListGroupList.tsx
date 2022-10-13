@@ -8,7 +8,11 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 
 import PositionList from './PositionList'
 
-const Chevron = styled(ChevronDown)<{ collapse?: boolean }>`
+const Chevron = styled(ChevronDown).withConfig<{ collapse?: boolean }>({
+  shouldForwardProp(prop, defaultValidatorFn) {
+    return prop !== 'collapse' && defaultValidatorFn(prop)
+  },
+})`
   transform: ${({ collapse }) => (collapse ? 'rotate(-90deg)' : 'rotate(0deg)')};
   transition: 150ms transform;
 `
