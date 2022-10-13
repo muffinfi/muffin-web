@@ -78,6 +78,29 @@ const LoaderWrapper = styled(M.Row)`
   grid-column: 2 / 8;
 `
 
+const ProgressBar = styled.progress<{ height?: number; width?: number }>`
+  width: ${({ width }) => `${width}px`};
+  height: ${({ height }) => `${height}px`};
+  appearance: none;
+  border: none;
+  border-radius: 3px;
+  overflow: hidden;
+
+  background-color: #637fff;
+
+  &::-webkit-progress-bar {
+    background-color: #637fff;
+  }
+
+  &::-moz-progress-bar {
+    background-color: #ff9459;
+  }
+
+  &::-webkit-progress-value {
+    background-color: #ff9459;
+  }
+`
+
 const PositionPriceRangeBar = ({
   position,
   invertPrice,
@@ -103,12 +126,7 @@ const PositionPriceRangeBar = ({
     return Math.round(bounded * 100)
   }, [position, invertPrice])
 
-  return (
-    <div style={{ width, height, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, background: '#FF9459' }} />
-      <div style={{ position: 'absolute', left: x + '%', right: 0, top: 0, bottom: 0, background: '#637FFF' }} />
-    </div>
-  )
+  return <ProgressBar width={width} height={height} value={x} max={100} />
 }
 
 export default memo(function PositionListRow({ positionDetails }: { positionDetails: MuffinPositionDetail }) {
