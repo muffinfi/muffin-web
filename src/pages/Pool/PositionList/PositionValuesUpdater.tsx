@@ -7,6 +7,7 @@ import { useMemoArrayWithEqualCheck } from 'hooks/useMemoWithEqualCheck'
 import { atom } from 'jotai'
 import { selectAtom, useAtomValue, useUpdateAtom } from 'jotai/utils'
 import { memo, useCallback, useEffect, useMemo } from 'react'
+import { PositionDetails } from 'types/position'
 
 const tokenPricesAtom = atom<PriceQueryResult>({
   isLoading: false,
@@ -38,6 +39,37 @@ const initialPositionValue: PositionValue = {
   valueUSD: 0,
   missingToken0Value: false,
   missingToken1Value: false,
+}
+
+/**
+ * Return the price in ETH for the given token address
+ * @param address token's address
+ * @returns token price in ETH or `undefined` if not yet found
+ */
+export const useTokenValueETH = (address: string) => {
+  const { tokenPricesETH } = useAtomValue(tokenPricesAtom)
+  return tokenPricesETH[address] as number | undefined
+}
+
+/**
+ * Return the list of price in ETH for the given token addresses
+ * @param addresses tokens' addresses
+ * @returns token price in ETH or `undefined` if not yet found
+ */
+export const useTokensValueETH = (addresses: string[]) => {
+  const { tokenPricesETH } = useAtomValue(tokenPricesAtom)
+  return useMemo(
+    () => addresses.map((address) => tokenPricesETH[address] as number | undefined),
+    [addresses, tokenPricesETH]
+  )
+}
+
+/**
+ * Return the ETH price in USD
+ */
+export const useETHPriceUSD = () => {
+  const { ethPriceUSD } = useAtomValue(tokenPricesAtom)
+  return ethPriceUSD
 }
 
 /**
@@ -91,10 +123,10 @@ export const usePositionValues = (positions: MuffinPositionDetail[]) => {
 /**
  * Fetch token prices and store query result into atom
  */
-const TokenPricesUpdater = memo(function TokenPricesUpdater({
+export const TokenPricesUpdater = memo(function TokenPricesUpdater({
   positionDetails,
 }: {
-  positionDetails: MuffinPositionDetail[]
+  positionDetails: (MuffinPositionDetail | PositionDetails)[]
 }) {
   const { chainId } = useActiveWeb3React()
   const setTokenPrices = useUpdateAtom(tokenPricesAtom)
