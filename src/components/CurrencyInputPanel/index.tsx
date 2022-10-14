@@ -200,7 +200,7 @@ export default function CurrencyInputPanel({
                           currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
                         : currency?.symbol) || (
                         <span style={{ marginLeft: '0.25rem' }}>
-                          <Trans>Select a token</Trans>
+                          <Trans>Select token</Trans>
                         </span>
                       )}
                     </span>
