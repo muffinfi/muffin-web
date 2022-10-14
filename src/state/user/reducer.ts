@@ -90,7 +90,7 @@ export const initialState: UserState = {
   userDarkMode: null,
   userExpertMode: false,
   userInternalAccountMode: true,
-  userStoreIntoInternalAccount: true,
+  userStoreIntoInternalAccount: false,
   userLocale: null,
   userClientSideRouter: false,
   userHideClosedPositions: false,
