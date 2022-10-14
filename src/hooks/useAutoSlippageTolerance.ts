@@ -40,7 +40,7 @@ export default function useAutoSlippageTolerance(
 
   const gasEstimate = guesstimateGas(trade)
   const nativeCurrency = useNativeCurrency()
-  const nativeCurrencyPrice = useUSDCPrice(nativeCurrency ?? undefined)
+  const nativeCurrencyPrice = useUSDCPrice(trade ? nativeCurrency ?? undefined : undefined)
 
   return useMemo(() => {
     if (!trade || onL2) return ONE_TENTHS_PERCENT
