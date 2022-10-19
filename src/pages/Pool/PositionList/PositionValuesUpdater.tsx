@@ -95,7 +95,7 @@ export const usePositionValues = (positions: MuffinPositionDetail[]) => {
   const result = useMemo(() => {
     let totalValueETH = 0
     let totalValueUSD = 0
-    const missingTokens: Set<{ symbol: string; address: string }> = new Set()
+    const missingTokens: Record<string /* address */, { symbol: string; address: string }> = {}
 
     for (const position of positions) {
       const data = positionValues[position.tokenId.toString()]
@@ -104,14 +104,19 @@ export const usePositionValues = (positions: MuffinPositionDetail[]) => {
       totalValueETH += data.valueETH
       totalValueUSD += data.valueUSD
 
-      if (data.missingToken0Value) missingTokens.add({ symbol: data.token0Symbol, address: position.token0 })
-      if (data.missingToken1Value) missingTokens.add({ symbol: data.token1Symbol, address: position.token1 })
+      if (data.missingToken0Value && !missingTokens[position.token0]) {
+        missingTokens[position.token0] = { symbol: data.token0Symbol, address: position.token0 }
+      }
+
+      if (data.missingToken1Value && !missingTokens[position.token1]) {
+        missingTokens[position.token1] = { symbol: data.token1Symbol, address: position.token1 }
+      }
     }
 
     return {
       totalValueETH,
       totalValueUSD,
-      missingTokens: [...missingTokens],
+      missingTokens: Object.values(missingTokens),
     }
   }, [positions, positionValues])
 
