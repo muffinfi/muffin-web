@@ -168,6 +168,7 @@ export default function TransactionSettings({ placeholderSlippage, noDeadline }:
             <Trans>Slippage tolerance</Trans>
           </ThemedText.Black>
           <QuestionHelper
+            placement="top"
             text={
               <Trans>Your transaction will revert if the price changes unfavorably by more than this percentage.</Trans>
             }
@@ -237,6 +238,7 @@ export default function TransactionSettings({ placeholderSlippage, noDeadline }:
               <Trans>Transaction deadline</Trans>
             </ThemedText.Black>
             <QuestionHelper
+              placement="top"
               text={<Trans>Your transaction will revert if it is pending for more than this period of time.</Trans>}
             />
           </RowFixed>
