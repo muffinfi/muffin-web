@@ -6,7 +6,9 @@ import { Position as UniV3Position } from '@uniswap/v3-sdk'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useManagerAddress } from 'hooks/useContractAddress'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { TransactionType } from 'state/transactions/actions'
+import { useTransactionAdder } from 'state/transactions/hooks'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 
 import { useUniV3PositionPermit } from '../uniswap'
@@ -38,12 +40,22 @@ export default function useMigrate({
   const [txn, setTxn] = useState<ContractTransaction | undefined>()
   const [error, setError] = useState<any | undefined>()
 
+  const addTransaction = useTransactionAdder()
+
   const {
     permit,
     sign,
     isLoading: isSigning,
     error: signingError,
-  } = useUniV3PositionPermit(tokenId, nonce, migratorContract?.address, deadline)
+    reset: resetPermit,
+  } = useUniV3PositionPermit(tokenId, nonce, migratorContract?.address, deadline?.add(10 * 60))
+
+  const reset = useCallback(() => {
+    resetPermit()
+    setTxn(undefined)
+    setError(undefined)
+    setIsLoading(false)
+  }, [resetPermit])
 
   // creating muffin position
   const migrate = useMemo(
@@ -58,7 +70,7 @@ export default function useMigrate({
       !deadline ||
       !migratorContract
         ? undefined
-        : () => {
+        : async () => {
             const permitParams = {
               deadline: permit.deadline.toString(),
               v: permit.v,
@@ -66,14 +78,11 @@ export default function useMigrate({
               s: permit.s,
             }
 
-            const { amount0: burnAmount0, amount1: burnAmount1 } =
-              uniV3Position.burnAmountsWithSlippage(slippageTolerance)
-
             const burnParams = {
               tokenId,
               liquidity: uniV3Position.liquidity.toString(),
-              amount0Min: burnAmount0.toString(),
-              amount1Min: burnAmount1.toString(),
+              amount0Min: 0,
+              amount1Min: 0,
               deadline,
             }
 
@@ -98,23 +107,29 @@ export default function useMigrate({
 
             setIsLoading(true)
 
-            migratorContract.estimateGas
-              .migrateFromUniV3WithPermit(permitParams, burnParams, mintParams)
+            return migratorContract.estimateGas
+              .migrateFromUniV3WithPermit(permitParams, burnParams, mintParams, true)
               .then((estimate) =>
-                migratorContract.migrateFromUniV3WithPermit(permitParams, burnParams, mintParams, {
+                migratorContract.migrateFromUniV3WithPermit(permitParams, burnParams, mintParams, true, {
                   gasLimit: calculateGasMargin(estimate),
                 })
               )
               .then((response) => {
+                addTransaction(response, {
+                  type: TransactionType.MIGRATE_LIQUIDITY_MUFFIN,
+                  baseCurrencyId: muffinPosition.pool.token0.address,
+                  quoteCurrencyId: muffinPosition.pool.token1.address,
+                })
                 setTxn(response)
               })
               .catch((error) => {
-                setError(error)
+                if (error.code !== 4001) setError(error)
               })
               .finally(() => setIsLoading(false))
           },
     [
       account,
+      addTransaction,
       chainId,
       deadline,
       managerAddress,
@@ -129,5 +144,5 @@ export default function useMigrate({
     ]
   )
 
-  return { txn, error: error || signingError, isLoading: isLoading || isSigning, sign, migrate }
+  return { txn, error: error || signingError, isLoading, isSigning, sign, migrate, reset }
 }

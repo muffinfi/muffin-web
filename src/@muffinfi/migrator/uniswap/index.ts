@@ -28,7 +28,7 @@ import { useToken } from 'hooks/useCurrency'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { EIP712_DOMAIN_TYPE } from 'lib/utils/erc20Permit'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PositionDetails } from 'types/position'
 
 const UNISWAP_ERC721_DOMAIN = {
@@ -116,16 +116,34 @@ export function useUniV3PositionPermit(
               .then(({ v, r, s }) => {
                 setPermit({ v, r, s, spender, deadline: deadline.toString() } as NFTPermitOptions)
               })
-              .catch(setError)
+              .catch((error) => {
+                if (error.code === 4001) return
+                setError(error)
+              })
               .finally(() => setIsLoading(false))
           },
     [account, deadline, library, permitObjectToSign, spender]
   )
 
-  return { permit, sign, error, isLoading }
+  const reset = useCallback(() => {
+    setPermit(undefined)
+    setError(undefined)
+    setIsLoading(false)
+  }, [])
+
+  // clear permit if deadline is less than 5 min
+  useEffect(() => {
+    if (!permit) return
+    const deadline = parseInt(permit.deadline as string)
+    const timeDiff = deadline * 1000 - Date.now() - 5 * 60 * 1000
+    const timeout = setTimeout(() => setPermit(undefined), Math.max(0, timeDiff))
+    return () => clearTimeout(timeout)
+  }, [permit])
+
+  return { permit, sign, error, isLoading, reset }
 }
 
-export function useBestMatchMuffinPosition(position: UniV3Position | undefined, slippageTolerance: Percent) {
+export function useBestMatchMuffinPosition(position: UniV3Position | undefined, sqrtGammaDesired: number | undefined) {
   const uniV3Pool = position?.pool
   const { token0, token1 } = uniV3Pool ?? {}
 
@@ -135,12 +153,6 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     [uniV3Pool?.token0Price]
   )
 
-  // calculating uniswap position value
-  const { amount0: burnAmount0, amount1: burnAmount1 }: { amount0?: JSBI; amount1?: JSBI } = useMemo(
-    () => position?.burnAmountsWithSlippage(slippageTolerance) || {},
-    [position, slippageTolerance]
-  )
-
   // matching pool
   const defaultTickSpacing = usePoolDefaultTickSpacing(token0, token1)
   const [poolState, pool] = useMuffinPool(token0, token1)
@@ -148,18 +160,23 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
 
   // matching sqrt gamma
   const [, feeTierOptions] = useFeeTierOptions(token0, token1)
+  const allTierOptions = useMemo(
+    () =>
+      [...(pool?.tiers.map(({ sqrtGamma }) => sqrtGamma) ?? []), ...(feeTierOptions ?? [])]
+        .filter((elm, i, arr) => arr.indexOf(elm) === i)
+        .sort((a, b) => b - a),
+    [feeTierOptions, pool?.tiers]
+  )
 
   const sqrtGamma = useMemo(() => {
-    if (!feeTierOptions || !uniV3Pool?.fee) return undefined
-    const sqrtGammaStr = feeToSqrtGamma(new Fraction(uniV3Pool.fee, 1_000_000)).toString()
-    const _sqrtGamma = parseInt(sqrtGammaStr)
-    const sortedOptions = [...feeTierOptions].sort((a, b) => b - a)
-    return sortedOptions.find((option) => option <= _sqrtGamma) ?? sortedOptions[0]
-  }, [uniV3Pool?.fee, feeTierOptions])
+    if (!allTierOptions.length || !uniV3Pool?.fee) return undefined
+    const _sqrtGamma = sqrtGammaDesired ?? parseInt(feeToSqrtGamma(new Fraction(uniV3Pool.fee, 1_000_000)).toString())
+    return allTierOptions.find((option) => option <= _sqrtGamma) ?? allTierOptions[0]
+  }, [uniV3Pool?.fee, sqrtGammaDesired, allTierOptions])
 
   // matching tier
   const [muffinTierId, muffinTier, isNewTier] = useMemo(() => {
-    if (!sqrtGamma || !sqrtPriceX72 || !token0 || !token1) return [-1, undefined, false]
+    if (sqrtGamma == null || !sqrtPriceX72 || !token0 || !token1) return [-1, undefined, false]
     if (poolState === PoolState.NOT_EXISTS) {
       // new pool
       return [0, new Tier(token0, token1, 0, sqrtPriceX72, sqrtGamma, MIN_TICK, MAX_TICK), true]
@@ -203,7 +220,7 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
       return [lowerLimit, upperLimit]
     }
     let lower = nearestUsableTick(position.tickLower, tickSpacing)
-    let upper = nearestUsableTick(position.tickLower, tickSpacing)
+    let upper = nearestUsableTick(position.tickUpper, tickSpacing)
     if (lower === upper) {
       if (lower === lowerLimit) {
         upper = lowerLimit + tickSpacing
@@ -216,20 +233,29 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     return [lower, upper]
   }, [tickSpacing, position?.tickLower, position?.tickUpper])
 
+  // calculating uniswap position value
+  const { amount0: burnAmount0, amount1: burnAmount1 }: { amount0?: JSBI; amount1?: JSBI } = useMemo(
+    () => position?.burnAmountsWithSlippage(new Percent(0)) || {},
+    [position]
+  )
+
   // calculating usable amount
-  const [mintAmount0, mintAmount1] = useMemo(() => {
+  const [mintAmount0, mintAmount1, hasEnoughAmounts] = useMemo(() => {
     if (!muffinPool || !burnAmount0 || !burnAmount1) return []
-    if (!isNewTier) return [burnAmount0, burnAmount1]
+    if (!isNewTier) return [burnAmount0, burnAmount1, true]
+    const enoughToken0 = JSBI.GE(burnAmount0, muffinPool.token0AmountForCreateTier.quotient)
+    const enoughToken1 = JSBI.GE(burnAmount1, muffinPool.token1AmountForCreateTier.quotient)
     return [
-      JSBI.subtract(burnAmount0, muffinPool.token0AmountForCreateTier.quotient),
-      JSBI.subtract(burnAmount1, muffinPool.token1AmountForCreateTier.quotient),
+      enoughToken0 ? JSBI.subtract(burnAmount0, muffinPool.token0AmountForCreateTier.quotient) : JSBI.BigInt(0),
+      enoughToken1 ? JSBI.subtract(burnAmount1, muffinPool.token1AmountForCreateTier.quotient) : JSBI.BigInt(0),
+      enoughToken0 && enoughToken1,
     ]
   }, [burnAmount0, burnAmount1, isNewTier, muffinPool])
 
   return {
     position: useMemo(
       () =>
-        muffinPool && tickLower != null && tickUpper != null && mintAmount0 && mintAmount1
+        muffinPool && tickLower != null && tickUpper != null && mintAmount0 && mintAmount1 && muffinTierId !== -1
           ? Position.fromAmounts({
               pool: muffinPool,
               tierId: muffinTierId,
@@ -241,7 +267,9 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
           : undefined,
       [mintAmount0, mintAmount1, muffinPool, muffinTierId, tickLower, tickUpper]
     ),
+    pool,
     isNewPool: poolState === PoolState.NOT_EXISTS,
     isNewTier,
+    hasEnoughAmounts,
   }
 }

@@ -142,6 +142,11 @@
         "internalType": "struct MuffinMigrator.MintParams",
         "name": "mintParams",
         "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "refundAsETH",
+        "type": "bool"
       }
     ],
     "name": "migrateFromUniV3WithPermit",
@@ -174,5 +179,22 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "weth",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

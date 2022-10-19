@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { useMigratorContract } from '@muffinfi/migrator/hooks/useMigratorContract'
 import * as M from '@muffinfi-ui'
 import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
@@ -7,12 +8,14 @@ import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { useV3Positions } from 'hooks/useV3Positions'
+import EtherscanLink from 'lib/components/EtherscanLink'
 import { TokenPricesUpdater } from 'pages/Pool/PositionList/PositionValuesUpdater'
 import { useMemo } from 'react'
 import { Inbox } from 'react-feather'
 import { useWalletModalToggle } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
+import { ExplorerDataType } from 'utils/getExplorerLink'
 
 import { LoadingRows } from '../styled'
 import { PositionListSection } from './PositionList/PositionListSection'
@@ -53,6 +56,7 @@ export function UniV3List() {
   const { account } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
   const { positions, loading } = useV3Positions(account)
+  const migrateContract = useMigratorContract()
   const activePositions = useMemo(() => positions?.filter((position) => position.liquidity.gt(0)) ?? [], [positions])
 
   const showConnectAWallet = Boolean(!account)
@@ -65,13 +69,29 @@ export function UniV3List() {
 
       <M.Container maxWidth="1050px">
         <M.Column stretch gap="32px">
+          <M.Link color="text2" to="/positions">
+            <Trans>← Back</Trans>
+          </M.Link>
+
           <M.Text size="xl" weight="bold">
             <Trans>Migrate Liquidity</Trans>
           </M.Text>
 
-          <M.Text color="text2" size="sm">
-            <Trans>Select a position to migrate liquidity from Uniswap V3 to Muffin.</Trans>
-          </M.Text>
+          <M.Column>
+            <M.Text paragraphLineHeight color="text2" size="sm">
+              <Trans>Select a position to migrate liquidity from Uniswap V3 to Muffin.</Trans>
+            </M.Text>
+            <M.Text paragraphLineHeight color="text2" size="sm">
+              <Trans>
+                The migration is done by the{' '}
+                <M.Text color="secondary-text">
+                  <EtherscanLink data={migrateContract?.address} type={ExplorerDataType.ADDRESS} inline>
+                    Muffin migration contract
+                  </EtherscanLink>
+                </M.Text>
+              </Trans>
+            </M.Text>
+          </M.Column>
 
           {loading ? (
             <M.SectionCard>

@@ -1,7 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { MuffinPositionDetail, useMuffinPositionDetails } from '@muffinfi/hooks/usePositions'
+import { useMigratorContract } from '@muffinfi/migrator/hooks/useMigratorContract'
 import * as M from '@muffinfi-ui'
 import AlertHelper from '@muffinfi-ui/components/AlertHelper'
+import { ReactComponent as UniLogo } from 'assets/svg/uniswap_logo.svg'
 // import CTACards from './CTACards'
 import DowntimeWarning from 'components/DowntimeWarning'
 import Loader from 'components/Loader'
@@ -116,6 +118,7 @@ export default function Pool() {
   const { account, chainId } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
 
+  const migratorContract = useMigratorContract()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
   const { positions, loading: positionsLoading, subgraphBlockNumber } = useMuffinPositionDetails(account)
@@ -154,9 +157,17 @@ export default function Pool() {
                 <Trans>Provide liquidity and earn fees on Muffin.</Trans>
               </M.Text>
             </M.Column>
-            <M.ButtonPrimary id="join-pool-button" as={Link} to={`/add/${getDefaultCurrencyId(chainId)}`}>
-              + <Trans>New Position</Trans>
-            </M.ButtonPrimary>
+            <M.Row gap="0.5rem">
+              {migratorContract && (
+                <M.ButtonSecondary id="migrate-from-uniswap-button" as={Link} to="/migrate/univ3">
+                  <UniLogo style={{ marginLeft: -4 }} width={24} height={24} />
+                  <Trans>Migrate</Trans>
+                </M.ButtonSecondary>
+              )}
+              <M.ButtonPrimary id="join-pool-button" as={Link} to={`/add/${getDefaultCurrencyId(chainId)}`}>
+                + <Trans>New Position</Trans>
+              </M.ButtonPrimary>
+            </M.Row>
           </M.RowBetween>
 
           <PositionsSummary positionsLoading={positionsLoading} positions={filteredPositions} />

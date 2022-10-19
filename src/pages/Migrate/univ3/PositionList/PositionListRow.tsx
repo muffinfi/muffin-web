@@ -11,7 +11,7 @@ import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Loader'
 import { usePricesFromPositionForUI } from 'hooks/usePricesFromPositionForUI'
 import { useETHPriceUSD, useTokenValueETH } from 'pages/Pool/PositionList/PositionValuesUpdater'
-import { memo, MouseEventHandler, useMemo } from 'react'
+import { memo, MouseEventHandler, useCallback, useMemo } from 'react'
 import { ExternalLink } from 'react-feather'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { css } from 'styled-components/macro'
@@ -90,7 +90,9 @@ const LoaderWrapper = styled(M.Row)`
   grid-column: 2 / 6;
 `
 
-const InfoLink = styled(M.Anchor)`
+const InfoLink = styled(M.Button)`
+  padding: 0;
+
   > div {
     border-bottom: 1px solid transparent;
   }
@@ -99,8 +101,6 @@ const InfoLink = styled(M.Anchor)`
     border-bottom-color: currentColor;
   }
 `
-
-const stopPropagation: MouseEventHandler<HTMLAnchorElement> = (e) => e.stopPropagation()
 
 export default memo(function PositionListRow({ positionDetails }: { positionDetails: PositionDetails }) {
   const { tokenId, token0: token0Address, token1: token1Address, fee, tickLower, tickUpper } = positionDetails
@@ -149,6 +149,14 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
   )
 
   const valueUSD = useMemo(() => valueETH * (ethPriceUSD ?? 0), [ethPriceUSD, valueETH])
+
+  const onClickInfo: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (e) => {
+      e.preventDefault()
+      window.open(`https://app.uniswap.org/#/pool/${tokenId.toString()}`, '_blank', 'noopener,noreferrer')
+    },
+    [tokenId]
+  )
 
   return (
     <PositionRow to={`/migrate/univ3/${tokenId}`}>
@@ -229,12 +237,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
           {/* 6 */}
           <LastColumn>
             <M.Column gap="0.5rem">
-              <InfoLink
-                href={`https://app.uniswap.org/#/pool/${tokenId.toString()}`}
-                rel="noopener noreferrer"
-                target="_blank"
-                onClick={stopPropagation}
-              >
+              <InfoLink onClick={onClickInfo}>
                 <M.Row gap="0.25rem">
                   Info
                   <ExternalLink size="1em" />
