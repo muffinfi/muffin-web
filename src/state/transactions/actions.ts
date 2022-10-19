@@ -42,6 +42,7 @@ export enum TransactionType {
   WITHDRAW_INTERNAL_ACCOUNT = 18,
   ADD_LIMIT_RANGE_ORDER = 19,
   COLLECT_SETTLED = 20,
+  MIGRATE_LIQUIDITY_MUFFIN = 21,
 }
 
 export interface BaseTransactionInfo {
@@ -218,6 +219,14 @@ export interface WithdrawInternalAccountTransactionInfo {
 
 ////////////////////////////////////////////////////////////
 
+export interface MigrateLiquidityToMuffinTransactionInfo {
+  type: TransactionType.MIGRATE_LIQUIDITY_MUFFIN
+  baseCurrencyId: string
+  quoteCurrencyId: string
+}
+
+////////////////////////////////////////////////////////////
+
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -241,6 +250,7 @@ export type TransactionInfo =
   | WithdrawInternalAccountTransactionInfo
   | AddLimitRangeOrderTransactionInfo
   | CollectSettledTransactionInfo
+  | MigrateLiquidityToMuffinTransactionInfo
 
 export const addTransaction = createAction<{
   chainId: number

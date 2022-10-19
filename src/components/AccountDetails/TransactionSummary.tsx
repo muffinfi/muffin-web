@@ -23,6 +23,7 @@ import {
   DepositLiquidityStakingTransactionInfo,
   ExactInputSwapTransactionInfo,
   ExactOutputSwapTransactionInfo,
+  MigrateLiquidityToMuffinTransactionInfo,
   MigrateV2LiquidityToV3TransactionInfo,
   RemoveLiquidityMuffinTransactionInfo,
   RemoveLiquidityV3TransactionInfo,
@@ -217,6 +218,21 @@ function MigrateLiquidityToV3Summary({
   return (
     <Trans>
       Migrate {baseCurrency?.symbol}/{quoteCurrency?.symbol} liquidity to V3
+    </Trans>
+  )
+}
+
+function MigrateLiquidityToMuffinSummary({
+  info: { baseCurrencyId, quoteCurrencyId },
+}: {
+  info: MigrateLiquidityToMuffinTransactionInfo
+}) {
+  const baseCurrency = useCurrency(baseCurrencyId)
+  const quoteCurrency = useCurrency(quoteCurrencyId)
+
+  return (
+    <Trans>
+      Migrate {baseCurrency?.symbol}/{quoteCurrency?.symbol} liquidity to Muffin
     </Trans>
   )
 }
@@ -485,6 +501,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.MIGRATE_LIQUIDITY_V3:
       return <MigrateLiquidityToV3Summary info={info} />
+
+    case TransactionType.MIGRATE_LIQUIDITY_MUFFIN:
+      return <MigrateLiquidityToMuffinSummary info={info} />
 
     case TransactionType.COLLECT_FEES:
       return <CollectFeesSummary info={info} />
