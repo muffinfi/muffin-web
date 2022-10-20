@@ -20,7 +20,6 @@ import {
   nearestUsableTick as uniV3NearestUsableTick,
   NFTPermitOptions,
   Position as UniV3Position,
-  TickMath as UniV3TickMath,
 } from '@uniswap/v3-sdk'
 import { NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from 'constants/addresses'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -42,12 +41,6 @@ const PERMIT_TYPE = [
   { name: 'nonce', type: 'uint256' },
   { name: 'deadline', type: 'uint256' },
 ]
-
-export function isUniV3FullRange(tickLower: number, tickUpper: number, tickSpacing: number) {
-  const lowerLimit = uniV3NearestUsableTick(UniV3TickMath.MIN_TICK, tickSpacing)
-  const upperLimit = uniV3NearestUsableTick(UniV3TickMath.MAX_TICK, tickSpacing)
-  return tickLower === lowerLimit && tickUpper === upperLimit
-}
 
 export function useUniV3PositionFromDetails(position?: PositionDetails) {
   const token0 = useToken(position?.token0) ?? undefined
@@ -216,11 +209,10 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     if (tickSpacing == null || position?.tickLower == null || position?.tickUpper == null) return []
     const lowerLimit = nearestUsableTick(MIN_TICK, tickSpacing)
     const upperLimit = nearestUsableTick(MAX_TICK, tickSpacing)
-    if (isUniV3FullRange(position.tickLower, position.tickLower, tickSpacing)) {
-      return [lowerLimit, upperLimit]
-    }
-    let lower = nearestUsableTick(position.tickLower, tickSpacing)
-    let upper = nearestUsableTick(position.tickUpper, tickSpacing)
+    const isAtLowerLimit = uniV3NearestUsableTick(position.tickLower, position.pool.tickSpacing)
+    const isAtUpperLimit = uniV3NearestUsableTick(position.tickLower, position.pool.tickSpacing)
+    let lower = isAtLowerLimit ? lowerLimit : nearestUsableTick(Math.max(MIN_TICK, position.tickLower), tickSpacing)
+    let upper = isAtUpperLimit ? upperLimit : nearestUsableTick(Math.min(MAX_TICK, position.tickUpper), tickSpacing)
     if (lower === upper) {
       if (lower === lowerLimit) {
         upper = lowerLimit + tickSpacing
@@ -231,7 +223,7 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
       }
     }
     return [lower, upper]
-  }, [tickSpacing, position?.tickLower, position?.tickUpper])
+  }, [tickSpacing, position?.tickLower, position?.tickUpper, position?.pool.tickSpacing])
 
   // calculating uniswap position value
   const { amount0: burnAmount0, amount1: burnAmount1 }: { amount0?: JSBI; amount1?: JSBI } = useMemo(
