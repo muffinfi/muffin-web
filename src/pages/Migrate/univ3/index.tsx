@@ -57,7 +57,10 @@ export function UniV3List() {
   const toggleWalletModal = useWalletModalToggle()
   const { positions, loading } = useV3Positions(account)
   const migrateContract = useMigratorContract()
-  const activePositions = useMemo(() => positions?.filter((position) => position.liquidity.gt(0)) ?? [], [positions])
+  const activePositions = useMemo(
+    () => positions?.filter((position) => position.liquidity.gt(0)).reverse() ?? [],
+    [positions]
+  )
 
   const showConnectAWallet = Boolean(!account)
 
