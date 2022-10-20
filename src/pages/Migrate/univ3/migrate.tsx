@@ -9,7 +9,7 @@ import * as M from '@muffinfi-ui'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Position as UniV3Position } from '@uniswap/v3-sdk'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import { ErrorCard, OutlineCard } from 'components/Card'
+import { ErrorCard, OutlineCard, YellowCard } from 'components/Card'
 import DowntimeWarning from 'components/DowntimeWarning'
 import PositionRow from 'components/migrate/PositionRow'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
@@ -405,6 +405,20 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
               </ThemedText.Main>
             </M.Row>
           </ErrorCard>
+        )}
+        {priceSpreadTooMuch && (
+          <YellowCard padding="12px" $borderRadius="12px">
+            <M.RowBetween gap="12px">
+              <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
+              <M.Text color="alert-text" style={{ fontSize: 13 }}>
+                <Trans>
+                  You should only deposit liquidity into Muffin at a price you believe is correct. <br />
+                  If the price seems incorrect, you can either make a swap to move the price or wait for someone else to
+                  do so.
+                </Trans>
+              </M.Text>
+            </M.RowBetween>
+          </YellowCard>
         )}
         <M.ButtonRowPrimary onClick={sign} disabled={!!migrate || isSigning || (!isExpert && priceSpreadTooMuch)}>
           {isSigning ? (
