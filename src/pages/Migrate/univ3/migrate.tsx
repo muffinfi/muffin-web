@@ -174,7 +174,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
     return diff.multiply(diff.greaterThan(0) ? 100 : -100).divide(uniswapPrice)
   }, [muffinPrice, uniswapPrice])
 
-  const priceSpreadTooMuch = useMemo(() => priceDifference?.greaterThan(2), [priceDifference])
+  const priceDiffTooMuch = useMemo(() => priceDifference?.greaterThan(2), [priceDifference])
 
   // muffin position at limit?
   const areTicksAtLimit = useIsTickAtLimit(position?.pool.tickSpacing, position?.tickLower, position?.tickUpper)
@@ -372,11 +372,25 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
               <Trans>Price Difference:</Trans>
             </M.Text>
             {priceDifference && (
-              <M.Text color={!priceSpreadTooMuch ? 'success' : isExpert ? 'alert' : 'error'}>
-                {priceDifference?.toFixed(2)}% {!priceSpreadTooMuch ? '✅' : isExpert ? '⚠️' : '⛔'}
+              <M.Text color={priceDiffTooMuch ? 'alert' : 'success'}>
+                {priceDifference?.toFixed(2)}% {priceDiffTooMuch ? '⚠️' : '✅'}
               </M.Text>
             )}
           </InfoRow>
+          {priceDiffTooMuch && (
+            <YellowCard padding="12px" $borderRadius="12px">
+              <M.RowBetween gap="12px">
+                <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
+                <M.Text color="alert-text" style={{ fontSize: 13 }}>
+                  <Trans>
+                    You should only deposit liquidity into Muffin at a price you believe is correct. <br />
+                    If the price seems incorrect, you can either make a swap to move the price or wait for someone else
+                    to do so.
+                  </Trans>
+                </M.Text>
+              </M.RowBetween>
+            </YellowCard>
+          )}
         </M.Column>
       </InputSectionContent>
     </InputSection>
@@ -406,21 +420,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
             </M.Row>
           </ErrorCard>
         )}
-        {priceSpreadTooMuch && (
-          <YellowCard padding="12px" $borderRadius="12px">
-            <M.RowBetween gap="12px">
-              <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
-              <M.Text color="alert-text" style={{ fontSize: 13 }}>
-                <Trans>
-                  You should only deposit liquidity into Muffin at a price you believe is correct. <br />
-                  If the price seems incorrect, you can either make a swap to move the price or wait for someone else to
-                  do so.
-                </Trans>
-              </M.Text>
-            </M.RowBetween>
-          </YellowCard>
-        )}
-        <M.ButtonRowPrimary onClick={sign} disabled={!!migrate || isSigning || (!isExpert && priceSpreadTooMuch)}>
+        <M.ButtonRowPrimary onClick={sign} disabled={!!migrate || isSigning}>
           {isSigning ? (
             <Dots>
               <Trans>Approving</Trans>
@@ -433,14 +433,12 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
         </M.ButtonRowPrimary>
         <M.ButtonRowPrimary
           onClick={() => (isExpert ? onMigrate() : setShowTxModalConfirm(true))}
-          disabled={!migrate || isLoading || (!isExpert && priceSpreadTooMuch) || !hasEnoughAmounts}
+          disabled={!migrate || isLoading || !hasEnoughAmounts}
         >
           {isLoading ? (
             <Dots>
               <Trans>Migrating</Trans>
             </Dots>
-          ) : !isExpert && priceSpreadTooMuch ? (
-            <Trans>Price spread too much</Trans>
           ) : !hasEnoughAmounts ? (
             <Trans>Not enough token amounts for creating new tier</Trans>
           ) : (
