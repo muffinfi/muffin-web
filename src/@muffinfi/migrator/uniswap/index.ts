@@ -20,6 +20,7 @@ import {
   nearestUsableTick as uniV3NearestUsableTick,
   NFTPermitOptions,
   Position as UniV3Position,
+  TickMath as UniV3TickMath,
 } from '@uniswap/v3-sdk'
 import { NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from 'constants/addresses'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -209,8 +210,10 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     if (tickSpacing == null || position?.tickLower == null || position?.tickUpper == null) return []
     const lowerLimit = nearestUsableTick(MIN_TICK, tickSpacing)
     const upperLimit = nearestUsableTick(MAX_TICK, tickSpacing)
-    const isAtLowerLimit = uniV3NearestUsableTick(position.tickLower, position.pool.tickSpacing)
-    const isAtUpperLimit = uniV3NearestUsableTick(position.tickLower, position.pool.tickSpacing)
+    const isAtLowerLimit =
+      position.tickLower === uniV3NearestUsableTick(UniV3TickMath.MIN_TICK, position.pool.tickSpacing)
+    const isAtUpperLimit =
+      position.tickUpper === uniV3NearestUsableTick(UniV3TickMath.MAX_TICK, position.pool.tickSpacing)
     let lower = isAtLowerLimit ? lowerLimit : nearestUsableTick(Math.max(MIN_TICK, position.tickLower), tickSpacing)
     let upper = isAtUpperLimit ? upperLimit : nearestUsableTick(Math.min(MAX_TICK, position.tickUpper), tickSpacing)
     if (lower === upper) {
