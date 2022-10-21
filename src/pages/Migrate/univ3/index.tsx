@@ -89,7 +89,7 @@ export function UniV3List() {
                 The migration is done by the{' '}
                 <M.Text color="secondary-text">
                   <EtherscanLink data={migrateContract?.address} type={ExplorerDataType.ADDRESS} inline>
-                    Muffin migration contract
+                    Muffin migrator contract
                   </EtherscanLink>
                 </M.Text>
               </Trans>

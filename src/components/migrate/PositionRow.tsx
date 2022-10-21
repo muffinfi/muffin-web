@@ -27,6 +27,8 @@ const Container = styled.div`
   background-color: var(--layer2);
   border: 1px solid var(--layer2);
   transition: border-color 150ms;
+
+  font-size: var(--text-sm);
 `
 
 const MuffinLogoWrapper = styled.div`
@@ -41,7 +43,7 @@ const MuffinLogoWrapper = styled.div`
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 48px 1.5fr 1fr;
+  grid-template-columns: 48px 1.66fr 1fr;
   gap: 1rem;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -55,9 +57,9 @@ const Logo = ({ position }: { position: Position | UniV3Position | undefined }) 
   return (
     <MuffinLogoWrapper>
       {position instanceof Position ? (
-        <MuffinLogo fill={color} width={32} height={32} />
+        <MuffinLogo fill={color} width={26} height={26} />
       ) : position instanceof UniV3Position ? (
-        <UniLogo color={color} width={48} height={48} />
+        <UniLogo color={color} width={42} height={42} />
       ) : null}
     </MuffinLogoWrapper>
   )
@@ -119,7 +121,7 @@ export default function PositionRow({
         <Logo position={position} />
         {position ? (
           <>
-            <M.Column gap="0.5rem">
+            <M.Column gap="0.5em">
               <M.Row gap="0.5em">
                 <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} margin={false} em={1.4} />
                 <M.Text weight="semibold">
@@ -131,9 +133,9 @@ export default function PositionRow({
                 <M.PriceRangeExpr priceLower={priceLower} priceUpper={priceUpper} tickAtLimit={tickAtLimit} />
               </M.Text>
             </M.Column>
-            <M.Column gap="0.5rem">
-              <M.Row gap="0.5rem">
-                <CurrencyLogo currency={currencyBase} />
+            <M.Column gap="0.5em" style={{ justifyContent: 'center' }}>
+              <M.Row gap="0.5em">
+                <CurrencyLogo currency={currencyBase} size="1.2em" />
                 <span>
                   {position && amount1 && amount0 && (
                     <FormattedCurrencyAmount currencyAmount={invertPrice ? amount1 : amount0} />
@@ -141,8 +143,8 @@ export default function PositionRow({
                   {currencyBase?.symbol}
                 </span>
               </M.Row>
-              <M.Row gap="0.5rem">
-                <CurrencyLogo currency={currencyQuote} />
+              <M.Row gap="0.5em">
+                <CurrencyLogo currency={currencyQuote} size="1.2em" />
                 <span>
                   {position && amount1 && amount0 && (
                     <FormattedCurrencyAmount currencyAmount={invertPrice ? amount0 : amount1} />

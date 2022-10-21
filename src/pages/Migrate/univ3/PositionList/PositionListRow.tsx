@@ -23,7 +23,7 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 export const BasePositionRow = css`
   display: grid;
   align-items: center;
-  grid-template-columns: 48px 1fr 1fr 1fr 100px 60px;
+  grid-template-columns: 48px 1fr 1fr 0.8fr 120px 60px;
   gap: 1rem;
   padding: 24px 24px;
   border-bottom: 1px solid var(--borderColor);
@@ -166,7 +166,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
     <PositionRow to={`/migrate/univ3/${tokenId}`}>
       {/* 1 */}
       <div>
-        <Logo color="#ff007a" />
+        <Logo color="#ff007a" width={42} height={42} />
       </div>
 
       {currencyBase && currencyQuote && priceLower && priceUpper ? (
@@ -196,9 +196,9 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
           </M.Column>
 
           {/* 4 */}
-          <M.Column gap="0.15em">
+          <M.Column gap="0.2em">
             <M.Row gap="0.5rem">
-              <CurrencyLogo currency={currencyBase} />
+              <CurrencyLogo currency={currencyBase} size="1.2em" />
               <span>
                 {position && (
                   <FormattedCurrencyAmount currencyAmount={invertPrice ? position.amount1 : position.amount0} />
@@ -207,7 +207,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
               </span>
             </M.Row>
             <M.Row gap="0.5rem">
-              <CurrencyLogo currency={currencyQuote} />
+              <CurrencyLogo currency={currencyQuote} size="1.2em" />
               <span>
                 {position && (
                   <FormattedCurrencyAmount currencyAmount={invertPrice ? position.amount0 : position.amount1} />
@@ -242,10 +242,12 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
           <LastColumn>
             <M.Column gap="0.5rem">
               <InfoLink onClick={onClickInfo}>
-                <M.Row gap="0.25rem">
-                  Info
-                  <ExternalLink size="1em" />
-                </M.Row>
+                <M.TextDiv size="sm">
+                  <M.Row gap="0.25rem">
+                    Info
+                    <ExternalLink size="1em" />
+                  </M.Row>
+                </M.TextDiv>
               </InfoLink>
             </M.Column>
           </LastColumn>

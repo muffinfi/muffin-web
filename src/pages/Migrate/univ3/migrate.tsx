@@ -41,11 +41,13 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 const DEFAULT_SLIPPAGE_TOLERANCE = new Percent(5, 1000)
 
 const InputSection = styled(OutlineCard)`
-  padding: 12px;
+  padding: 12px 16px;
   border: 1px solid var(--borderColor);
 `
 
 const InputSectionContent = styled(M.Column).attrs({ stretch: true })`
+  font-size: var(--text-sm);
+
   & > div {
     padding-top: 24px;
     padding-bottom: 24px;
@@ -286,9 +288,9 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
   const makeInputSection = () => (
     <InputSection>
       <InputSectionContent>
-        <M.Column stretch gap="1rem">
+        <M.Column stretch gap="1em">
           <InfoRow style={{ alignItems: 'baseline' }}>
-            <M.Text weight="bold">
+            <M.Text weight="semibold">
               <Trans>% of liquidity to migrate</Trans>
             </M.Text>
             <M.Column stretch gap="0.25rem">
@@ -313,7 +315,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
             </M.Column>
           </InfoRow>
           <InfoRow>
-            <M.Text weight="bold">
+            <M.Text weight="semibold">
               <Trans>Migrate to fee tier</Trans>
             </M.Text>
             <M.Row gap="0.25rem">
@@ -340,7 +342,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
             </AnimatedDropdown>
           </div>
         </M.Column>
-        <M.Column stretch gap="1rem">
+        <M.Column stretch gap="1em">
           <InfoRow>
             <M.Text>
               <Trans>Uniswap V3 Current Price:</Trans>
@@ -384,6 +386,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
                 <M.Text color="alert-text" style={{ fontSize: 13 }}>
                   <Trans>
                     You should only deposit liquidity into Muffin at a price you believe is correct. <br />
+                    <br />
                     If the price seems incorrect, you can either make a swap to move the price or wait for someone else
                     to do so.
                   </Trans>
@@ -398,7 +401,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
 
   const makeRefundText = () =>
     !refundAmounts ? null : (
-      <M.TextDiv paragraphLineHeight style={{ padding: '0 0.5rem' }}>
+      <M.TextDiv paragraphLineHeight style={{ fontSize: 13, padding: '0 0.5rem' }}>
         <Trans>
           At least <CurrencyAmountWithMinimum amount={refundAmounts.amount0} /> and{' '}
           <CurrencyAmountWithMinimum amount={refundAmounts.amount1} /> will be refunded to your wallet due to difference
@@ -454,14 +457,14 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
 
       {makeTransactionModal()}
 
-      <M.Container maxWidth="36rem">
+      <M.Container maxWidth="34rem">
         <M.Column stretch gap="32px">
           <M.Link color="text2" to="/migrate/univ3" onClick={reset}>
             <Trans>← Back</Trans>
           </M.Link>
 
           <M.RowBetween>
-            <M.Text size="xl" weight="semibold">
+            <M.Text size="xl" weight="bold">
               <Trans>Migrate Liquidity</Trans>
             </M.Text>
             <SettingsTab placeholderSlippage={DEFAULT_SLIPPAGE_TOLERANCE} noUseInternalAccount />
