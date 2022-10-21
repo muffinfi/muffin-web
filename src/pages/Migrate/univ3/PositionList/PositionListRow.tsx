@@ -1,7 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { useUniV3PositionFromDetails } from '@muffinfi/migrator/uniswap'
+import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
 import AlertHelper from '@muffinfi-ui/components/AlertHelper'
+import { Fraction } from '@uniswap/sdk-core'
 import { nearestUsableTick, TickMath } from '@uniswap/v3-sdk'
 import { ReactComponent as Logo } from 'assets/svg/uniswap_logo.svg'
 import Badge from 'components/Badge'
@@ -107,6 +109,8 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
 
   const position = useUniV3PositionFromDetails(positionDetails)
 
+  const feePercent = useMemo(() => formatFeePercent(new Fraction(fee ?? 0, 10_000)), [fee])
+
   // NOTE: fetch token basic info, init Token objects from sdk-core
   const pool = position?.pool
   const { token1 } = pool ?? {}
@@ -176,7 +180,7 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
                   {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
                 </M.Text>
               </M.Row>
-              <Badge>{(fee ?? 0) / 10000}%</Badge>
+              <Badge>{feePercent}%</Badge>
             </PoolTier>
           </M.Column>
 

@@ -1,7 +1,7 @@
 import { MAX_TICK, MIN_TICK, nearestUsableTick, Position, sqrtGammaToFeePercent } from '@muffinfi/muffin-sdk'
 import { formatFeePercent } from '@muffinfi/utils/formatFeePercent'
 import * as M from '@muffinfi-ui'
-import { CurrencyAmount } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction } from '@uniswap/sdk-core'
 import {
   nearestUsableTick as uniV3NearestUsableTick,
   Position as UniV3Position,
@@ -75,7 +75,7 @@ export default function PositionRow({
       position instanceof Position
         ? `${formatFeePercent(sqrtGammaToFeePercent(position.poolTier.sqrtGamma))}%`
         : position instanceof UniV3Position
-        ? `${position.pool.fee / 10000}%`
+        ? `${formatFeePercent(new Fraction(position.pool.fee, 10_000))}%`
         : null,
     [position]
   )
