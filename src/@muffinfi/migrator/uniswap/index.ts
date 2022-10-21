@@ -165,7 +165,7 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
   const sqrtGamma = useMemo(() => {
     if (!allTierOptions.length || !uniV3Pool?.fee) return undefined
     const _sqrtGamma = sqrtGammaDesired ?? parseInt(feeToSqrtGamma(new Fraction(uniV3Pool.fee, 1_000_000)).toString())
-    return allTierOptions.find((option) => option <= _sqrtGamma) ?? allTierOptions[0]
+    return allTierOptions.find((option) => option <= _sqrtGamma) ?? allTierOptions[allTierOptions.length - 1]
   }, [uniV3Pool?.fee, sqrtGammaDesired, allTierOptions])
 
   // matching tier
