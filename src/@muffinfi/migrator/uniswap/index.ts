@@ -14,8 +14,9 @@ import {
   priceToClosestTick,
   TickMath,
   Tier,
+  ZERO,
 } from '@muffinfi/muffin-sdk'
-import { Fraction, Percent } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction, Percent } from '@uniswap/sdk-core'
 import {
   nearestUsableTick as uniV3NearestUsableTick,
   NFTPermitOptions,
@@ -141,10 +142,19 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
   const uniV3Pool = position?.pool
   const { token0, token1 } = uniV3Pool ?? {}
 
+  const [owing0, setOwing0] = useState<string | undefined>()
+  const [owing1, setOwing1] = useState<string | undefined>()
+
   // uniswap pool current price to muffin price
   const sqrtPriceX72 = useMemo(
     () => (uniV3Pool?.token0Price ? TickMath.tickToSqrtPriceX72(priceToClosestTick(uniV3Pool.token0Price)) : undefined),
     [uniV3Pool?.token0Price]
+  )
+
+  // calculating uniswap position value
+  const { amount0: burnAmount0, amount1: burnAmount1 }: { amount0?: JSBI; amount1?: JSBI } = useMemo(
+    () => position?.burnAmountsWithSlippage(new Percent(0)) || {},
+    [position]
   )
 
   // matching pool
@@ -177,11 +187,16 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     }
     if (!pool) return [-1, undefined, false]
     const [tierId, tier] = pool.getTierBySqrtGamma(sqrtGamma)
-    if (tierId === -1) {
-      // need new tier but max number of tiers reached
-      if (pool.tiers.length >= MAX_TIERS_LENGTH) {
+    if (tierId >= 0) {
+      // reset owing amounts here to prevent infinite re-render
+      if (owing0) setOwing0(undefined)
+      if (owing1) setOwing1(undefined)
+    } else {
+      // choose an existing tier if position has not enough tokens for new tier or max number of tiers reached
+      if (((owing0 || owing1) && !sqrtGammaDesired) || pool.tiers.length >= MAX_TIERS_LENGTH) {
         const sortedOptions = pool.tiers.map(({ sqrtGamma }) => sqrtGamma).sort((a, b) => b - a)
-        const newSqrtGamma = sortedOptions.find((option) => option <= sqrtGamma) ?? sortedOptions[0]
+        const newSqrtGamma =
+          sortedOptions.find((option) => option <= sqrtGamma) ?? sortedOptions[sortedOptions.length - 1]
         return [...pool.getTierBySqrtGamma(newSqrtGamma), false]
       }
       // new tier
@@ -192,7 +207,7 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
       ]
     }
     return [tierId, tier, false]
-  }, [sqrtGamma, sqrtPriceX72, token0, token1, poolState, pool])
+  }, [sqrtGamma, sqrtPriceX72, token0, token1, poolState, pool, owing0, owing1, sqrtGammaDesired])
 
   // pool for creating or minting to
   const muffinPool = useMemo(
@@ -204,6 +219,27 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
         : undefined,
     [isNewTier, muffinTier, pool, tickSpacing, token0, token1]
   )
+
+  // calculating usable amount
+  const [mintAmount0, mintAmount1] = useMemo(() => {
+    if (!muffinPool || !burnAmount0 || !burnAmount1) return []
+    if (!isNewTier) {
+      // reset owing amounts when changing tier to prevent infinite re-render
+      return [burnAmount0, burnAmount1]
+    }
+    const amount0 = JSBI.subtract(burnAmount0, muffinPool.token0AmountForCreateTier.quotient)
+    const amount1 = JSBI.subtract(burnAmount1, muffinPool.token1AmountForCreateTier.quotient)
+    const newOwing0 = JSBI.greaterThanOrEqual(amount0, ZERO)
+      ? undefined
+      : JSBI.multiply(amount0, JSBI.BigInt(-1)).toString()
+    const newOwing1 = JSBI.greaterThanOrEqual(amount1, ZERO)
+      ? undefined
+      : JSBI.multiply(amount1, JSBI.BigInt(-1)).toString()
+    if (owing0 !== newOwing0) setOwing0(newOwing0)
+    if (owing1 !== newOwing1) setOwing1(newOwing1)
+
+    return [JSBI.GE(amount0, ZERO) ? amount0 : ZERO, JSBI.GE(amount1, ZERO) ? amount1 : ZERO]
+  }, [burnAmount0, burnAmount1, isNewTier, muffinPool, owing0, owing1])
 
   // matching ticks
   const [tickLower, tickUpper] = useMemo(() => {
@@ -228,25 +264,6 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     return [lower, upper]
   }, [tickSpacing, position?.tickLower, position?.tickUpper, position?.pool.tickSpacing])
 
-  // calculating uniswap position value
-  const { amount0: burnAmount0, amount1: burnAmount1 }: { amount0?: JSBI; amount1?: JSBI } = useMemo(
-    () => position?.burnAmountsWithSlippage(new Percent(0)) || {},
-    [position]
-  )
-
-  // calculating usable amount
-  const [mintAmount0, mintAmount1, hasEnoughAmounts] = useMemo(() => {
-    if (!muffinPool || !burnAmount0 || !burnAmount1) return []
-    if (!isNewTier) return [burnAmount0, burnAmount1, true]
-    const enoughToken0 = JSBI.GE(burnAmount0, muffinPool.token0AmountForCreateTier.quotient)
-    const enoughToken1 = JSBI.GE(burnAmount1, muffinPool.token1AmountForCreateTier.quotient)
-    return [
-      enoughToken0 ? JSBI.subtract(burnAmount0, muffinPool.token0AmountForCreateTier.quotient) : JSBI.BigInt(0),
-      enoughToken1 ? JSBI.subtract(burnAmount1, muffinPool.token1AmountForCreateTier.quotient) : JSBI.BigInt(0),
-      enoughToken0 && enoughToken1,
-    ]
-  }, [burnAmount0, burnAmount1, isNewTier, muffinPool])
-
   return {
     position: useMemo(
       () =>
@@ -265,6 +282,13 @@ export function useBestMatchMuffinPosition(position: UniV3Position | undefined, 
     pool,
     isNewPool: poolState === PoolState.NOT_EXISTS,
     isNewTier,
-    hasEnoughAmounts,
+    owingToken0ForCreateTier: useMemo(
+      () => (token0 && owing0 ? CurrencyAmount.fromRawAmount(token0, owing0) : undefined),
+      [token0, owing0]
+    ),
+    owingToken1ForCreateTier: useMemo(
+      () => (token1 && owing1 ? CurrencyAmount.fromRawAmount(token1, owing1) : undefined),
+      [token1, owing1]
+    ),
   }
 }

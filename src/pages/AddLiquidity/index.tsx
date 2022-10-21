@@ -33,6 +33,7 @@ import { getPriceRangeWithTokenRatio } from '@muffinfi/utils/getPriceRangeWithTo
 import * as M from '@muffinfi-ui'
 import AlertHelper from '@muffinfi-ui/components/AlertHelper'
 import { Currency, CurrencyAmount, Fraction, Percent, Price } from '@uniswap/sdk-core'
+import { CurrencyAmountInScienticNotation } from 'components/FormattedCurrencyAmount'
 import { LiquidityChart } from 'components/LiquidityChart'
 import PageTitle from 'components/PageTitle/PageTitle'
 import { QuestionHelperInline } from 'components/QuestionHelper'
@@ -51,7 +52,7 @@ import { useTokenBalances } from 'lib/hooks/useCurrencyBalance'
 import useOutstandingAmountToApprove from 'lib/hooks/useOutstandingAmountToApprove'
 import { useTokenApproveOrPermitButtonHandler } from 'lib/hooks/useTokenApproveOrPermitButtonHandlers'
 import { signatureDataToPermitOptions } from 'lib/utils/erc20Permit'
-import { memo, ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -109,31 +110,6 @@ const LockButton = styled(M.Button).attrs((props) => ({ size: 'badge', color: pr
   line-height: 0;
   font-weight: var(--regular);
 `
-
-/**
- * Show currency amount in the format of "1.23*10^-4 ETH" format
- */
-const CurrencyAmountInScienticNotation = memo(function CurrencyAmountInScienticNotation({
-  amount,
-}: {
-  amount: CurrencyAmount<Currency> | undefined
-}) {
-  if (!amount) return <span>---</span>
-
-  const rawAmt = amount.quotient.toString()
-  const sign = rawAmt[0] === '-' ? '-' : ''
-  const absRawAmt = rawAmt.replace(/^-/, '')
-  const exp = Math.floor(Math.log10(Number(absRawAmt))) - amount.currency.decimals
-  let mantissa = absRawAmt.length > 1 ? `${absRawAmt[0]}.${absRawAmt.slice(1)}` : absRawAmt
-  if (mantissa.length > 4) mantissa = (Number(mantissa) + 0.005).toFixed(2)
-
-  return (
-    <span>
-      {sign}
-      {mantissa}&times;10<sup>{exp}</sup> {amount.currency.symbol}
-    </span>
-  )
-})
 
 export default function AddLiquidity({
   match: { params },

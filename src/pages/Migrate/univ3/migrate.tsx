@@ -11,6 +11,7 @@ import { Position as UniV3Position } from '@uniswap/v3-sdk'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { ErrorCard, OutlineCard, YellowCard } from 'components/Card'
 import DowntimeWarning from 'components/DowntimeWarning'
+import { CurrencyAmountInScienticNotation } from 'components/FormattedCurrencyAmount'
 import PositionRow from 'components/migrate/PositionRow'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import PageTitle from 'components/PageTitle/PageTitle'
@@ -128,10 +129,8 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
   )
 
   // current muffin pool
-  const { position, pool, isNewPool, isNewTier, hasEnoughAmounts } = useBestMatchMuffinPosition(
-    partialUniV3Position,
-    sqrtGamma
-  )
+  const { position, pool, isNewPool, isNewTier, owingToken0ForCreateTier, owingToken1ForCreateTier } =
+    useBestMatchMuffinPosition(partialUniV3Position, sqrtGamma)
 
   useEffect(() => {
     if (sqrtGamma != null || !position) return
@@ -327,7 +326,7 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
           </InfoRow>
           <div style={{ marginTop: '-1rem' }}>
             <AnimatedDropdown open={isEditTierDropdownOpened}>
-              <M.Column stretch gap="8px" style={{ padding: '12px 1px' }}>
+              <M.Column stretch gap="8px" style={{ padding: '12px 1px 1px' }}>
                 <TierSelector
                   showNotCreated
                   disabled={false}
@@ -341,6 +340,30 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
               </M.Column>
             </AnimatedDropdown>
           </div>
+          {(owingToken0ForCreateTier || owingToken1ForCreateTier) && (
+            <YellowCard>
+              <M.RowBetween gap="12px">
+                <AlertTriangle stroke="#d39000" size="16px" style={{ flexShrink: 0 }} />
+                <M.TextDiv color="alert-text" style={{ fontSize: 13 }}>
+                  <Trans>
+                    Migrating to new fee tier require both tokens but the position does not have{' '}
+                    {owingToken0ForCreateTier ? (
+                      <CurrencyAmountInScienticNotation amount={owingToken0ForCreateTier} />
+                    ) : (
+                      ''
+                    )}
+                    {owingToken0ForCreateTier && owingToken1ForCreateTier ? ' and ' : ''}
+                    {owingToken1ForCreateTier ? (
+                      <CurrencyAmountInScienticNotation amount={owingToken1ForCreateTier} />
+                    ) : (
+                      ''
+                    )}{' '}
+                    to proceed
+                  </Trans>
+                </M.TextDiv>
+              </M.RowBetween>
+            </YellowCard>
+          )}
         </M.Column>
         <M.Column stretch gap="1em">
           <InfoRow>
@@ -413,16 +436,6 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
   const makeButtonSection = () =>
     !isOwner ? null : (
       <M.Column stretch gap="0.5rem">
-        {error && (
-          <ErrorCard>
-            <M.Row gap="12px">
-              <AlertTriangle stroke={theme.red3} size="16px" style={{ flexShrink: 0 }} />
-              <ThemedText.Main color="red3" fontSize="12px">
-                {error.reason || error.message || error}
-              </ThemedText.Main>
-            </M.Row>
-          </ErrorCard>
-        )}
         <M.ButtonRowPrimary onClick={sign} disabled={!!migrate || isSigning}>
           {isSigning ? (
             <Dots>
@@ -434,16 +447,24 @@ export function MigrateUniV3({ match: { params }, history }: RouteComponentProps
             <Trans>Allow Migrator to use Uniswap V3 position</Trans>
           )}
         </M.ButtonRowPrimary>
+        {error && (
+          <ErrorCard mt={12}>
+            <M.Row gap="12px">
+              <AlertTriangle stroke={theme.red3} size="16px" style={{ flexShrink: 0 }} />
+              <ThemedText.Main color="red3" fontSize="12px">
+                {error.reason || error.message || error}
+              </ThemedText.Main>
+            </M.Row>
+          </ErrorCard>
+        )}
         <M.ButtonRowPrimary
           onClick={() => (isExpert ? onMigrate() : setShowTxModalConfirm(true))}
-          disabled={!migrate || isLoading || !hasEnoughAmounts}
+          disabled={!migrate || isLoading || !!owingToken0ForCreateTier || !!owingToken1ForCreateTier}
         >
           {isLoading ? (
             <Dots>
               <Trans>Migrating</Trans>
             </Dots>
-          ) : !hasEnoughAmounts ? (
-            <Trans>Not enough token amounts for creating new tier</Trans>
           ) : (
             <Trans>Migrate</Trans>
           )}
