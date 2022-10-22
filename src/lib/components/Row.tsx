@@ -7,6 +7,7 @@ const Row = styled.div<{
   justify?: string
   pad?: number
   gap?: number
+  inline?: boolean
   flex?: true
   grow?: true | 'first' | 'last'
   children?: ReactNode
@@ -14,7 +15,7 @@ const Row = styled.div<{
 }>`
   align-items: ${({ align }) => align ?? 'center'};
   color: ${({ color, theme }) => color && theme[color]};
-  display: ${({ flex }) => (flex ? 'flex' : 'grid')};
+  display: ${({ flex, inline }) => (inline ? (flex ? 'inline-flex' : 'inline-grid') : flex ? 'flex' : 'grid')};
   flex-flow: wrap;
   flex-grow: ${({ grow }) => grow && 1};
   gap: ${({ gap }) => gap && `${gap}em`};

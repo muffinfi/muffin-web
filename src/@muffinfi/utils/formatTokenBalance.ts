@@ -1,17 +1,23 @@
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { DEFAULT_LOCALE } from 'constants/locales'
-import JSBI from 'jsbi'
+import { BigintIsh, Currency, CurrencyAmount, Fraction } from '@uniswap/sdk-core'
 
-export const formatTokenBalance = (amount: CurrencyAmount<Currency> | undefined, sigFigs = 4, lowest = 0.0001) => {
+const DEFAULT_LOWEST_AMOUNT = new Fraction(1, 10_000)
+
+export const formatTokenBalance = (
+  amount: CurrencyAmount<Currency> | undefined,
+  sigFigs = 4,
+  lowest: Fraction | BigintIsh = DEFAULT_LOWEST_AMOUNT
+) => {
   if (amount == null) return undefined
-  if (JSBI.equal(amount.quotient, JSBI.BigInt(0))) return '0'
+  if (amount.equalTo(0)) return '0'
 
-  // 12 sig fig should be precise enough
-  const value = parseFloat(amount.toSignificant(12))
+  const value = amount.divide(amount.decimalScale)
 
-  if (value < lowest) return `<${lowest}`
-  if (value >= 10 ** sigFigs) return value.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: 0 })
-  return value.toLocaleString(DEFAULT_LOCALE, { maximumSignificantDigits: sigFigs })
+  if (value.lessThan(lowest)) {
+    return `<${lowest instanceof Fraction ? lowest.toSignificant(1) : lowest}`
+  }
+
+  // e.g. value is 123.456 => show 123.5; value is 123456 => show 123456
+  return value.lessThan(10 ** sigFigs) ? amount.toSignificant(sigFigs) : amount.toFixed(0)
 }
 
 export const formatTokenBalanceWithSymbol = (amount: CurrencyAmount<Currency> | undefined, sigFigs = 4) => {
@@ -24,17 +30,21 @@ export const formatUSDBalanceWithDollarSign = (
   minSigFigs = 4
 ) => {
   if (amount == null) return undefined
-  if (JSBI.equal(amount.quotient, JSBI.BigInt(0))) return '$0'
+  if (amount.equalTo(0)) return '$0'
 
-  const value = parseFloat(amount.toSignificant(12))
+  const value = amount.divide(amount.decimalScale)
 
-  const lowest = 1 / 10 ** maxDecimalPlaces
-  if (value < lowest) return `<$${lowest}`
+  const lowest = new Fraction(1, 10 ** maxDecimalPlaces)
+
+  if (value.lessThan(lowest)) {
+    return `<$${lowest.toSignificant(1)}`
+  }
 
   for (let n = 0; n < maxDecimalPlaces; n++) {
-    if (value >= 10 ** (minSigFigs - 1) / 10 ** n) {
-      return `$${value.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: n })}`
+    if (!value.lessThan(10 ** (minSigFigs - 1 - n))) {
+      return `$${amount.toFixed(n)}`
     }
   }
-  return `$${value.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: maxDecimalPlaces })}`
+
+  return `$${amount.toFixed(maxDecimalPlaces)}`
 }

@@ -25,6 +25,7 @@ export default function TierSelector({
   sqrtGammaSelected,
   handleTierSelect,
   showNotCreated,
+  activeColor,
 }: {
   disabled: boolean | undefined
   pool: Pool | undefined
@@ -33,6 +34,7 @@ export default function TierSelector({
   sqrtGammaSelected: number | undefined
   showNotCreated?: boolean
   handleTierSelect: (sqrtGamma: number) => void
+  activeColor?: string
 }) {
   const { chainId } = useActiveWeb3React()
 
@@ -71,7 +73,7 @@ export default function TierSelector({
               <TierOption
                 tierId={i}
                 active={i === tierIdSelected}
-                activeColor={tierColors[i % tierColors.length]}
+                activeColor={activeColor ?? tierColors[i % tierColors.length]}
                 sqrtGamma={sqrtGamma}
                 distributions={distributions ?? (showNotCreated ? defaultDistribution : undefined)}
                 handleTierSelect={handleTierSelect}

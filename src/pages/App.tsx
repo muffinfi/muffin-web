@@ -23,6 +23,9 @@ import Withdraw from './Account/Withdraw'
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 import LimitRange from './LimitRange'
+import { RedirectToMigrateUniV3 } from './Migrate/redirects'
+import { UniV3List } from './Migrate/univ3'
+import { MigrateUniV3 } from './Migrate/univ3/migrate'
 // import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 // import Earn from './Earn'
 // import Manage from './Earn/Manage'
@@ -113,6 +116,9 @@ export default function App() {
                 {/* <Route exact strict path="/remove/v2/:currencyIdA/:currencyIdB" component={RemoveLiquidity} /> */}
                 <Route exact strict path="/remove/:tokenId" component={RemoveLiquidityV3} />
 
+                <Route exact strict path="/migrate" component={RedirectToMigrateUniV3} />
+                <Route exact strict path="/migrate/univ3" component={UniV3List} />
+                <Route exact strict path="/migrate/univ3/:tokenId" component={MigrateUniV3} />
                 {/* <Route exact strict path="/migrate/v2" component={MigrateV2} />
                 <Route exact strict path="/migrate/v2/:address" component={MigrateV2Pair} /> */}
 

@@ -118,9 +118,11 @@ const ModalContentWrapper = styled.div`
 export default function SettingsTab({
   placeholderSlippage,
   noDeadline,
+  noUseInternalAccount,
 }: {
   placeholderSlippage: Percent
   noDeadline?: boolean
+  noUseInternalAccount?: boolean
 }) {
   // const { chainId } = useActiveWeb3React()
 
@@ -200,25 +202,28 @@ export default function SettingsTab({
               <Trans>Transaction Settings</Trans>
             </Text>
             <TransactionSettings placeholderSlippage={placeholderSlippage} noDeadline={noDeadline} />
-            <RowBetween>
-              <RowFixed>
-                <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
-                  <Trans>Use Muffin Account</Trans>
-                </ThemedText.Black>
-                <QuestionHelper
-                  text={
-                    <Trans>
-                      Include internal Muffin account balance and use them for swapping and adding liquidity.
-                    </Trans>
-                  }
+            {noUseInternalAccount ? null : (
+              <RowBetween>
+                <RowFixed>
+                  <ThemedText.Black fontWeight={400} fontSize={14} color={theme.text2}>
+                    <Trans>Use Muffin Account</Trans>
+                  </ThemedText.Black>
+                  <QuestionHelper
+                    placement="top"
+                    text={
+                      <Trans>
+                        Include internal Muffin account balance and use them for swapping and adding liquidity.
+                      </Trans>
+                    }
+                  />
+                </RowFixed>
+                <Toggle
+                  id="toggle-internal-account-mode-button"
+                  isActive={internalAccountMode}
+                  toggle={toggleInternalAccountMode}
                 />
-              </RowFixed>
-              <Toggle
-                id="toggle-internal-account-mode-button"
-                isActive={internalAccountMode}
-                toggle={toggleInternalAccountMode}
-              />
-            </RowBetween>
+              </RowBetween>
+            )}
 
             <Text fontWeight={600} fontSize={14}>
               <Trans>Interface Settings</Trans>
@@ -250,6 +255,7 @@ export default function SettingsTab({
                   <Trans>Expert Mode</Trans>
                 </ThemedText.Black>
                 <QuestionHelper
+                  placement="top"
                   text={
                     <Trans>Allow high price impact trades and skip the confirm screen. Use at your own risk.</Trans>
                   }

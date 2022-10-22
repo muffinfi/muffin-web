@@ -1,9 +1,9 @@
-import { MuffinPositionDetail } from '@muffinfi/hooks/usePositions'
 import * as M from '@muffinfi-ui'
 import { useToken } from 'hooks/useCurrency'
 import { memo, useMemo, useState } from 'react'
 import { ChevronDown } from 'react-feather'
 import styled from 'styled-components/macro'
+import { PositionDetails } from 'types/position'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
 import PositionList from './PositionList'
@@ -22,7 +22,7 @@ const PositionListGroup = memo(function PositionListGroup({
   positionDetails,
 }: {
   groupKey: string
-  positionDetails: MuffinPositionDetail[]
+  positionDetails: PositionDetails[]
 }) {
   const [token0Address, token1Address] = groupKey.split('-')
   const token0 = useToken(token0Address)
@@ -48,12 +48,12 @@ const PositionListGroup = memo(function PositionListGroup({
   )
 })
 
-export default function PositionListGroupList({ positionDetails }: { positionDetails: MuffinPositionDetail[] }) {
+export default function PositionListGroupList({ positionDetails }: { positionDetails: PositionDetails[] }) {
   const positionsByPair = useMemo(() => {
     return positionDetails.reduce((acc, cur) => {
       const key = `${cur.token0}-${cur.token1}`
       return { ...acc, [key]: [...(acc[key] ?? []), cur] }
-    }, {} as { [key: string]: MuffinPositionDetail[] })
+    }, {} as { [key: string]: PositionDetails[] })
   }, [positionDetails])
 
   return (
