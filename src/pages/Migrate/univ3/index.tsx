@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useMigratorContract } from '@muffinfi/migrator/hooks/useMigratorContract'
 import * as M from '@muffinfi-ui'
 import DowntimeWarning from 'components/DowntimeWarning'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
@@ -8,14 +7,12 @@ import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useScrollToTopOnMount from 'hooks/useScrollToTopOnMount'
 import { useV3Positions } from 'hooks/useV3Positions'
-import EtherscanLink from 'lib/components/EtherscanLink'
 import { TokenPricesUpdater } from 'pages/Pool/PositionList/PositionValuesUpdater'
 import { useMemo } from 'react'
-import { Inbox } from 'react-feather'
+import { ExternalLink, Inbox } from 'react-feather'
 import { useWalletModalToggle } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { HideSmall } from 'theme'
-import { ExplorerDataType } from 'utils/getExplorerLink'
 
 import { LoadingRows } from '../styled'
 import { PositionListSection } from './PositionList/PositionListSection'
@@ -56,7 +53,6 @@ export function UniV3List() {
   const { account } = useActiveWeb3React()
   const toggleWalletModal = useWalletModalToggle()
   const { positions, loading } = useV3Positions(account)
-  const migrateContract = useMigratorContract()
   const activePositions = useMemo(
     () => positions?.filter((position) => position.liquidity.gt(0)).reverse() ?? [],
     [positions]
@@ -87,11 +83,13 @@ export function UniV3List() {
             <M.Text paragraphLineHeight color="text2" size="sm">
               <Trans>
                 The migration is done by the{' '}
-                <M.Text color="secondary-text">
-                  <EtherscanLink data={migrateContract?.address} type={ExplorerDataType.ADDRESS} inline>
-                    Muffin migrator contract
-                  </EtherscanLink>
-                </M.Text>
+                <M.ExternalLink
+                  color="primary0"
+                  hoverColor="primary1"
+                  href="https://github.com/muffinfi/muffin-migrator"
+                >
+                  Muffin migrator contract <ExternalLink size="1em" style={{ marginBottom: -1 }} />
+                </M.ExternalLink>
               </Trans>
             </M.Text>
           </M.Column>
