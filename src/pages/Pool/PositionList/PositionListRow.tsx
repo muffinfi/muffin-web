@@ -153,10 +153,11 @@ export default memo(function PositionListRow({ positionDetails }: { positionDeta
 
   // construct Position from details returned
   const [, pool] = useMuffinPool(currency0 ?? undefined, currency1 ?? undefined)
-  const tier = typeof tierId === 'number' ? pool?.tiers[tierId] : undefined
+  const tier = pool?.tiers[tierId] ?? undefined
 
   const position = useMemo(() => {
-    if (pool) {
+    // ensure `tierId` exists before position object creation
+    if (pool && tierId < pool.tiers.length) {
       return new Position({
         pool,
         tierId,
